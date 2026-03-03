@@ -1,0 +1,9 @@
+version: "1"
+description: "Conservative baseline assumptions for UK household stress testing"
+income_shock_std_percent: 5.0
+rate_shock_std_percent: 0.5
+inflation_shock_std_percent: 1.0
+notes: >
+  These assumptions represent a conservative central estimate.
+  They should be reviewed periodically against observed UK macro data.
+  They do not constitute macro forecasts.
