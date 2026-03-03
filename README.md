@@ -1,19 +1,52 @@
 # 🏠 UK Household Financial Stress Testing Engine
 
 Anonymous, educational simulation platform for UK household financial stress testing.
-**NOT financial advice. No PII collected. No login required.**
+**Educational simulation only. This tool does not provide financial advice, investment advice, product recommendations, or regulated advice of any kind.**
+**No login required. No PII required.**
 
 ---
 
 ## Overview
 
-This application allows UK households to anonymously stress test their finances against:
+This Python web app allows UK households to stress test their finances against:
 
 - **Income shocks** — a percentage drop in monthly net income
-- **Mortgage rate increases** — e.g. rate at next fixed-rate renewal
+- **Mortgage rate increases** — e.g., rate at next fixed-rate renewal
 - **Essentials inflation** — increased cost of essential spending
+- **Savings runway** — months until savings are depleted under negative cashflow
 
-It produces both **deterministic** (single-point) and **Monte Carlo probabilistic** outputs (P10/P50/P90 cashflow and savings runway), with a clear educational disclaimer throughout.
+It provides:
+
+- **Deterministic outputs** (single-point scenario results)
+- **Premium/advanced Monte Carlo outputs** (P10/P50/P90 cashflow and runway)
+
+All outputs are **illustrative estimates** based on simplified modelling assumptions and should not be relied on as your sole basis for financial decisions.
+
+---
+
+## What This Is Not
+
+- Financial advice
+- Investment advice
+- Product recommendations
+- Regulated advice of any kind
+- A mortgage or product comparison tool
+- Connected to bank accounts
+- A tool for institutional or regulatory capital modelling
+
+---
+
+## Privacy (Anonymous by Design)
+
+- No login required
+- No bank linking
+- No statement uploads
+- No personally identifiable information (PII) required to run the model
+- User inputs are processed in-memory and not persisted by the application
+- No analytics, tracking pixels, or session recording
+- If payment processing is added, it should be delegated to a third-party provider
+
+For full details, see [docs/privacy.md](docs/privacy.md).
 
 ---
 
@@ -30,7 +63,7 @@ pip install uv
 ### Setup & Run
 
 ```bash
-# Create virtual environment and install all dependencies
+# Create virtual environment and install dependencies
 uv venv
 uv sync --all-extras
 
@@ -38,15 +71,15 @@ uv sync --all-extras
 uv run uvicorn app.main:app --reload
 ```
 
-Visit [http://localhost:8000](http://localhost:8000) in your browser.
+Open [http://localhost:8000](http://localhost:8000) in your browser.
 
-### Run Tests
+### Tests
 
 ```bash
 uv run pytest -v
 ```
 
-### Lint & Format
+### Lint & Format Checks
 
 ```bash
 uv run ruff check .
@@ -62,22 +95,21 @@ app/
   main.py               # FastAPI application entry point
   api/routes.py         # HTTP routes (UI + JSON API)
   models/
-    inputs.py           # Pydantic input models (DeterministicInput, MonteCarloInput)
-    outputs.py          # Pydantic output models (DeterministicOutput, MonteCarloOutput)
+    inputs.py           # Pydantic input models
+    outputs.py          # Pydantic output models
   engines/
     deterministic.py    # Single-point stress test engine
     monte_carlo.py      # Probabilistic Monte Carlo engine (P10/P50/P90)
   assumptions/
-    v1.yaml             # Conservative uncertainty band assumptions
-    v2.yaml             # Severe / tail-risk uncertainty band assumptions
+    v1.yaml             # Conservative uncertainty assumptions
+    v2.yaml             # Severe/tail-risk uncertainty assumptions
   templates/
     index.html          # Input form (Jinja2)
     results.html        # Results display (Jinja2)
-  core/config.py        # Application configuration constants
+  core/config.py        # Application configuration
 
-tests/                  # pytest test suite (39 tests)
-docs/                   # Assumptions, regulatory disclaimer, privacy policy
-.github/workflows/      # CI pipeline (lint + test)
+tests/                  # pytest test suite
+docs/                   # assumptions, disclaimer, privacy, licensing docs
 ```
 
 ### API Endpoints
@@ -89,12 +121,12 @@ docs/                   # Assumptions, regulatory disclaimer, privacy policy
 | `POST` | `/api/v1/stress/deterministic` | JSON deterministic stress test |
 | `POST` | `/api/v1/stress/monte-carlo` | JSON Monte Carlo stress test |
 
-Interactive API docs available at [http://localhost:8000/docs](http://localhost:8000/docs).
+Interactive API docs: [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ---
 
 ## Disclaimer
 
-> **EDUCATIONAL SIMULATION ONLY.** This tool does not provide financial advice, investment advice, or product recommendations. Results are illustrative estimates based on simplified modelling assumptions. Always consult a qualified financial adviser before making financial decisions.
+> **EDUCATIONAL SIMULATION ONLY.** This tool does not provide financial advice, investment advice, or product recommendations. It is not regulated by the UK Financial Conduct Authority (FCA). Results are illustrative estimates based on simplified modelling assumptions and should not be relied on as the sole basis for financial decisions.
 
-See [`docs/regulatory_disclaimer.md`](docs/regulatory_disclaimer.md) and [`docs/privacy.md`](docs/privacy.md) for full details.
+See [docs/regulatory_disclaimer.md](docs/regulatory_disclaimer.md) for the full disclaimer.
