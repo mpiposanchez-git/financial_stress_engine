@@ -1,9 +1,0 @@
-version: "2"
-description: "Severe stress assumptions for tail-risk scenario modelling"
-income_shock_std_percent: 10.0
-rate_shock_std_percent: 1.0
-inflation_shock_std_percent: 2.0
-notes: >
-  These assumptions represent a more severe stress scenario with wider uncertainty bands.
-  Intended for tail-risk analysis. Not a forecast.
-  Users should consider both v1 and v2 outputs when assessing resilience.

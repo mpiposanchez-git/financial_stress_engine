@@ -1,4 +1,0 @@
-"""Application configuration."""
-
-MAX_MONTE_CARLO_TRIALS = 50_000
-DEFAULT_MONTE_CARLO_TRIALS = 10_000
