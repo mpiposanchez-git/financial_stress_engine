@@ -73,4 +73,4 @@ If you are experiencing financial difficulty, please contact:
 
 ---
 
-*Last reviewed: 2024. This disclaimer should be reviewed periodically to ensure it remains accurate and compliant with applicable UK law and regulatory guidance.*
+*Last reviewed: 2026-03-03. This disclaimer should be reviewed periodically to ensure it remains accurate and compliant with applicable UK law and regulatory guidance.*

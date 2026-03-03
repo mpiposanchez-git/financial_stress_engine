@@ -84,4 +84,4 @@ This privacy policy may be updated from time to time. Any changes will be reflec
 
 ---
 
-*This document was last reviewed: 2024.*
+*This document was last reviewed: 2026-03-03.*
