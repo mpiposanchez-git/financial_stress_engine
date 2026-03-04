@@ -27,9 +27,7 @@ def test_no_sensitive_logging_patterns_in_api_app() -> None:
         for label, pattern in checks:
             for match in pattern.finditer(content):
                 line_no = content.count("\n", 0, match.start()) + 1
-                offenders.append(
-                    f"{rel_path}:{line_no} matched '{label}' via /{pattern.pattern}/"
-                )
+                offenders.append(f"{rel_path}:{line_no} matched '{label}' via /{pattern.pattern}/")
 
     assert not offenders, (
         "Sensitive logging/body-access patterns detected in API code:\n"

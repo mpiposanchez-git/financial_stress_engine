@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import secrets
+
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from shared.engine.deterministic import run_deterministic
-from shared.engine.montecarlo import run_montecarlo
 from shared.engine.money import format_currency_from_pence
+from shared.engine.montecarlo import run_montecarlo
 
 from .auth import AuthContext, require_auth
 from .models import (

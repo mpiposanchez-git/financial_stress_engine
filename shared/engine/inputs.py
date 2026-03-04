@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
-from shared.engine.fx import SUPPORTED_CURRENCIES, validate_currency
+from shared.engine.fx import validate_currency
 
 
 class DeterministicInput(BaseModel):

@@ -25,8 +25,16 @@ def test_no_request_body_logging_patterns_in_api_app() -> None:
 
         for line in content.splitlines():
             lowered_line = line.lower()
-            is_log_line = "logger." in lowered_line or "logging." in lowered_line or "print(" in lowered_line
-            if is_log_line and ("authorization" in lowered_line or "bearer" in lowered_line or "token" in lowered_line):
-                offenders.append(f"{file_path.name}: potentially sensitive log line '{line.strip()}'")
+            is_log_line = (
+                "logger." in lowered_line or "logging." in lowered_line or "print(" in lowered_line
+            )
+            if is_log_line and (
+                "authorization" in lowered_line
+                or "bearer" in lowered_line
+                or "token" in lowered_line
+            ):
+                offenders.append(
+                    f"{file_path.name}: potentially sensitive log line '{line.strip()}'"
+                )
 
     assert not offenders, "Sensitive logging patterns detected:\n" + "\n".join(offenders)

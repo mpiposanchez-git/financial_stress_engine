@@ -104,8 +104,7 @@ def run_deterministic(inputs: DeterministicInput) -> DeterministicOutput:
         for code in sorted(inputs.fx_spot_rates.keys())
     }
     fx_stress_bps_used: dict[str, int] = {
-        code: int(inputs.fx_stress_bps.get(code, 0))
-        for code in sorted(fx_spot_rates_used.keys())
+        code: int(inputs.fx_stress_bps.get(code, 0)) for code in sorted(fx_spot_rates_used.keys())
     }
     fx_stressed_rates_used: dict[str, Decimal] = {
         code: stressed_rate(spot, fx_stress_bps_used.get(code, 0))
@@ -192,12 +191,7 @@ def run_deterministic(inputs: DeterministicInput) -> DeterministicOutput:
         fx_stressed_rates_used,
     )
 
-    cashflow_stress = (
-        stressed_income
-        - stressed_essentials
-        - stressed_debt
-        - mortgage_stress
-    )
+    cashflow_stress = stressed_income - stressed_essentials - stressed_debt - mortgage_stress
 
     runway_base = _compute_runway(cashflow_base, cash_savings_base)
     runway_stress = _compute_runway(cashflow_stress, cash_savings_stress)
@@ -246,9 +240,13 @@ def run_deterministic(inputs: DeterministicInput) -> DeterministicOutput:
             float(round_half_up_decimal(runway_stress, 2)) if runway_stress is not None else None
         ),
         mortgage_payment_current_pence=mortgage_current,
-        mortgage_payment_current_formatted=format_currency_from_pence(mortgage_current, symbol=symbol),
+        mortgage_payment_current_formatted=format_currency_from_pence(
+            mortgage_current, symbol=symbol
+        ),
         mortgage_payment_stress_pence=mortgage_stress,
-        mortgage_payment_stress_formatted=format_currency_from_pence(mortgage_stress, symbol=symbol),
+        mortgage_payment_stress_formatted=format_currency_from_pence(
+            mortgage_stress, symbol=symbol
+        ),
         savings_path_pence=savings_path_pence,
         savings_path_formatted=[
             format_currency_from_pence(value, symbol=symbol) for value in savings_path_pence

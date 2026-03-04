@@ -80,12 +80,12 @@ def _monthly_mortgage_payment_from_bps(
     if np.any(~zero_mask):
         rates = annual_rate_bps[~zero_mask].astype(np.float64) / 120_000.0
         factor = np.power(1.0 + rates, term_months)
-        payments[~zero_mask] = (
-            balance_pence * (rates * factor) / (factor - 1.0)
-        )
+        payments[~zero_mask] = balance_pence * (rates * factor) / (factor - 1.0)
 
     if np.any(zero_mask):
-        payments[zero_mask] = divide_round_half_up(balance_pence, term_months) if term_months > 0 else 0
+        payments[zero_mask] = (
+            divide_round_half_up(balance_pence, term_months) if term_months > 0 else 0
+        )
 
     return _round_half_up_int_array(payments)
 
@@ -137,7 +137,9 @@ def _build_fx_paths(
         stress_bps = int(inputs.fx_stress_bps.get(currency, 0))
         base_rate = float(get_spot_rate_to_reporting(currency, inputs.fx_spot_rates))
 
-        stressed_start = float(stressed_rate(get_spot_rate_to_reporting(currency, inputs.fx_spot_rates), stress_bps))
+        stressed_start = float(
+            stressed_rate(get_spot_rate_to_reporting(currency, inputs.fx_spot_rates), stress_bps)
+        )
         if vol_bps == 0:
             paths[currency] = np.full((n_sims, horizon_months), stressed_start, dtype=np.float64)
             continue
@@ -261,7 +263,9 @@ def run_montecarlo(
         newly_depleted = (month_of_depletion == 0) & (savings == 0)
         month_of_depletion[newly_depleted] = month + 1
 
-    depletion_for_percentiles = np.where(month_of_depletion > 0, month_of_depletion, horizon_months + 1)
+    depletion_for_percentiles = np.where(
+        month_of_depletion > 0, month_of_depletion, horizon_months + 1
+    )
     runway = depletion_for_percentiles.astype(np.float64)
 
     runtime_ms = _round_half_up_float((time.perf_counter() - start) * 1000.0, 2)
