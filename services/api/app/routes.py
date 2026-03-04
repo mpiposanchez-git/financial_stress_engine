@@ -60,10 +60,7 @@ def _assert_limits(payload: MonteCarloRunRequest, settings: Settings) -> None:
     if payload.horizon_months > settings.max_horizon_months:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=(
-                f"horizon_months exceeds MAX_HORIZON_MONTHS "
-                f"({settings.max_horizon_months})"
-            ),
+            detail=(f"horizon_months exceeds MAX_HORIZON_MONTHS ({settings.max_horizon_months})"),
         )
 
 
@@ -178,9 +175,7 @@ async def run_montecarlo_route(
             dtype=float,
         )
 
-        stressed_incomes = p.household_monthly_net_income_gbp * (
-            1 - income_shock_samples / 100.0
-        )
+        stressed_incomes = p.household_monthly_net_income_gbp * (1 - income_shock_samples / 100.0)
         stressed_essentials = p.household_monthly_essential_spend_gbp * (
             1 + inflation_samples / 100.0
         )
