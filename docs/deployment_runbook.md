@@ -6,6 +6,20 @@ This runbook provides the exact configuration needed to deploy and operate this 
 
 ---
 
+## 0) Release Tag Snapshot
+
+Use this section at release time to tie deployment actions to a specific version.
+
+- Release tag: `v0.1.0-poc3` (update per release)
+- Release date: `2026-03-04`
+- Scope: `POC-001`, `POC-002`, `POC-003`
+- Release notes: `docs/CHANGELOG.md`
+- Session logs: `docs/progress_log.md`
+
+Before deployment, confirm the tag/branch being deployed matches the release notes above.
+
+---
+
 ## 1) Canonical URLs
 
 - GitHub username: `mpiposanchez-git`

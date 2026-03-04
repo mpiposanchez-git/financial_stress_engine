@@ -1,6 +1,6 @@
 # MOD-002 — Monte Carlo Engine Specification 🎲
 
-**Status:** Draft  
+**Status:** Implemented (POC-005)  
 **Scope:** stochastic simulation over monthly horizon.  
 **Default horizon:** 24 months.  
 **Outputs:** percentile summaries (P10/P50/P90) and reproducibility.
@@ -21,6 +21,7 @@ We simulate many alternate futures (“paths”). Each simulation `i` produces a
 - FX rate changes (from MOD-003)
 
 Then we compute monthly cashflow and savings path, exactly as in MOD-001, but with time-varying shocks.
+All monetary aggregation is reported in reporting-currency pence.
 
 ---
 
@@ -41,7 +42,7 @@ All units are percent; internal engine may store in bps.
 
 ## 4) Optional persistence mode (AR(1) hook) 🧷
 
-Add a parameter `shock_dynamics`:
+Parameter `shock_dynamics`:
 - `"iid"` (default POC)
 - `"ar1"` (optional)
 
@@ -49,9 +50,9 @@ For AR(1):
 - `x[t] = a*x[t-1] + (1-a)*mu + eps[t]`
 - where `eps[t] ~ Normal(0, sigma_eps)`
 
-Design goal:
-- Keep `"iid"` stable for POC.
-- Implement `"ar1"` behind a flag or scaffold it with tests.
+Implemented behavior:
+- `iid`: independent monthly innovations.
+- `ar1`: persistence via `x[t] = mu + phi * (x[t-1] - mu) + eps[t]` with configurable `ar1_phi`.
 
 ---
 
@@ -61,7 +62,6 @@ At minimum report P10/P50/P90 for:
 - `runway_months`
 - `min_savings_pence`
 - `month_of_depletion`
-- optional: `end_savings_pence` at horizon end
 
 Also include:
 - runtime_ms
@@ -73,6 +73,8 @@ Also include:
 If a seed is provided:
 - The same inputs + same seed must produce identical outputs.
 
+This contract is covered by reproducibility tests for both `iid` and `ar1` dynamics.
+
 ---
 
 ## 7) Limits & stability ⚠️
@@ -80,3 +82,6 @@ Enforce:
 - max `n_sims`
 - max `horizon_months`
 - response time budget
+
+FX note:
+- Monte Carlo includes stochastic monthly FX paths per configured currency with optional volatility.

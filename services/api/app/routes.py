@@ -2,47 +2,26 @@ from __future__ import annotations
 
 import asyncio
 import secrets
-import time
-
-import numpy as np
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from shared.engine.deterministic import run_deterministic
+from shared.engine.montecarlo import run_montecarlo
+from shared.engine.money import format_currency_from_pence
 
 from .auth import AuthContext, require_auth
 from .models import (
     DeterministicRunRequest,
     DeterministicRunResponse,
+    MoneyPercentileTriplet,
     MonteCarloMetrics,
     MonteCarloRunRequest,
     MonteCarloRunResponse,
-    PercentileTriplet,
+    RunwayPercentileTriplet,
 )
 from .rate_limit import rate_limiter
 from .settings import Settings, get_settings
 
 router = APIRouter()
-
-
-def _monthly_mortgage_payment(
-    balance: float,
-    annual_rate_percent: float,
-    term_years: float,
-    mortgage_type: str,
-) -> float:
-    if balance <= 0:
-        return 0.0
-
-    monthly_rate = annual_rate_percent / 100.0 / 12.0
-    n = term_years * 12
-
-    if mortgage_type == "interest_only":
-        return balance * monthly_rate
-
-    if monthly_rate == 0.0:
-        return balance / n if n > 0 else 0.0
-
-    return balance * (monthly_rate * (1 + monthly_rate) ** n) / ((1 + monthly_rate) ** n - 1)
 
 
 @router.get("/health")
@@ -73,15 +52,6 @@ def _apply_rate_limit(auth: AuthContext, settings: Settings) -> None:
         )
 
 
-def _percentiles(values: np.ndarray) -> PercentileTriplet:
-    p10, p50, p90 = np.percentile(values, [10, 50, 90], method="linear")
-    return PercentileTriplet(
-        p10=float(round(p10, 2)),
-        p50=float(round(p50, 2)),
-        p90=float(round(p90, 2)),
-    )
-
-
 @router.post("/api/v1/deterministic/run", response_model=DeterministicRunResponse)
 async def run_deterministic_route(
     payload: DeterministicRunRequest,
@@ -89,10 +59,11 @@ async def run_deterministic_route(
     settings: Settings = Depends(get_settings),
 ) -> DeterministicRunResponse:
     _apply_rate_limit(auth, settings)
+    engine_input = payload.input_parameters.to_engine_input(payload.horizon_months)
 
     try:
         result = await asyncio.wait_for(
-            asyncio.to_thread(run_deterministic, payload.input_parameters),
+            asyncio.to_thread(run_deterministic, engine_input),
             timeout=settings.request_timeout_seconds,
         )
     except TimeoutError as exc:
@@ -101,20 +72,27 @@ async def run_deterministic_route(
             detail="Request timed out",
         ) from exc
 
-    min_savings = (
-        payload.input_parameters.cash_savings_gbp
-        if result.monthly_cashflow_stress_gbp >= 0
-        else max(
-            0.0,
-            payload.input_parameters.cash_savings_gbp + result.monthly_cashflow_stress_gbp,
-        )
-    )
-
     warnings = ["Educational simulation only. Not financial advice."]
     return DeterministicRunResponse(
-        runway_months=result.estimated_months_of_runway_stress,
-        min_savings=float(round(min_savings, 2)),
-        month_by_month=[],
+        reporting_currency=result.reporting_currency,
+        fx_spot_rates_used=result.fx_spot_rates_used,
+        fx_stressed_rates_used=result.fx_stressed_rates_used,
+        fx_stress_bps=result.fx_stress_bps,
+        monthly_cashflow_base_pence=result.monthly_cashflow_base_pence,
+        monthly_cashflow_base_formatted=result.monthly_cashflow_base_formatted,
+        monthly_cashflow_stress_pence=result.monthly_cashflow_stress_pence,
+        monthly_cashflow_stress_formatted=result.monthly_cashflow_stress_formatted,
+        mortgage_payment_current_pence=result.mortgage_payment_current_pence,
+        mortgage_payment_current_formatted=result.mortgage_payment_current_formatted,
+        mortgage_payment_stress_pence=result.mortgage_payment_stress_pence,
+        mortgage_payment_stress_formatted=result.mortgage_payment_stress_formatted,
+        runway_months=result.runway_months,
+        savings_path_pence=result.savings_path_pence,
+        savings_path_formatted=result.savings_path_formatted,
+        min_savings_pence=result.min_savings_pence,
+        min_savings_formatted=result.min_savings_formatted,
+        month_of_depletion=result.month_of_depletion,
+        month_by_month=result.savings_path_pence,
         warnings=warnings,
     )
 
@@ -129,91 +107,42 @@ async def run_montecarlo_route(
     _assert_limits(payload, settings)
 
     async def _run() -> MonteCarloRunResponse:
-        start = time.perf_counter()
-
-        p = payload.input_parameters
-        n_sims = payload.n_sims
-        horizon_months = payload.horizon_months
+        engine_input = payload.input_parameters.to_engine_input()
         seed = payload.seed if payload.seed is not None else secrets.randbelow(2_147_483_647)
-
-        rng = np.random.default_rng(seed)
-
-        income_shock_samples = np.clip(
-            rng.normal(
-                p.shock_monthly_income_drop_percent,
-                p.income_shock_std_percent,
-                size=n_sims,
-            ),
-            0,
-            100,
+        result = await asyncio.to_thread(
+            run_montecarlo,
+            engine_input,
+            payload.n_sims,
+            payload.horizon_months,
+            int(seed),
         )
-        stress_rate_samples = np.clip(
-            rng.normal(p.mortgage_rate_percent_stress, p.rate_shock_std_percent, size=n_sims),
-            0,
-            100,
-        )
-        inflation_samples = np.clip(
-            rng.normal(
-                p.inflation_monthly_essentials_increase_percent,
-                p.inflation_shock_std_percent,
-                size=n_sims,
-            ),
-            0,
-            100,
-        )
-
-        mortgage_payments = np.array(
-            [
-                _monthly_mortgage_payment(
-                    p.mortgage_balance_gbp,
-                    float(rate),
-                    p.mortgage_term_years_remaining,
-                    p.mortgage_type,
-                )
-                for rate in stress_rate_samples
-            ],
-            dtype=float,
-        )
-
-        stressed_incomes = p.household_monthly_net_income_gbp * (1 - income_shock_samples / 100.0)
-        stressed_essentials = p.household_monthly_essential_spend_gbp * (
-            1 + inflation_samples / 100.0
-        )
-
-        cashflows = (
-            stressed_incomes
-            - stressed_essentials
-            - p.household_monthly_debt_payments_gbp
-            - mortgage_payments
-        )
-
-        runway_months = np.where(
-            cashflows < 0,
-            np.minimum(horizon_months, p.cash_savings_gbp / np.abs(cashflows)),
-            float(horizon_months),
-        )
-
-        terminal_savings = p.cash_savings_gbp + cashflows * horizon_months
-        min_savings = np.clip(
-            np.minimum(p.cash_savings_gbp, terminal_savings),
-            a_min=0.0,
-            a_max=None,
-        )
-        max_monthly_deficit = np.maximum(0.0, -cashflows)
 
         metrics = MonteCarloMetrics(
-            runway_months=_percentiles(runway_months),
-            min_savings=_percentiles(min_savings),
-            max_monthly_deficit=_percentiles(max_monthly_deficit),
+            runway_months=RunwayPercentileTriplet(
+                p10=result.runway_months.p10,
+                p50=result.runway_months.p50,
+                p90=result.runway_months.p90,
+            ),
+            min_savings=MoneyPercentileTriplet(
+                p10_pence=result.min_savings.p10_pence,
+                p10_formatted=format_currency_from_pence(result.min_savings.p10_pence),
+                p50_pence=result.min_savings.p50_pence,
+                p50_formatted=format_currency_from_pence(result.min_savings.p50_pence),
+                p90_pence=result.min_savings.p90_pence,
+                p90_formatted=format_currency_from_pence(result.min_savings.p90_pence),
+            ),
+            month_of_depletion=RunwayPercentileTriplet(
+                p10=result.month_of_depletion.p10,
+                p50=result.month_of_depletion.p50,
+                p90=result.month_of_depletion.p90,
+            ),
         )
 
-        runtime_ms = round((time.perf_counter() - start) * 1000.0, 2)
-
         return MonteCarloRunResponse(
-            n_sims=n_sims,
-            horizon_months=horizon_months,
-            seed=int(seed),
-            runtime_ms=runtime_ms,
+            n_sims=result.n_sims,
+            horizon_months=result.horizon_months,
+            seed=result.seed,
+            runtime_ms=result.runtime_ms,
             metrics=metrics,
         )
 

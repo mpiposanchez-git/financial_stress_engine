@@ -2,36 +2,132 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-from shared.engine.inputs import DeterministicInput
+from shared.engine.inputs import DeterministicInput, MonteCarloInput
+from shared.engine.money import gbp_to_pence, percent_to_bps, years_to_months
 
 
-class MonteCarloInputParameters(DeterministicInput):
+class DeterministicInputParameters(BaseModel):
+    household_monthly_net_income_gbp: float = Field(..., ge=0)
+    household_monthly_essential_spend_gbp: float = Field(..., ge=0)
+    household_monthly_debt_payments_gbp: float = Field(..., ge=0)
+    cash_savings_gbp: float = Field(..., ge=0)
+    mortgage_balance_gbp: float = Field(..., ge=0)
+    mortgage_term_years_remaining: float = Field(..., ge=0)
+    mortgage_rate_percent_current: float = Field(..., ge=0, le=100)
+    mortgage_rate_percent_stress: float = Field(..., ge=0, le=100)
+    mortgage_type: str = Field(...)
+    shock_monthly_income_drop_percent: float = Field(..., ge=0, le=100)
+    inflation_monthly_essentials_increase_percent: float = Field(..., ge=0, le=100)
+    household_monthly_net_income_currency: str = Field(default="GBP")
+    household_monthly_essential_spend_currency: str = Field(default="GBP")
+    household_monthly_debt_payments_currency: str = Field(default="GBP")
+    cash_savings_currency: str = Field(default="GBP")
+    mortgage_balance_currency: str = Field(default="GBP")
+    reporting_currency: str = Field(default="GBP")
+    fx_spot_rates: dict[str, float] = Field(
+        default_factory=lambda: {"GBP": 1.0, "EUR": 0.86, "USD": 0.78}
+    )
+    fx_stress_bps: dict[str, int] = Field(default_factory=dict)
+
+    def to_engine_input(self, horizon_months: int = 24) -> DeterministicInput:
+        return DeterministicInput(
+            household_monthly_net_income_pence=gbp_to_pence(self.household_monthly_net_income_gbp),
+            household_monthly_essential_spend_pence=gbp_to_pence(
+                self.household_monthly_essential_spend_gbp
+            ),
+            household_monthly_debt_payments_pence=gbp_to_pence(
+                self.household_monthly_debt_payments_gbp
+            ),
+            cash_savings_pence=gbp_to_pence(self.cash_savings_gbp),
+            mortgage_balance_pence=gbp_to_pence(self.mortgage_balance_gbp),
+            mortgage_term_months_remaining=years_to_months(self.mortgage_term_years_remaining),
+            mortgage_rate_bps_current=percent_to_bps(self.mortgage_rate_percent_current),
+            mortgage_rate_bps_stress=percent_to_bps(self.mortgage_rate_percent_stress),
+            mortgage_type=self.mortgage_type,
+            shock_monthly_income_drop_bps=percent_to_bps(self.shock_monthly_income_drop_percent),
+            inflation_monthly_essentials_increase_bps=percent_to_bps(
+                self.inflation_monthly_essentials_increase_percent
+            ),
+            household_monthly_net_income_currency=self.household_monthly_net_income_currency,
+            household_monthly_essential_spend_currency=self.household_monthly_essential_spend_currency,
+            household_monthly_debt_payments_currency=self.household_monthly_debt_payments_currency,
+            cash_savings_currency=self.cash_savings_currency,
+            mortgage_balance_currency=self.mortgage_balance_currency,
+            reporting_currency=self.reporting_currency,
+            fx_spot_rates=self.fx_spot_rates,
+            fx_stress_bps=self.fx_stress_bps,
+            horizon_months=horizon_months,
+        )
+
+
+class MonteCarloInputParameters(DeterministicInputParameters):
     income_shock_std_percent: float = Field(default=5.0, ge=0, le=50)
     rate_shock_std_percent: float = Field(default=0.5, ge=0, le=10)
     inflation_shock_std_percent: float = Field(default=1.0, ge=0, le=20)
+    shock_dynamics: str = Field(default="iid")
+    ar1_phi: float = Field(default=0.0, ge=0.0, lt=1.0)
+    fx_monthly_vol_bps: dict[str, int] = Field(default_factory=dict)
+
+    def to_engine_input(self) -> MonteCarloInput:
+        base = super().to_engine_input()
+        return MonteCarloInput(
+            **base.model_dump(),
+            income_shock_std_bps=percent_to_bps(self.income_shock_std_percent),
+            rate_shock_std_bps=percent_to_bps(self.rate_shock_std_percent),
+            inflation_shock_std_bps=percent_to_bps(self.inflation_shock_std_percent),
+            shock_dynamics=self.shock_dynamics,
+            ar1_phi=self.ar1_phi,
+            fx_monthly_vol_bps=self.fx_monthly_vol_bps,
+        )
 
 
 class DeterministicRunRequest(BaseModel):
-    input_parameters: DeterministicInput
+    input_parameters: DeterministicInputParameters
+    horizon_months: int = Field(default=24, ge=1)
 
 
 class DeterministicRunResponse(BaseModel):
+    reporting_currency: str
+    fx_spot_rates_used: dict[str, float]
+    fx_stressed_rates_used: dict[str, float]
+    fx_stress_bps: dict[str, int]
+    monthly_cashflow_base_pence: int
+    monthly_cashflow_base_formatted: str
+    monthly_cashflow_stress_pence: int
+    monthly_cashflow_stress_formatted: str
+    mortgage_payment_current_pence: int
+    mortgage_payment_current_formatted: str
+    mortgage_payment_stress_pence: int
+    mortgage_payment_stress_formatted: str
     runway_months: float | None
-    min_savings: float
-    month_by_month: list[float]
+    savings_path_pence: list[int]
+    savings_path_formatted: list[str]
+    min_savings_pence: int
+    min_savings_formatted: str
+    month_of_depletion: int | None
+    month_by_month: list[int]
     warnings: list[str]
 
 
-class PercentileTriplet(BaseModel):
+class RunwayPercentileTriplet(BaseModel):
     p10: float
     p50: float
     p90: float
 
 
+class MoneyPercentileTriplet(BaseModel):
+    p10_pence: int
+    p10_formatted: str
+    p50_pence: int
+    p50_formatted: str
+    p90_pence: int
+    p90_formatted: str
+
+
 class MonteCarloMetrics(BaseModel):
-    runway_months: PercentileTriplet
-    min_savings: PercentileTriplet
-    max_monthly_deficit: PercentileTriplet
+    runway_months: RunwayPercentileTriplet
+    min_savings: MoneyPercentileTriplet
+    month_of_depletion: RunwayPercentileTriplet
 
 
 class MonteCarloRunRequest(BaseModel):

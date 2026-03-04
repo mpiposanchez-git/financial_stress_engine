@@ -14,6 +14,14 @@ def _base_input() -> dict:
         "mortgage_type": "repayment",
         "shock_monthly_income_drop_percent": 10,
         "inflation_monthly_essentials_increase_percent": 5,
+        "household_monthly_net_income_currency": "GBP",
+        "household_monthly_essential_spend_currency": "GBP",
+        "household_monthly_debt_payments_currency": "GBP",
+        "cash_savings_currency": "GBP",
+        "mortgage_balance_currency": "GBP",
+        "reporting_currency": "GBP",
+        "fx_spot_rates": {"GBP": 1.0, "EUR": 0.86, "USD": 0.78},
+        "fx_stress_bps": {"GBP": 0, "EUR": 0, "USD": 0},
     }
 
 
@@ -34,10 +42,28 @@ def test_deterministic_returns_required_keys(authenticated_client):
     response = authenticated_client.post("/api/v1/deterministic/run", json=payload)
     assert response.status_code == 200
     body = response.json()
+    assert "reporting_currency" in body
+    assert "fx_spot_rates_used" in body
+    assert "fx_stressed_rates_used" in body
+    assert "fx_stress_bps" in body
+    assert "monthly_cashflow_base_pence" in body
+    assert "monthly_cashflow_base_formatted" in body
+    assert "monthly_cashflow_stress_pence" in body
+    assert "monthly_cashflow_stress_formatted" in body
+    assert "mortgage_payment_current_pence" in body
+    assert "mortgage_payment_current_formatted" in body
+    assert "mortgage_payment_stress_pence" in body
+    assert "mortgage_payment_stress_formatted" in body
     assert "runway_months" in body
-    assert "min_savings" in body
+    assert "savings_path_pence" in body
+    assert "savings_path_formatted" in body
+    assert "min_savings_pence" in body
+    assert "min_savings_formatted" in body
+    assert "month_of_depletion" in body
     assert "month_by_month" in body
     assert "warnings" in body
+    assert len(body["savings_path_pence"]) == 25
+    assert body["month_by_month"] == body["savings_path_pence"]
 
 
 def test_montecarlo_returns_metrics_percentiles(authenticated_client):
@@ -56,6 +82,15 @@ def test_montecarlo_returns_metrics_percentiles(authenticated_client):
     assert response.status_code == 200
     metrics = response.json()["metrics"]
     assert set(metrics["runway_months"].keys()) == {"p10", "p50", "p90"}
+    assert set(metrics["min_savings"].keys()) == {
+        "p10_pence",
+        "p10_formatted",
+        "p50_pence",
+        "p50_formatted",
+        "p90_pence",
+        "p90_formatted",
+    }
+    assert set(metrics["month_of_depletion"].keys()) == {"p10", "p50", "p90"}
 
 
 def test_montecarlo_seed_reproducibility(authenticated_client):

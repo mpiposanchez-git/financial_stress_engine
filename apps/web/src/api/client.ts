@@ -1,4 +1,9 @@
-import type { DeterministicRequest, MonteCarloRequest } from "../types";
+import type {
+  DeterministicRequest,
+  DeterministicResponse,
+  MonteCarloRequest,
+  MonteCarloResponse
+} from "../types";
 
 type TokenProvider = () => Promise<string | null>;
 
@@ -28,7 +33,8 @@ export function createApiClient(baseUrl: string, getToken: TokenProvider) {
 
   return {
     runDeterministic: (payload: DeterministicRequest) =>
-      postJson("/api/v1/deterministic/run", payload),
-    runMonteCarlo: (payload: MonteCarloRequest) => postJson("/api/v1/montecarlo/run", payload)
+      postJson<DeterministicResponse>("/api/v1/deterministic/run", payload),
+    runMonteCarlo: (payload: MonteCarloRequest) =>
+      postJson<MonteCarloResponse>("/api/v1/montecarlo/run", payload)
   };
 }
