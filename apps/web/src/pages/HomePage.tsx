@@ -1,6 +1,8 @@
 import { SignedIn, SignedOut, SignInButton, SignOutButton } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
 
+const authDisabled = import.meta.env.VITE_AUTH_DISABLED === "true";
+
 export function HomePage() {
   return (
     <main>
@@ -9,15 +11,20 @@ export function HomePage() {
         This tool provides illustrative simulation outputs only. It is not financial advice,
         investment advice, or product recommendation.
       </p>
+      {authDisabled ? <p>Authentication disabled for diagnostics.</p> : null}
       <SignedOut>
-        <SignInButton mode="modal">
-          <button type="button">Sign in</button>
-        </SignInButton>
+        {authDisabled ? null : (
+          <SignInButton mode="modal">
+            <button type="button">Sign in</button>
+          </SignInButton>
+        )}
       </SignedOut>
       <SignedIn>
-        <SignOutButton>
-          <button type="button">Sign out</button>
-        </SignOutButton>
+        {authDisabled ? null : (
+          <SignOutButton>
+            <button type="button">Sign out</button>
+          </SignOutButton>
+        )}
       </SignedIn>
       <nav>
         <ul>
