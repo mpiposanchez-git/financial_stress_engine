@@ -2,7 +2,22 @@ import type { DeterministicRequest, MonteCarloRequest } from "../types";
 
 type TokenProvider = () => Promise<string | null>;
 
+function normalizeBaseUrl(baseUrl: string): string {
+  const trimmed = baseUrl.trim();
+  if (!trimmed) {
+    throw new Error("Missing VITE_API_BASE_URL");
+  }
+
+  const parsed = new URL(trimmed);
+  parsed.pathname = "/";
+  parsed.search = "";
+  parsed.hash = "";
+  return parsed.toString();
+}
+
 export function createApiClient(baseUrl: string, getToken: TokenProvider) {
+  const normalizedBaseUrl = normalizeBaseUrl(baseUrl);
+
   const postJson = async <T>(path: string, payload: unknown): Promise<T> => {
     const token = await getToken();
     const headers: Record<string, string> = {
@@ -13,7 +28,9 @@ export function createApiClient(baseUrl: string, getToken: TokenProvider) {
       headers.Authorization = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${baseUrl}${path}`, {
+    const url = new URL(path, normalizedBaseUrl).toString();
+
+    const response = await fetch(url, {
       method: "POST",
       headers,
       body: JSON.stringify(payload)

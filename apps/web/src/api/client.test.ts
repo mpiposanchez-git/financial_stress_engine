@@ -15,7 +15,27 @@ describe("createApiClient", () => {
     await client.runDeterministic({ input_parameters: {} });
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [, options] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const [url, options] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("https://api.example.com/api/v1/deterministic/run");
     expect((options.headers as Record<string, string>).Authorization).toBe("Bearer token-123");
+  });
+
+  it("normalizes base URL when it includes extra path segments", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ ok: true })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const client = createApiClient("https://api.example.com/health", async () => null);
+
+    await client.runMonteCarlo({ input_parameters: {}, n_sims: 1000, horizon_months: 24 });
+
+    const [url] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("https://api.example.com/api/v1/montecarlo/run");
+  });
+
+  it("throws for missing base URL", () => {
+    expect(() => createApiClient("   ", async () => null)).toThrow("Missing VITE_API_BASE_URL");
   });
 });
