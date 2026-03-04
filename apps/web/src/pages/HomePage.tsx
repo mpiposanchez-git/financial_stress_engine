@@ -1,17 +1,19 @@
 import {
-  SignedIn,
-  SignedOut,
   SignInButton,
   SignOutButton,
+  useAuth,
   useSignIn
 } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
 
 export function HomePage() {
-  const { isLoaded, signIn } = useSignIn();
+  const { isLoaded: isAuthLoaded, isSignedIn } = useAuth();
+  const { isLoaded: isSignInLoaded, signIn } = useSignIn();
+
+  const isReady = isAuthLoaded && isSignInLoaded;
 
   const onGitHubSignIn = async () => {
-    if (!isLoaded) {
+    if (!isReady || !signIn) {
       return;
     }
 
@@ -29,19 +31,22 @@ export function HomePage() {
         This tool provides illustrative simulation outputs only. It is not financial advice,
         investment advice, or product recommendation.
       </p>
-      <SignedOut>
-        <button type="button" onClick={() => void onGitHubSignIn()} disabled={!isLoaded}>
-          Sign in with GitHub
-        </button>
-        <SignInButton mode="redirect">
-          <button type="button">Sign in</button>
-        </SignInButton>
-      </SignedOut>
-      <SignedIn>
+      {!isReady ? <p>Loading authentication…</p> : null}
+      {isReady && !isSignedIn ? (
+        <>
+          <button type="button" onClick={() => void onGitHubSignIn()}>
+            Sign in with GitHub
+          </button>
+          <SignInButton mode="redirect">
+            <button type="button">Sign in</button>
+          </SignInButton>
+        </>
+      ) : null}
+      {isReady && isSignedIn ? (
         <SignOutButton>
           <button type="button">Sign out</button>
         </SignOutButton>
-      </SignedIn>
+      ) : null}
       <nav>
         <ul>
           <li>
