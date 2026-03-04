@@ -144,4 +144,41 @@ Triggered by metrics
 
 ------------------------------------------------------------------------
 
+# OPS-001 --- Cloud Deployment Baseline Confirmed
+
+## Decision
+
+Adopt GitHub Pages (frontend) + Render (API) + Clerk (authentication) as
+the operational baseline for current live development.
+
+## Rationale
+
+This architecture has been validated end-to-end in production-like
+conditions, including authenticated simulation execution.
+
+## Review Date
+
+2026-06-01
+
+------------------------------------------------------------------------
+
+# SEC-001 --- Temporary Auth Bypass Forbidden in Normal Operation
+
+## Decision
+
+Temporary auth bypass controls were used for diagnostics and then fully
+removed from code and env templates. Authentication remains mandatory in
+normal operation.
+
+## Rationale
+
+Bypass was useful for isolating simulation-path issues but is not
+acceptable for routine deployment due to security and compliance risks.
+
+## Review Date
+
+2026-04-01
+
+------------------------------------------------------------------------
+
 End of Master Decision Log

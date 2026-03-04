@@ -64,8 +64,12 @@ arising from the use of this Software.
 
 ## 2.5 Data & Privacy
 
-The platform is designed to operate without collecting personally
-identifiable financial information.
+The platform is designed to avoid storing personally identifiable
+financial inputs in project-owned storage.
+
+Authentication may be provided through a third-party identity provider
+(Clerk), which may process account-level personal data under its own
+terms and privacy policy.
 
 Users should not upload sensitive financial documents or confidential
 data.

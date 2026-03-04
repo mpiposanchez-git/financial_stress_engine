@@ -7,7 +7,6 @@ from dataclasses import dataclass
 @dataclass(frozen=True)
 class Settings:
     env: str
-    auth_disabled: bool
     cors_origins: list[str]
     clerk_jwks_url: str
     clerk_issuer: str
@@ -21,16 +20,9 @@ def _parse_cors_origins(raw: str) -> list[str]:
     return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
 
-def _parse_bool(raw: str | None, default: bool = False) -> bool:
-    if raw is None:
-        return default
-    return raw.strip().lower() in {"1", "true", "yes", "on"}
-
-
 def get_settings() -> Settings:
     return Settings(
         env=os.getenv("ENV", "dev"),
-        auth_disabled=_parse_bool(os.getenv("AUTH_DISABLED"), default=False),
         cors_origins=_parse_cors_origins(os.getenv("CORS_ORIGINS", "http://localhost:5173")),
         clerk_jwks_url=os.getenv("CLERK_JWKS_URL", "https://example.com/.well-known/jwks.json"),
         clerk_issuer=os.getenv("CLERK_ISSUER", "https://example.com"),

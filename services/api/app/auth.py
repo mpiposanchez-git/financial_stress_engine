@@ -40,10 +40,6 @@ def require_auth(
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
     settings: Settings = Depends(get_settings),
 ) -> AuthContext:
-    if settings.auth_disabled:
-        request.state.auth_subject = "auth-disabled"
-        return AuthContext(subject="auth-disabled")
-
     if credentials is None or credentials.scheme.lower() != "bearer":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

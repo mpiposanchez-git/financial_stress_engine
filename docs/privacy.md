@@ -2,27 +2,39 @@
 
 ## Summary
 
-This tool is **anonymous by design**. We do not collect, store, or process any personal data.
+This tool is designed to minimise personal data processing in the simulation engine.
+
+Authentication is provided by **Clerk**. Account-level personal data is handled by Clerk as a third-party identity provider.
+
+The application backend does not persist simulation inputs or simulation outputs per user.
 
 ---
 
-## No Login Required
+## Authentication
 
-You do not need to create an account, register, or log in to use this tool. There is no user authentication system.
+Some application routes require sign-in. Authentication is managed by Clerk.
+
+When using authenticated routes:
+
+- Clerk may process account information (for example, email address and authentication metadata).
+- The API validates JWT bearer tokens issued by Clerk.
+- The API does not store user account profiles in the project database (no project user database is used in this PoC).
 
 ---
 
-## No Personal Data Collected
+## Personal Data Processed by This Project
 
-We do not collect any personally identifiable information (PII), including:
+The simulation engine and API are designed not to collect or persist household PII within project-owned storage.
+
+The project does not intentionally request or store:
 
 - Name
-- Email address
 - Address or postcode
 - National Insurance number
 - Date of birth
-- IP address (not stored or logged beyond standard web server operation)
 - Device identifiers
+
+However, authentication-related personal data may be processed by Clerk under Clerk’s policies.
 
 ---
 
@@ -44,7 +56,7 @@ The numerical inputs you enter into the stress test form are:
 
 - Used **in-memory** to compute your results.
 - **Not persisted** to any database, file, or log.
-- **Not transmitted** to any third party.
+- **Not transmitted to third parties by the simulation engine** for analytics/marketing purposes.
 - **Discarded** immediately after your results are returned.
 
 We do not operate any analytics, tracking pixels, session recording, or behavioural data collection on this platform.
@@ -53,7 +65,9 @@ We do not operate any analytics, tracking pixels, session recording, or behaviou
 
 ## Cookies
 
-This tool does not use cookies for tracking or analytics. Any cookies set are strictly functional (e.g. session cookies required for form submission) and contain no personal data.
+This tool does not use tracking or analytics cookies.
+
+Authentication/session cookies or browser storage may be used by Clerk for identity and session management.
 
 ---
 
@@ -61,10 +75,9 @@ This tool does not use cookies for tracking or analytics. Any cookies set are st
 
 Under the UK General Data Protection Regulation (UK GDPR) and the Data Protection Act 2018:
 
-- **No personal data is processed** in the operation of this tool as described above.
-- No lawful basis for processing is required because no personal data is collected.
-- No data subject rights are engaged because no personal data is held.
-- No Data Protection Impact Assessment (DPIA) is required for anonymous, non-persistent computation of user-provided anonymous inputs.
+Project-operated simulation processing remains minimal and non-persistent.
+
+For authentication and account data, Clerk acts as a third-party provider and its own legal terms, lawful basis, and data subject processes apply.
 
 If you believe that any personal data has been inadvertently collected or processed, please contact us immediately so we can investigate and remedy the situation.
 
@@ -72,7 +85,9 @@ If you believe that any personal data has been inadvertently collected or proces
 
 ## Third-Party Services
 
-This tool does not integrate with any third-party analytics, advertising, or data enrichment services.
+This tool integrates with Clerk for authentication.
+
+This tool does not integrate with third-party analytics, advertising, or data enrichment services.
 
 If the tool is deployed using a cloud hosting provider, standard infrastructure-level logging (e.g. access logs) may be retained by the hosting provider in accordance with their own privacy policies. These logs are infrastructure-level and are not used to profile or identify individual users.
 
@@ -84,4 +99,4 @@ This privacy policy may be updated from time to time. Any changes will be reflec
 
 ---
 
-*This document was last reviewed: 2026-03-03.*
+*This document was last reviewed: 2026-03-04.*
