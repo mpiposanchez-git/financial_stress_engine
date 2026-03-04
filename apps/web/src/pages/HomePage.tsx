@@ -1,26 +1,12 @@
 import {
   SignInButton,
   SignOutButton,
-  useAuth,
-  useSignIn
+  useAuth
 } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
 
 export function HomePage() {
   const { isLoaded: isAuthLoaded, isSignedIn } = useAuth();
-  const { isLoaded: isSignInLoaded, signIn } = useSignIn();
-
-  const onGitHubSignIn = async () => {
-    if (!isSignInLoaded || !signIn) {
-      return;
-    }
-
-    await signIn.authenticateWithRedirect({
-      strategy: "oauth_github",
-      redirectUrl: window.location.href,
-      redirectUrlComplete: window.location.href
-    });
-  };
 
   return (
     <main>
@@ -31,18 +17,9 @@ export function HomePage() {
       </p>
       {!isAuthLoaded ? <p>Loading authentication…</p> : null}
       {isAuthLoaded && !isSignedIn ? (
-        <>
-          <button
-            type="button"
-            onClick={() => void onGitHubSignIn()}
-            disabled={!isSignInLoaded || !signIn}
-          >
-            Sign in with GitHub
-          </button>
-          <SignInButton mode="redirect">
-            <button type="button">Sign in</button>
-          </SignInButton>
-        </>
+        <SignInButton mode="redirect">
+          <button type="button">Sign in</button>
+        </SignInButton>
       ) : null}
       {isAuthLoaded && isSignedIn ? (
         <SignOutButton>
