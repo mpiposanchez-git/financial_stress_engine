@@ -10,10 +10,8 @@ export function HomePage() {
   const { isLoaded: isAuthLoaded, isSignedIn } = useAuth();
   const { isLoaded: isSignInLoaded, signIn } = useSignIn();
 
-  const isReady = isAuthLoaded && isSignInLoaded;
-
   const onGitHubSignIn = async () => {
-    if (!isReady || !signIn) {
+    if (!isSignInLoaded || !signIn) {
       return;
     }
 
@@ -31,10 +29,14 @@ export function HomePage() {
         This tool provides illustrative simulation outputs only. It is not financial advice,
         investment advice, or product recommendation.
       </p>
-      {!isReady ? <p>Loading authentication…</p> : null}
-      {isReady && !isSignedIn ? (
+      {!isAuthLoaded ? <p>Loading authentication…</p> : null}
+      {isAuthLoaded && !isSignedIn ? (
         <>
-          <button type="button" onClick={() => void onGitHubSignIn()}>
+          <button
+            type="button"
+            onClick={() => void onGitHubSignIn()}
+            disabled={!isSignInLoaded || !signIn}
+          >
             Sign in with GitHub
           </button>
           <SignInButton mode="redirect">
@@ -42,7 +44,7 @@ export function HomePage() {
           </SignInButton>
         </>
       ) : null}
-      {isReady && isSignedIn ? (
+      {isAuthLoaded && isSignedIn ? (
         <SignOutButton>
           <button type="button">Sign out</button>
         </SignOutButton>
