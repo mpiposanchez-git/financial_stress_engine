@@ -386,4 +386,148 @@ repo-root/
 
 ---
 
+# PART VIII — External Deployment Runbook (Manual Actions Outside Repo)
+
+This section defines the actions that must be completed in external platforms.
+These cannot be completed by code changes alone.
+
+## Quick Start (15-minute checklist)
+
+1. **Clerk:** create app, enable sign-in method, copy publishable key + issuer + JWKS URL.
+2. **Render:** create Web Service from repo `main`, set build/start commands, add API env vars, deploy.
+3. **Render health check:** open `https://<render-service>/health` and confirm `{"status":"ok"}`.
+4. **GitHub Pages:** set Pages source to GitHub Actions and ensure Actions are enabled.
+5. **GitHub build vars:** configure `VITE_API_BASE_URL`, `VITE_CLERK_PUBLISHABLE_KEY`, `VITE_APP_BASE_PATH`.
+6. **Trigger deploy:** push to `main` or run `Deploy Web to GitHub Pages` manually.
+7. **Smoke test:** open site, sign in via Clerk, run stress test, confirm results render.
+
+## 0. Responsibility split
+
+### Can be done in repo (already handled)
+- App code, tests, workflows, and environment templates.
+- Path filters and CI definitions.
+
+### Must be done manually by operator
+- Clerk tenant/application setup.
+- Render service creation and environment variable entry.
+- GitHub repository settings for Pages/Actions/environments.
+- DNS/custom domain setup (if used).
+
+---
+
+## 1. Clerk setup (authentication provider)
+
+1. Create a Clerk application in Clerk Dashboard.
+2. Enable at least one sign-in method (email/password or social).
+3. Record the following values:
+   - Publishable key (`VITE_CLERK_PUBLISHABLE_KEY`)
+   - Issuer URL (`CLERK_ISSUER`)
+   - JWKS URL (`CLERK_JWKS_URL`) as `https://<issuer-domain>/.well-known/jwks.json`
+4. Configure allowed origins / redirect URLs:
+   - `http://localhost:5173`
+   - `https://<github-user>.github.io`
+   - `https://<github-user>.github.io/<repo-name>` (project pages path)
+5. Save changes and verify sign-in works in Clerk hosted UI.
+
+---
+
+## 2. Render setup (FastAPI API hosting)
+
+1. In Render, create **Web Service** from this GitHub repository.
+2. Set branch to `main`.
+3. Set runtime to Python and configure:
+   - Build command: `pip install -U uv && uv sync --all-extras`
+   - Start command: `uv run uvicorn services.api.app.main:app --host 0.0.0.0 --port $PORT`
+4. Add required environment variables in Render:
+   - `ENV=prod`
+   - `CORS_ORIGINS=https://<github-user>.github.io`
+   - `CLERK_JWKS_URL=<from Clerk>`
+   - `CLERK_ISSUER=<from Clerk>`
+   - `MAX_MONTE_CARLO_SIMS=2000`
+   - `MAX_HORIZON_MONTHS=120`
+   - `RATE_LIMIT_RPM=60`
+   - `REQUEST_TIMEOUT_SECONDS=30`
+5. Trigger first deploy.
+6. Verify API health endpoint: `GET https://<render-service>/health` returns `{"status":"ok"}`.
+
+---
+
+## 3. GitHub Pages setup (frontend hosting)
+
+1. In GitHub repo settings, enable **Actions** permissions (if disabled).
+2. In **Settings → Pages**, set source to **GitHub Actions**.
+3. Confirm workflow file exists: `.github/workflows/deploy-pages.yml`.
+4. Push to `main` (or run `workflow_dispatch`) to trigger deployment.
+5. Wait for the `Deploy Web to GitHub Pages` workflow to complete.
+6. Open published URL and confirm app shell renders.
+
+---
+
+## 4. Frontend runtime configuration in GitHub Actions
+
+The web app requires these runtime values at build time:
+- `VITE_API_BASE_URL`
+- `VITE_CLERK_PUBLISHABLE_KEY`
+- `VITE_APP_BASE_PATH`
+
+Recommended operator action:
+1. Add repository/environment variables/secrets in GitHub:
+   - Variables: `VITE_API_BASE_URL`, `VITE_APP_BASE_PATH`
+   - Secret or variable: `VITE_CLERK_PUBLISHABLE_KEY`
+2. Ensure workflow exports them into build environment.
+3. Re-run deploy workflow and validate production auth + API calls.
+
+Note: if these are missing at build time, production app may fail to initialize Clerk or call the API.
+
+---
+
+## 5. Post-deploy validation checklist
+
+1. Open GitHub Pages URL.
+2. Confirm public routes load (`/`, `/about`).
+3. Sign in via Clerk.
+4. Open protected route (`/stress-test`) and run simulation.
+5. Confirm results route shows deterministic + Monte Carlo payload.
+6. Validate API responses for authenticated requests:
+   - Deterministic: `POST /api/v1/deterministic/run`
+   - Monte Carlo: `POST /api/v1/montecarlo/run`
+7. Confirm unauthenticated requests return `401`.
+
+---
+
+## 6. Troubleshooting map (external configuration)
+
+- `401 Unauthorized`:
+  - Check `CLERK_ISSUER` and `CLERK_JWKS_URL` in Render.
+  - Verify frontend is sending Bearer token.
+
+- CORS error in browser:
+  - Check `CORS_ORIGINS` includes `https://<github-user>.github.io`.
+
+- GitHub Pages deploy green but app broken:
+  - Missing `VITE_*` variables at build time.
+  - Incorrect `VITE_APP_BASE_PATH` for project pages.
+
+- Render deploy fails:
+  - Check build/start commands and Python version compatibility.
+  - Review Render logs for dependency/runtime errors.
+
+---
+
+## 7. Operational cadence after go-live
+
+- Weekly:
+  - Check Render logs for 401/429/5xx spikes.
+  - Verify Pages deployment status and user sign-in success.
+
+- Monthly:
+  - Rotate keys/secrets if policy requires.
+  - Reconfirm CORS/auth settings after any domain change.
+
+- Quarterly:
+  - Dependency updates and security review.
+  - Re-test full sign-in and simulation flow end-to-end.
+
+---
+
 END OF DOCUMENT
