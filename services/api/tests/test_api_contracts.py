@@ -29,9 +29,9 @@ def test_auth_rejects_missing_token(client):
     assert response.status_code == 401
 
 
-def test_deterministic_returns_required_keys(client, valid_headers):
+def test_deterministic_returns_required_keys(authenticated_client):
     payload = {"input_parameters": _base_input()}
-    response = client.post("/api/v1/deterministic/run", json=payload, headers=valid_headers)
+    response = authenticated_client.post("/api/v1/deterministic/run", json=payload)
     assert response.status_code == 200
     body = response.json()
     assert "runway_months" in body
@@ -40,7 +40,7 @@ def test_deterministic_returns_required_keys(client, valid_headers):
     assert "warnings" in body
 
 
-def test_montecarlo_returns_metrics_percentiles(client, valid_headers):
+def test_montecarlo_returns_metrics_percentiles(authenticated_client):
     payload = {
         "input_parameters": {
             **_base_input(),
@@ -52,13 +52,13 @@ def test_montecarlo_returns_metrics_percentiles(client, valid_headers):
         "horizon_months": 24,
         "seed": 12345,
     }
-    response = client.post("/api/v1/montecarlo/run", json=payload, headers=valid_headers)
+    response = authenticated_client.post("/api/v1/montecarlo/run", json=payload)
     assert response.status_code == 200
     metrics = response.json()["metrics"]
     assert set(metrics["runway_months"].keys()) == {"p10", "p50", "p90"}
 
 
-def test_montecarlo_seed_reproducibility(client, valid_headers):
+def test_montecarlo_seed_reproducibility(authenticated_client):
     payload = {
         "input_parameters": {
             **_base_input(),
@@ -71,8 +71,8 @@ def test_montecarlo_seed_reproducibility(client, valid_headers):
         "seed": 98765,
     }
 
-    first = client.post("/api/v1/montecarlo/run", json=payload, headers=valid_headers)
-    second = client.post("/api/v1/montecarlo/run", json=payload, headers=valid_headers)
+    first = authenticated_client.post("/api/v1/montecarlo/run", json=payload)
+    second = authenticated_client.post("/api/v1/montecarlo/run", json=payload)
 
     assert first.status_code == 200
     assert second.status_code == 200

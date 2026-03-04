@@ -181,4 +181,139 @@ acceptable for routine deployment due to security and compliance risks.
 
 ------------------------------------------------------------------------
 
-End of Master Decision Log
+# Decision Log — New Entries (Append to docs/decision_log.md)
+
+> Date: 2026-03-04  
+> Append these entries to the end of `docs/decision_log.md`.
+
+---
+
+## LEG-002 — Clerk authentication always on (no runtime bypass)
+
+**Context**  
+Bypass toggles were included for testing convenience. Production posture must be “auth always on”.
+
+**Options considered**  
+1) Keep runtime bypass flags for local/CI  
+2) Remove bypass flags and test using dependency overrides/mocks ✅  
+3) Keep bypass but hard-gate to local env only
+
+**Decision**  
+Option 2.
+
+**Assumptions**  
+- Tests can inject a fake authenticated principal via dependency overrides.
+
+**Risks & mitigations**  
+- Risk: more test setup.  
+  Mitigation: a single reusable `override_auth()` fixture.
+
+**Capacity impact**  
+~1–2 sessions.
+
+**Validation metrics**  
+- Unauthenticated requests fail outside tests; CI tests pass without bypass flags.
+
+**Review date**  
+2026-03-18
+
+---
+
+## TEC-004 — Exact arithmetic: integer pence + integer basis points, explicit rounding
+
+**Context**  
+You want no numerical drift.
+
+**Options considered**  
+1) floats everywhere  
+2) Decimal everywhere  
+3) integer pence for money + integer bps for rates, Decimal only internally where needed ✅
+
+**Decision**  
+Option 3.
+
+**Rounding policy**  
+- Convert user inputs to pence by rounding to nearest penny (round-half-up).  
+- Apply percent changes in pence with explicit rounding.  
+- Mortgage payment quantized to 1 penny.
+
+**Capacity impact**  
+~2–4 sessions.
+
+**Validation metrics**  
+- Golden tests are penny-exact; no floats appear in engine core.
+
+**Review date**  
+2026-03-25
+
+---
+
+## MOD-003 — Deterministic outputs include month-by-month savings path (24 months default)
+
+**Context**  
+Dynamic view required; a single-month snapshot is insufficient.
+
+**Decision**  
+Implement month-by-month savings path (monthly time step) with:
+- `savings_path`, `min_savings`, `month_of_depletion`, `runway_months`.
+
+**Capacity impact**  
+~1–2 sessions.
+
+**Validation metrics**  
+- Golden scenario includes full savings path and depletion month.
+
+**Review date**  
+2026-03-18
+
+---
+
+## MOD-004 — Monte Carlo uses monthly shock paths (IID), with AR(1) persistence as an option
+
+**Context**  
+You want monthly paths and a hook for persistence.
+
+**Decision**  
+- Default: monthly IID draws per simulation and month.  
+- Optional: AR(1) mode for persistence (behind a flag).
+
+**Capacity impact**  
+~2–5 sessions.
+
+**Validation metrics**  
+- Seed reproducibility; sigma sensitivity checks; optional AR(1) tests.
+
+**Review date**  
+2026-04-01
+
+---
+
+## MOD-005 — Multi-currency inputs + FX risk driver + selectable reporting currency
+
+**Context**  
+Users can have multiple currencies. FX is a risk driver. Outputs must be displayed in a chosen reporting currency.
+
+**Options considered**  
+1) Single currency only (GBP)  
+2) Multi-currency without FX risk (static conversion)  
+3) Multi-currency + FX risk + reporting currency selector ✅
+
+**Decision**  
+Option 3.
+
+**Design rules**  
+- Each monetary input has a currency code.  
+- Convert to reporting currency using spot FX; quantize to pennies.  
+- Deterministic FX stress parameter supported.  
+- Monte Carlo FX paths supported (lognormal via monthly Normal returns).
+
+**Capacity impact**  
+~3–6 sessions (engine + API + UI + tests).
+
+**Validation metrics**  
+- Unit tests for conversion and rounding.  
+- Golden scenario with 2+ currencies.  
+- Monte Carlo sensitivity: higher FX sigma widens distributions.
+
+**Review date**  
+2026-04-08
