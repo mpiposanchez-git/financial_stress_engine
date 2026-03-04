@@ -1,7 +1,27 @@
-import { SignedIn, SignedOut, SignInButton, SignOutButton } from "@clerk/clerk-react";
+import {
+  SignedIn,
+  SignedOut,
+  SignInButton,
+  SignOutButton,
+  useSignIn
+} from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
 
 export function HomePage() {
+  const { isLoaded, signIn } = useSignIn();
+
+  const onGitHubSignIn = async () => {
+    if (!isLoaded) {
+      return;
+    }
+
+    await signIn.authenticateWithRedirect({
+      strategy: "oauth_github",
+      redirectUrl: window.location.href,
+      redirectUrlComplete: window.location.href
+    });
+  };
+
   return (
     <main>
       <h1>UK Household Financial Stress Simulation</h1>
@@ -10,7 +30,10 @@ export function HomePage() {
         investment advice, or product recommendation.
       </p>
       <SignedOut>
-        <SignInButton mode="modal">
+        <button type="button" onClick={() => void onGitHubSignIn()} disabled={!isLoaded}>
+          Sign in with GitHub
+        </button>
+        <SignInButton mode="redirect">
           <button type="button">Sign in</button>
         </SignInButton>
       </SignedOut>
