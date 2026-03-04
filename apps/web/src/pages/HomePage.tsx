@@ -17,7 +17,7 @@ export function HomePage() {
       </p>
       {!isAuthLoaded ? <p>Loading authentication…</p> : null}
       {isAuthLoaded && !isSignedIn ? (
-        <SignInButton mode="redirect" forceRedirectUrl="/#/stress-test">
+        <SignInButton mode="redirect">
           <button type="button">Sign in</button>
         </SignInButton>
       ) : null}
