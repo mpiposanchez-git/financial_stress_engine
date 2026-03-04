@@ -7,7 +7,17 @@ export type AuthState = {
 };
 
 export function useAuthState(): AuthState {
-  const { isLoaded, isSignedIn, getToken } = useAuth();
+  const { isLoaded, isSignedIn, getToken: clerkGetToken } = useAuth();
+
+  const getToken = async () => {
+    const cachedToken = await clerkGetToken();
+    if (cachedToken) {
+      return cachedToken;
+    }
+
+    return clerkGetToken({ skipCache: true });
+  };
+
   return {
     isLoaded,
     isSignedIn: Boolean(isSignedIn),

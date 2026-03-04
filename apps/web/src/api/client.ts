@@ -20,13 +20,15 @@ export function createApiClient(baseUrl: string, getToken: TokenProvider) {
 
   const postJson = async <T>(path: string, payload: unknown): Promise<T> => {
     const token = await getToken();
+    if (!token) {
+      throw new Error("No auth token found. Please sign out and sign in again.");
+    }
+
     const headers: Record<string, string> = {
       "Content-Type": "application/json"
     };
 
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
+    headers.Authorization = `Bearer ${token}`;
 
     const url = new URL(path, normalizedBaseUrl).toString();
 
