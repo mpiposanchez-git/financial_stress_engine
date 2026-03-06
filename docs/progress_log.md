@@ -1098,6 +1098,29 @@
 ### Risks / Blockers
 - Regex-based secrets checks are lightweight and may miss advanced credential patterns; stronger scanning can be added later if needed.
 
+## 2026-03-06 — WS9-03 Evidence Pack and Release Checklist Docs
+
+### Completed
+- WS9-03: Added `docs/evidence_pack.md` with:
+	- exact validation commands,
+	- artifact retention guidance,
+	- release tagging and SHA capture steps.
+- WS9-03: Added a release checklist section to `docs/CHANGELOG.md`.
+- WS9-03: Preserved append-only progress log structure while adding this release-process slice.
+
+### In progress
+- WS9-04: Single-source-of-truth docs wiring.
+
+### Test evidence
+- Documentation review: checklist commands and artifact list aligned with current repo test/deploy flows ✅
+
+### Decisions made
+- Centralized evidence-pack procedure in a standalone doc to reduce release ambiguity and improve audit repeatability.
+- Kept changelog checklist concise and linked to fuller evidence-pack guidance.
+
+### Risks / Blockers
+- Release evidence quality still depends on disciplined manual capture of CI links and provenance snapshots at release time.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

@@ -2,6 +2,23 @@
 
 All notable changes to this project are documented in this file.
 
+## Release Checklist
+
+Before publishing a milestone release:
+
+1. Run validation gates:
+	- `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .`
+	- `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q`
+	- `npm --prefix apps/web test -- --run`
+	- `npm --prefix apps/web run typecheck`
+2. Capture evidence artifacts:
+	- CI links
+	- test/typecheck summaries
+	- dataset hash/timestamp snapshot
+3. Tag release using:
+	- `poc-milestone-<n>-YYYY-MM-DD`
+4. Record tag + commit SHA in `docs/progress_log.md` and release notes.
+
 ## v0.1.1-poc4 — 2026-03-06
 
 ### Added
