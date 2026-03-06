@@ -25,6 +25,7 @@ from shared.engine.money import (
 from shared.engine.mortgage import mortgage_payment_interest_only, mortgage_payment_repayment
 from shared.engine.outputs import DISCLAIMER, DeterministicOutput
 from shared.engine.savings_path import compute_savings_path, min_savings, month_of_depletion
+from shared.engine.schedules import resolve_schedule_levels
 
 
 def _monthly_mortgage_payment(
@@ -98,17 +99,20 @@ def run_deterministic(inputs: DeterministicInput) -> DeterministicOutput:
         fx_spot_rates_used,
     )
 
-    # Stressed mortgage payment
-    mortgage_stress_source = _monthly_mortgage_payment(
-        inputs.mortgage_balance_pence,
-        inputs.mortgage_rate_bps_stress,
-        inputs.mortgage_term_months_remaining,
-        inputs.mortgage_type,
+    income_shock_levels = resolve_schedule_levels(
+        inputs.shock_monthly_income_drop_bps,
+        inputs.horizon_months,
+        inputs.income_shock_schedule,
     )
-    mortgage_stress = _convert_to_reporting(
-        mortgage_stress_source,
-        inputs.mortgage_balance_currency,
-        fx_stressed_rates_used,
+    inflation_levels = resolve_schedule_levels(
+        inputs.inflation_monthly_essentials_increase_bps,
+        inputs.horizon_months,
+        inputs.inflation_shock_schedule,
+    )
+    mortgage_rate_levels = resolve_schedule_levels(
+        inputs.mortgage_rate_bps_stress,
+        inputs.horizon_months,
+        inputs.mortgage_rate_stress_schedule,
     )
 
     income_base = _convert_to_reporting(
@@ -135,25 +139,6 @@ def run_deterministic(inputs: DeterministicInput) -> DeterministicOutput:
     # Base cashflow
     cashflow_base = income_base - essentials_base - debt_base - mortgage_current
 
-    # Stressed cashflow
-    stressed_income_source = apply_bps(
-        inputs.household_monthly_net_income_pence,
-        10_000 - inputs.shock_monthly_income_drop_bps,
-    )
-    stressed_essentials_source = apply_bps(
-        inputs.household_monthly_essential_spend_pence,
-        10_000 + inputs.inflation_monthly_essentials_increase_bps,
-    )
-    stressed_income = _convert_to_reporting(
-        stressed_income_source,
-        inputs.household_monthly_net_income_currency,
-        fx_stressed_rates_used,
-    )
-    stressed_essentials = _convert_to_reporting(
-        stressed_essentials_source,
-        inputs.household_monthly_essential_spend_currency,
-        fx_stressed_rates_used,
-    )
     stressed_debt = _convert_to_reporting(
         inputs.household_monthly_debt_payments_pence,
         inputs.household_monthly_debt_payments_currency,
@@ -165,13 +150,54 @@ def run_deterministic(inputs: DeterministicInput) -> DeterministicOutput:
         fx_stressed_rates_used,
     )
 
-    cashflow_stress = stressed_income - stressed_essentials - stressed_debt - mortgage_stress
+    cashflow_stress_series: list[int] = []
+    mortgage_stress_series: list[int] = []
+
+    for month_idx in range(inputs.horizon_months):
+        stressed_income_source = apply_bps(
+            inputs.household_monthly_net_income_pence,
+            10_000 - income_shock_levels[month_idx],
+        )
+        stressed_essentials_source = apply_bps(
+            inputs.household_monthly_essential_spend_pence,
+            10_000 + inflation_levels[month_idx],
+        )
+        stressed_income = _convert_to_reporting(
+            stressed_income_source,
+            inputs.household_monthly_net_income_currency,
+            fx_stressed_rates_used,
+        )
+        stressed_essentials = _convert_to_reporting(
+            stressed_essentials_source,
+            inputs.household_monthly_essential_spend_currency,
+            fx_stressed_rates_used,
+        )
+
+        mortgage_stress_source = _monthly_mortgage_payment(
+            inputs.mortgage_balance_pence,
+            mortgage_rate_levels[month_idx],
+            inputs.mortgage_term_months_remaining,
+            inputs.mortgage_type,
+        )
+        mortgage_stress = _convert_to_reporting(
+            mortgage_stress_source,
+            inputs.mortgage_balance_currency,
+            fx_stressed_rates_used,
+        )
+        mortgage_stress_series.append(mortgage_stress)
+
+        cashflow_stress_series.append(
+            stressed_income - stressed_essentials - stressed_debt - mortgage_stress
+        )
+
+    cashflow_stress = cashflow_stress_series[0]
+    mortgage_stress = mortgage_stress_series[0]
 
     runway_base = _compute_runway(cashflow_base, cash_savings_base)
     runway_stress = _compute_runway(cashflow_stress, cash_savings_stress)
     savings_path_pence = compute_savings_path(
         cash_savings_stress,
-        [cashflow_stress] * inputs.horizon_months,
+        cashflow_stress_series,
     )
     min_savings_pence = min_savings(savings_path_pence)
     depletion_month = month_of_depletion(savings_path_pence)

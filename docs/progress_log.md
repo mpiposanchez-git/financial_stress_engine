@@ -514,6 +514,30 @@
 ### Risks / Blockers
 - Tornado bars currently visualize min-savings impact magnitude; if product requirements shift toward runway-first visual ranking, chart labels and sorting semantics should be updated together.
 
+## 2026-03-06 — WS5-F13-01 Shock Schedules in Deterministic Engine
+
+### Completed
+- WS5-F13-01: Added `shared/engine/schedules.py` with schedule resolution for `step`, `ramp`, and `stepped` modes.
+- WS5-F13-01: Extended deterministic input schema with optional schedule DTOs (`income_shock_schedule`, `inflation_shock_schedule`, `mortgage_rate_stress_schedule`).
+- WS5-F13-01: Updated deterministic engine to compute month-by-month stressed cashflow series using resolved schedule levels.
+- WS5-F13-01: Savings path now consumes the month-by-month stressed cashflow series in deterministic runs.
+- WS5-F13-01: Added deterministic schedule tests covering each schedule type in `services/api/tests/test_schedules_deterministic.py`.
+
+### In progress
+- WS5-F13-02: Schedules in Monte Carlo monthly paths.
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`51 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`43 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Applied schedule resolution to monthly stress drivers while preserving existing top-level deterministic output fields (`monthly_cashflow_stress_pence`, runway summary) based on first stressed month for backward compatibility.
+
+### Risks / Blockers
+- Backward-compatible first-month stress summary may under-represent later-month schedule severity; if needed, summary contract can be extended in a future non-backward-compatible revision.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
