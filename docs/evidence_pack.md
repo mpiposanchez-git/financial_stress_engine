@@ -68,6 +68,19 @@ git rev-parse HEAD
 - `docs/progress_log.md`
 - deployment/release notes
 
+## 3.1) WS9-05 Tagging Discipline Convention
+
+For each milestone release, use exactly:
+
+- `poc-milestone-<n>-YYYY-MM-DD`
+
+Examples:
+
+- `poc-milestone-1-2026-03-06`
+- `poc-milestone-2-2026-03-20`
+
+Always capture the commit SHA used to generate release artifacts (including PDF/JSON exports where release metadata is included).
+
 ## 4) Minimal Release Checklist
 
 - Lint is green.

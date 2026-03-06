@@ -1143,6 +1143,25 @@
 ### Risks / Blockers
 - File duplication introduces drift risk unless future updates keep canonical and mirrored docs synchronized.
 
+## 2026-03-06 — WS9-05 Tagging Discipline (Manual, Documented)
+
+### Completed
+- WS9-05: Documented milestone tagging convention and SHA capture discipline explicitly in `docs/evidence_pack.md`.
+- WS9-05: Confirmed canonical tag pattern:
+	- `poc-milestone-<n>-YYYY-MM-DD`
+
+### In progress
+- None (WS1–WS9 backlog complete).
+
+### Test evidence
+- Documentation review: tag format and SHA capture guidance present and aligned across release docs ✅
+
+### Decisions made
+- Kept WS9-05 as documentation-only discipline to avoid automating release tags in CI prematurely.
+
+### Risks / Blockers
+- Tag/SHA capture remains operationally manual and depends on release-process adherence.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
