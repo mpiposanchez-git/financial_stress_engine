@@ -78,7 +78,22 @@ def test_montecarlo_returns_metrics_percentiles(authenticated_client):
     }
     response = authenticated_client.post("/api/v1/montecarlo/run", json=payload)
     assert response.status_code == 200
-    metrics = response.json()["metrics"]
+    body = response.json()
+    assert isinstance(body["n_sims"], int)
+    assert isinstance(body["horizon_months"], int)
+    assert isinstance(body["seed"], int)
+    assert isinstance(body["runtime_ms"], float)
+    assert isinstance(body["runway_months_p10"], float)
+    assert isinstance(body["runway_months_p50"], float)
+    assert isinstance(body["runway_months_p90"], float)
+    assert isinstance(body["min_savings_p10_pence"], int)
+    assert isinstance(body["min_savings_p50_pence"], int)
+    assert isinstance(body["min_savings_p90_pence"], int)
+    assert isinstance(body["month_of_depletion_p10"], float)
+    assert isinstance(body["month_of_depletion_p50"], float)
+    assert isinstance(body["month_of_depletion_p90"], float)
+
+    metrics = body["metrics"]
     assert set(metrics["runway_months"].keys()) == {"p10", "p50", "p90"}
     assert set(metrics["min_savings"].keys()) == {
         "p10_pence",
@@ -89,6 +104,16 @@ def test_montecarlo_returns_metrics_percentiles(authenticated_client):
         "p90_formatted",
     }
     assert set(metrics["month_of_depletion"].keys()) == {"p10", "p50", "p90"}
+
+    assert body["runway_months_p10"] == metrics["runway_months"]["p10"]
+    assert body["runway_months_p50"] == metrics["runway_months"]["p50"]
+    assert body["runway_months_p90"] == metrics["runway_months"]["p90"]
+    assert body["min_savings_p10_pence"] == metrics["min_savings"]["p10_pence"]
+    assert body["min_savings_p50_pence"] == metrics["min_savings"]["p50_pence"]
+    assert body["min_savings_p90_pence"] == metrics["min_savings"]["p90_pence"]
+    assert body["month_of_depletion_p10"] == metrics["month_of_depletion"]["p10"]
+    assert body["month_of_depletion_p50"] == metrics["month_of_depletion"]["p50"]
+    assert body["month_of_depletion_p90"] == metrics["month_of_depletion"]["p90"]
 
 
 def test_montecarlo_seed_reproducibility(authenticated_client):

@@ -393,6 +393,30 @@
 ### Risks / Blockers
 - Premium entitlement source is still static in page wiring; when entitlement service wiring is added, UI limits should be bound to real auth claims.
 
+## 2026-03-06 — WS5-F05-01 Monte Carlo DTO Alignment + API Contract Hardening
+
+### Completed
+- WS5-F05-01: Extended Monte Carlo API response DTO with explicit top-level percentile fields for runway, min savings (pence), and month of depletion.
+- WS5-F05-01: Preserved existing nested `metrics` object for compatibility while adding explicit stable keys for downstream UI contracts.
+- WS5-F05-01: Updated Monte Carlo route response construction to populate all new top-level percentile fields.
+- WS5-F05-01: Hardened API contract tests to assert presence and concrete types of `n_sims`, `horizon_months`, `seed`, `runtime_ms`, and all top-level percentile keys.
+- WS5-F05-01: Added consistency assertions confirming top-level percentile values match nested metrics values.
+
+### In progress
+- WS5-F05-02: Fan chart UI (table-first, chart-second).
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`44 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`38 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Kept both nested and top-level Monte Carlo percentile fields in this step to avoid breaking existing consumers while introducing explicit contract keys required for future premium UI slices.
+
+### Risks / Blockers
+- Response currently duplicates percentile values in two shapes (`metrics` and top-level), which should be rationalized in a later breaking-change window if contract simplification is desired.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

@@ -141,6 +141,15 @@ class MonteCarloRunResponse(BaseModel):
     horizon_months: int
     seed: int
     runtime_ms: float
+    runway_months_p10: float
+    runway_months_p50: float
+    runway_months_p90: float
+    min_savings_p10_pence: int
+    min_savings_p50_pence: int
+    min_savings_p90_pence: int
+    month_of_depletion_p10: float
+    month_of_depletion_p50: float
+    month_of_depletion_p90: float
     metrics: MonteCarloMetrics
 
 

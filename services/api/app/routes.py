@@ -206,6 +206,15 @@ async def run_montecarlo_route(
             horizon_months=result.horizon_months,
             seed=result.seed,
             runtime_ms=result.runtime_ms,
+            runway_months_p10=result.runway_months.p10,
+            runway_months_p50=result.runway_months.p50,
+            runway_months_p90=result.runway_months.p90,
+            min_savings_p10_pence=result.min_savings.p10_pence,
+            min_savings_p50_pence=result.min_savings.p50_pence,
+            min_savings_p90_pence=result.min_savings.p90_pence,
+            month_of_depletion_p10=result.month_of_depletion.p10,
+            month_of_depletion_p50=result.month_of_depletion.p50,
+            month_of_depletion_p90=result.month_of_depletion.p90,
             metrics=metrics,
         )
         record_montecarlo_run(result.runtime_ms)
