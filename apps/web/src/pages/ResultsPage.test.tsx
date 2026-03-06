@@ -4,7 +4,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ResultsPage } from "./ResultsPage";
 
-const { mockGetToken, mockRunSensitivity, mockGetUkReferenceValues, mockGetUkPercentile } = vi.hoisted(() => ({
+const {
+  mockGetToken,
+  mockRunSensitivity,
+  mockGetUkReferenceValues,
+  mockGetUkPercentile,
+  mockDownloadPdfReport,
+} = vi.hoisted(() => ({
   mockGetToken: vi.fn(),
   mockRunSensitivity: vi.fn().mockResolvedValue({
     impacts: [
@@ -38,6 +44,7 @@ const { mockGetToken, mockRunSensitivity, mockGetUkReferenceValues, mockGetUkPer
     thresholds_gbp: [12000, 15500, 19000, 23000, 28000, 34000, 42000, 55000, 80000],
     caveats: ["indicative"],
   }),
+  mockDownloadPdfReport: vi.fn().mockResolvedValue(new Blob(["pdf"], { type: "application/pdf" })),
 }));
 
 vi.mock("../auth/useAuthState", () => ({
@@ -55,6 +62,7 @@ vi.mock("../api/client", () => ({
     runSensitivity: mockRunSensitivity,
     getUkReferenceValues: mockGetUkReferenceValues,
     getUkPercentile: mockGetUkPercentile,
+    downloadPdfReport: mockDownloadPdfReport,
   })
 }));
 
@@ -88,6 +96,7 @@ describe("ResultsPage", () => {
     mockRunSensitivity.mockClear();
     mockGetUkReferenceValues.mockClear();
     mockGetUkPercentile.mockClear();
+    mockDownloadPdfReport.mockClear();
   });
 
   it("renders formatted and pence money fields from route state", () => {
@@ -501,5 +510,6 @@ describe("ResultsPage", () => {
     const ui = within(container);
 
     expect(ui.getByText("Premium unlock required to view tornado sensitivity chart.")).toBeInTheDocument();
+    expect(ui.getByText("Premium unlock required to download PDF report.")).toBeInTheDocument();
   });
 });

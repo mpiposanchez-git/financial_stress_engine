@@ -5,6 +5,7 @@ import type {
   InputParameters,
   MonteCarloRequest,
   MonteCarloResponse,
+  PdfReportRequest,
   UkPercentileRequest,
   UkPercentileResponse,
   UkReferenceValuesResponse,
@@ -125,11 +126,36 @@ export function createApiClient(baseUrl: string, getToken: TokenProvider) {
     return (await response.json()) as T;
   };
 
+  const postBinary = async (path: string, payload: unknown): Promise<Blob> => {
+    const token = await getToken();
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json"
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${baseUrl}${path}`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const detail = await extractErrorDetail(response);
+      throw new Error(buildErrorMessage(response.status, detail));
+    }
+
+    return response.blob();
+  };
+
   return {
     getDefaults: () => getJson<DataDefaultsResponse>("/api/v1/data/defaults"),
     getUkReferenceValues: () => getJson<UkReferenceValuesResponse>("/api/v1/benchmarks/uk/reference"),
     getUkPercentile: (payload: UkPercentileRequest) =>
       postJson<UkPercentileResponse>("/api/v1/benchmarks/uk/percentile", payload),
+    downloadPdfReport: (payload: PdfReportRequest) => postBinary("/api/v1/reports/pdf", payload),
     runDeterministic: (payload: DeterministicRequest) =>
       postJson<DeterministicResponse>("/api/v1/deterministic/run", payload),
     runDeterministicFromInput: (inputParameters: InputParameters) =>

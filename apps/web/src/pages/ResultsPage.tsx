@@ -13,6 +13,7 @@ import { SavingsPathChart } from "../components/charts/SavingsPathChart";
 import { TornadoChart } from "../components/charts/TornadoChart";
 import { MortgageStressPanel } from "../components/MortgageStressPanel";
 import { OfficialResources } from "../components/OfficialResources";
+import { PdfDownloadButton } from "../components/PdfDownloadButton";
 import { ScenarioCompareTable } from "../components/scenarios/ScenarioCompareTable";
 import { ResultsRouteState, SensitivityDriverImpact, UkPercentileResponse, UkReferenceValuesResponse } from "../types";
 
@@ -32,6 +33,8 @@ export function ResultsPage() {
   const [ukRanking, setUkRanking] = useState<UkPercentileResponse | null>(null);
   const [ukRankingLoading, setUkRankingLoading] = useState(false);
   const [ukRankingError, setUkRankingError] = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   const api = useMemo(() => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
@@ -157,6 +160,40 @@ export function ResultsPage() {
     );
   }
 
+  const onDownloadPdf = async () => {
+    setPdfLoading(true);
+    setPdfError(null);
+    try {
+      const pdfBlob = await api.downloadPdfReport({
+        inputs: (inputParameters ?? {}) as Record<string, unknown>,
+        outputs: {
+          deterministic: state.deterministic,
+          montecarlo: state.montecarlo ?? null,
+          sensitivity: sensitivityImpacts ?? null,
+        },
+        disclaimers: ["Educational simulation only.", "Not financial advice."],
+        provenance: {
+          reference_fetched_at_utc: ukReference?.provenance.fetched_at_utc ?? null,
+          reference_source_url: ukReference?.provenance.source_url ?? null,
+        },
+        app_version: "0.1.1",
+      });
+
+      const objectUrl = URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = "stress-report.pdf";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      setPdfError(error instanceof Error ? error.message : "PDF export failed");
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
   return (
     <main className="page-shell">
       <h1>Results</h1>
@@ -278,6 +315,22 @@ export function ResultsPage() {
         premiumUnlocked={false}
         dataTimestamp="Not provided"
       />
+
+      {premiumUnlocked ? (
+        <PdfDownloadButton onDownload={onDownloadPdf} loading={pdfLoading} />
+      ) : (
+        <section className="result-card" aria-label="PDF export locked">
+          <h2>PDF report export</h2>
+          <p>Premium unlock required to download PDF report.</p>
+        </section>
+      )}
+
+      {pdfError ? (
+        <section className="result-card" aria-label="PDF export error">
+          <h2>PDF report export</h2>
+          <p>{pdfError}</p>
+        </section>
+      ) : null}
 
       <OfficialResources />
 

@@ -998,6 +998,34 @@
 ### Risks / Blockers
 - Request payload size can grow materially for richer report data; if needed later, enforce request-size bounds or server-side composition.
 
+## 2026-03-06 — WS8-F06-03 PDF Download UI (Premium)
+
+### Completed
+- WS8-F06-03: Added `apps/web/src/components/PdfDownloadButton.tsx` and integrated premium PDF export trigger UX.
+- WS8-F06-03: Updated `apps/web/src/pages/ResultsPage.tsx` to:
+	- show PDF download button for premium users,
+	- call backend PDF endpoint,
+	- trigger browser download,
+	- show lock teaser for non-premium users.
+- WS8-F06-03: Added frontend API binary method `downloadPdfReport(...)` in `apps/web/src/api/client.ts`.
+- WS8-F06-03: Added/updated tests:
+	- `apps/web/src/components/PdfDownloadButton.test.tsx`
+	- `apps/web/src/pages/ResultsPage.test.tsx` (non-premium lock assertion)
+
+### In progress
+- WS8-JSON-01: JSON export hardening (always on).
+
+### Test evidence
+- Frontend tests: `npm --prefix apps/web test -- --run src/components/PdfDownloadButton.test.tsx src/pages/ResultsPage.test.tsx` ✅ (`9 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Kept PDF download orchestration in `ResultsPage` while making button UI reusable and testable.
+- Added explicit premium lock messaging in Results page to align monetization UX with existing premium-gated cards.
+
+### Risks / Blockers
+- Browser download handling relies on client-side blob/object URL behavior and may require cross-browser QA in release hardening.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

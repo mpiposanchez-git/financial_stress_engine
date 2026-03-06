@@ -72,6 +72,14 @@ export type UkPercentileResponse = {
   caveats: string[];
 };
 
+export type PdfReportRequest = {
+  inputs: Record<string, unknown>;
+  outputs: Record<string, unknown>;
+  disclaimers: string[];
+  provenance: Record<string, unknown>;
+  app_version: string;
+};
+
 export type MonteCarloRequest = {
   input_parameters: InputParameters;
   n_sims: number;
