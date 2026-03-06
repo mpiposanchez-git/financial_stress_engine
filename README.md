@@ -53,5 +53,8 @@ cd apps/web && npm run test
 
 - Architecture and implementation spec: [docs/system_architecture_instructions.md](docs/system_architecture_instructions.md)
 - Model Development Document (BRD + MDR + RTM): [docs/model_development_document.md](docs/model_development_document.md)
+- POC flyer: [docs/poc_flyer.md](docs/poc_flyer.md)
+- Methodology textbook: [docs/methodology_textbook.md](docs/methodology_textbook.md)
+- BRD implementation plan: [docs/brd_implementation_plan.md](docs/brd_implementation_plan.md)
 - Privacy: [docs/disclaimers/privacy.md](docs/disclaimers/privacy.md)
 - Regulatory disclaimer: [docs/disclaimers/regulatory_disclaimer.md](docs/disclaimers/regulatory_disclaimer.md)

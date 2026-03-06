@@ -1,0 +1,378 @@
+# UK Household Financial Stress Engine — Model Development Methodology (Textbook) 📘
+
+**Version:** v0.2.0  
+**Status:** Draft / living document  
+**Date:** 2026-03-06  
+**Repo:** https://github.com/mpiposanchez-git/financial_stress_engine  
+**Evidence snapshot:** _Insert commit SHA for the release (`git rev-parse HEAD`)_  
+**Audience order:** (1) auditor/reviewer, (2) end user learner
+
+> This document is intentionally comprehensive. It explains the concepts, assumptions, mathematics, data sources, and controls behind the tool.
+
+---
+
+## Table of Contents
+0. Reader guide  
+1. Purpose, scope, and guardrails  
+2. System architecture overview  
+3. Core financial concepts (beginner section)  
+4. Numerical correctness (pence + bps, rounding)  
+5. Deterministic model methodology  
+6. Monte Carlo methodology (monthly paths, IID vs AR(1))  
+7. FX & multi-currency methodology (reporting currency)  
+8. Additional modelling features (categories, schedules, debt)  
+9. UK benchmarking methodology (BHC percentile ranking)  
+10. Data module (sources, auto-fetch, user verification, overrides)  
+11. Exports (JSON + PDF)  
+12. Premium entitlements (POC allowlist; V1 Stripe)  
+13. Accessibility & interpretability controls  
+14. Privacy-safe measurement (aggregate only)  
+15. Validation & testing framework  
+16. Governance, modularity, and change management  
+Appendix: Glossary  
+
+---
+
+## 0. Reader guide
+- Want “what does this do?” → Ch. 1–2  
+- Want to understand outputs → Ch. 3 + Ch. 5  
+- Want uncertainty modelling → Ch. 6  
+- Want FX/multi-currency → Ch. 7  
+- Want UK percentiles → Ch. 9  
+- Want audit evidence → Ch. 15–16  
+
+---
+
+## 1. Purpose, scope, and guardrails ⚖️
+
+### 1.1 Purpose
+The tool simulates household financial resilience under stress (income, costs, rates, FX).
+
+### 1.2 Intended use
+Educational scenario simulation.
+
+### 1.3 Non-intended use (important)
+- No personalised advice.
+- No product recommendation.
+- No bank linking / Open Banking.
+- No uploads (statements/payslips).
+
+### 1.4 Privacy posture
+Authentication uses Clerk. The application is designed not to persist scenario inputs/outputs in a project database.
+
+---
+
+## 2. System architecture overview 🧩
+High-level components:
+- **Frontend (React):** user inputs, charts, premium gating, exports
+- **API (FastAPI):** auth, rate limiting, caps/timeouts, orchestration
+- **Engine (shared/engine):** deterministic, Monte Carlo, FX, money utilities
+- **Data module:** official defaults, provenance, verification steps, caching
+- **Benchmark module:** UK reference values + premium percentiles (BHC)
+
+---
+
+## 3. Core financial concepts (beginner section) 🧠
+
+### 3.1 Cashflow
+Monthly cashflow is:
+
+\[
+CF = I - E - D - M
+\]
+
+Where:
+- \(I\): net income  
+- \(E\): essential spending  
+- \(D\): debt payments (non-mortgage)  
+- \(M\): mortgage payment  
+
+### 3.2 Savings dynamics
+If cashflow is positive, savings increase; if negative, savings decrease.
+
+### 3.3 Runway
+Approximate runway:
+
+\[
+\text{runway} \approx \frac{S}{|CF|}
+\]
+
+The tool also computes a month-by-month savings path, which is more interpretable.
+
+### 3.4 Percentiles
+For Monte Carlo results:
+- P10 = downside
+- P50 = median
+- P90 = upside
+
+---
+
+## 4. Numerical correctness (pence + bps) ✅
+
+### 4.1 Money in minor units (pence)
+All monetary values are represented internally as **integer pence** to avoid floating point drift.
+
+### 4.2 Rates in basis points (bps)
+All rates and shocks are stored as **integer basis points**:
+- 1% = 100 bps
+
+### 4.3 Rounding rule
+When converting intermediate decimals to pennies: **round-half-up**.
+
+### 4.4 Why this matters
+Auditors and users require penny-accurate, reproducible results.
+
+---
+
+## 5. Deterministic model methodology 📆
+
+### 5.1 Inputs (conceptual)
+- Income, essentials, debt, savings (each with currency)
+- Mortgage balance, term, type, current and stress rate
+- Income shock, inflation shock
+- Reporting currency and FX spot rates
+- FX stress (optional)
+- Horizon months (default 24)
+
+### 5.2 Mortgage payment mechanics
+- Interest-only:
+
+\[
+P = B \cdot r_m
+\]
+
+- Repayment:
+
+\[
+P = B \cdot \frac{r_m(1+r_m)^n}{(1+r_m)^n - 1}
+\]
+
+Edge cases are handled (0% rate, 0 balance).
+
+### 5.3 Stress mechanics
+- Income stress: reduce income by shock percentage  
+- Essentials inflation: increase essentials by inflation percentage  
+- Rate stress: recompute mortgage payment using stressed rate  
+- FX stress: adjust FX rate used for conversion (if set)
+
+### 5.4 Month-by-month savings path
+
+\[
+S_{t+1} = \max(0, S_t + CF_t^*)
+\]
+
+Outputs:
+- savings path array
+- minimum savings
+- month of depletion
+- runway estimate
+
+---
+
+## 6. Monte Carlo methodology (monthly paths) 🎲
+
+### 6.1 Overview
+Monte Carlo runs the model many times, drawing random shocks, to produce a distribution of outcomes.
+
+### 6.2 Shock paths (IID vs AR(1))
+**IID:** each month independent  
+**AR(1):**
+
+\[
+x_t = \mu + \phi(x_{t-1} - \mu) + \epsilon_t
+\]
+
+This creates persistent periods of stress.
+
+### 6.3 What is stochastic
+- income shock path
+- inflation path
+- mortgage rate path
+- FX path (if FX volatility is set)
+
+### 6.4 Outputs and interpretation
+Report P10/P50/P90 for:
+- runway months
+- min savings
+- month of depletion
+
+---
+
+## 7. FX & multi-currency methodology 🌍💱
+
+### 7.1 Reporting currency
+All outputs are shown in one selected currency.
+
+### 7.2 FX spot rates
+User can accept defaults or override. Reporting currency rate is 1.0 by definition.
+
+### 7.3 FX stress and volatility
+- Deterministic FX stress: percentage shock to FX level.
+- Monte Carlo FX: lognormal path via monthly returns, with optional AR(1) persistence.
+
+### 7.4 Disclosure
+BoE FX rates are disclosed as indicative (not official).
+
+---
+
+## 8. Additional modelling features (functionalities 8, 13, 14, 15)
+
+### 8.1 Category inflation
+Different inflation rates by category (e.g., food vs energy vs transport).  
+Implemented by splitting essentials into categories and applying category-specific inflation.
+
+### 8.2 Shock schedules
+Stress can be:
+- immediate step change
+- gradual ramp
+- stepped schedule (month indices)
+
+### 8.3 Debt schedule (optional)
+Simplified non-mortgage debt dynamics:
+- balance, APR, minimum payment
+- simulate balance evolution and payment burden
+
+### 8.4 Mortgage type sandbox
+Educational comparison of repayment vs interest-only behaviour.
+
+---
+
+## 9. UK benchmarking methodology (BHC) 🇬🇧
+
+### 9.1 Purpose
+Provide context:
+- Free: UK reference values (median/average)
+- Premium: “you are approximately in X percentile”
+
+### 9.2 Source
+DWP HBAI data tables (BHC). (https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2024)
+
+### 9.3 Method (BHC)
+- Convert monthly net income to annual net income.
+- Compare to income thresholds from HBAI tables for the reference year.
+- Return percentile bucket (approximate).
+
+### 9.4 Ethics and limitations (mandatory)
+- Percentiles are approximate.
+- Depends on definition/year and household composition.
+- Not a measure of personal worth.
+- Presented as context, not advice.
+
+---
+
+## 10. Data module (sources, auto-fetch, verification, overrides) 🔍
+
+### 10.1 Datasets used
+- ONS CPI/CPIH: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/consumerpriceindices/current  
+- BoE Bank Rate: https://www.bankofengland.co.uk/boeapps/database/Bank-Rate.asp  
+- BoE FX: https://www.bankofengland.co.uk/boeapps/database/Rates.asp  
+- Ofgem price cap: https://www.ofgem.gov.uk/information-consumers/energy-advice-households/get-energy-price-cap-standing-charges-and-unit-rates-region  
+- DWP HBAI: https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2024  
+
+### 10.2 Auto-fetch design
+Use scheduled jobs (Render Cron Jobs pattern): https://render.com/docs/cronjobs
+
+Store:
+- fetched_at timestamp
+- source URL
+- hash (sha256)
+- values used in defaults
+
+### 10.3 User verification steps
+For each dataset:
+1) open official link
+2) download table/CSV
+3) confirm “as of” value matches the tool’s displayed value
+
+### 10.4 Manual overrides
+Users can override defaults. Exports record:
+- default vs override
+- dataset timestamp and hash
+
+---
+
+## 11. Exports (JSON + PDF) 📤
+
+### 11.1 JSON export
+Always available; includes full inputs, outputs, and provenance.
+
+### 11.2 PDF export (premium)
+Includes:
+- summary + charts (static)
+- inputs and assumptions
+- version metadata
+- data sources and timestamps
+- disclaimers and limitations
+
+---
+
+## 12. Premium entitlements (recommendation #1) 💳
+
+### 12.1 POC entitlement (no payments)
+Premium access granted via server-side allowlist (preferably by Clerk subject `sub`).
+
+### 12.2 V1 upgrade path
+Stripe subscription with webhook-based entitlement updates.
+
+---
+
+## 13. Accessibility & interpretability (recommendation #2) ♿
+
+### 13.1 Accessibility principle
+Charts must have:
+- clear labels
+- keyboard focus
+- a text summary describing the result (“what the chart shows”)
+
+### 13.2 Interpretability principle
+Use tooltips, glossary definitions, and “explain-the-result” narratives.
+
+---
+
+## 14. Privacy-safe measurement (recommendation #4) 🔒📈
+
+### 14.1 What we measure
+Only aggregate counters (e.g., number of deterministic runs, number of Monte Carlo runs).
+
+### 14.2 What we do not measure
+- no third-party analytics trackers
+- no user-level tracking or profiling
+- no scenario contents stored
+
+### 14.3 Disclosure
+Privacy policy states that aggregate operational metrics may be collected.
+
+---
+
+## 15. Validation & testing framework ✅
+
+- Unit tests: mortgage, rounding, FX conversion, schedules
+- Golden tests: known-answer scenarios
+- Monte Carlo: reproducibility (seed), sigma sensitivity
+- Contract tests: API schema stability
+- Security tests: prevent logging request bodies and auth headers
+
+---
+
+## 16. Governance, modularity, and change management 🧾
+
+### 16.1 Modularity
+Each capability is a module with clear boundaries.
+
+### 16.2 UDF separation
+User-defined functions are placed in dedicated scripts to reduce “blast radius” of changes.
+
+### 16.3 Change control
+Any modelling change requires:
+- Decision log entry
+- Spec update (this doc and/or MOD specs)
+- Tests updated and CI green
+
+---
+
+## Appendix — Glossary
+(Expand over time: cashflow, runway, BHC, CPIH, bps, AR(1), etc.)
+
+---
+
+**End of methodology textbook.**
