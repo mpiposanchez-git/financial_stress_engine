@@ -65,6 +65,11 @@ describe("ResultsPage", () => {
     expect(screen.getByRole("heading", { name: "Deterministic savings path" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Mortgage stress impact" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Emergency fund adequacy" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Explain the result" })).toBeInTheDocument();
+    expect(screen.getByText("runway")).toHaveAttribute(
+      "title",
+      "Estimated months until savings are depleted under model assumptions."
+    );
     expect(screen.getByText(/Delta under stress: \+30000p \(higher than current\)\./)).toBeInTheDocument();
     expect(screen.getByText(/P10: 6.5m \| P50: 9.5m \| P90: 14.2m/)).toBeInTheDocument();
     expect(

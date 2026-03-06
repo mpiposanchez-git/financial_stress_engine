@@ -320,6 +320,13 @@ a:focus-visible {
   cursor: help;
 }
 
+.glossary-term {
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  cursor: help;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

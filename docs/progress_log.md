@@ -231,6 +231,29 @@
 ### Risks / Blockers
 - Baseline monthly outgoings currently use available deterministic output fields and may need refinement once direct essentials outgoings are exposed in results contracts.
 
+## 2026-03-06 — WS3-04 Explain-the-Result Narrative + Glossary Tooltips
+
+### Completed
+- WS3-04: Added `ExplainResult` component with plain-language narrative describing runway drivers and output interpretation context.
+- WS3-04: Added reusable `GlossaryTooltip` component for inline key-term definitions.
+- WS3-04: Integrated explain narrative block into `ResultsPage` using deterministic and optional Monte Carlo context.
+- WS3-04: Added tests to verify key terms render and glossary tooltip definitions exist.
+
+### In progress
+- WS3-05: Assumptions panel (limits, rounding, caps, timestamps placeholder).
+
+### Test evidence
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`26 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`42 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+
+### Decisions made
+- Glossary terms use inline tooltip definitions to keep narrative readable without adding extra navigation.
+
+### Risks / Blockers
+- Tooltip-based definitions rely on hover/title affordance and may later need explicit tap-target alternatives for mobile-first glossary UX.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

@@ -2,6 +2,7 @@ import { useLocation } from "react-router-dom";
 
 import { PercentileDisclosure } from "../components/benchmarks/PercentileDisclosure";
 import { EmergencyFundCard } from "../components/EmergencyFundCard";
+import { ExplainResult } from "../components/ExplainResult";
 import { SavingsPathChart } from "../components/charts/SavingsPathChart";
 import { MortgageStressPanel } from "../components/MortgageStressPanel";
 import { ResultsRouteState } from "../types";
@@ -137,6 +138,14 @@ export function ResultsPage() {
       <EmergencyFundCard
         minSavingsPence={state.deterministic.min_savings_pence}
         monthlyEssentialsSpendPence={state.deterministic.monthly_cashflow_base_pence < 0 ? 0 : state.deterministic.monthly_cashflow_base_pence}
+      />
+
+      <ExplainResult
+        runwayMonths={state.deterministic.runway_months}
+        minSavingsFormatted={state.deterministic.min_savings_formatted}
+        cashflowBaseFormatted={state.deterministic.monthly_cashflow_base_formatted}
+        cashflowStressFormatted={state.deterministic.monthly_cashflow_stress_formatted}
+        hasMonteCarlo={hasMonteCarlo}
       />
 
       {state.deterministic.warnings.length > 0 ? (
