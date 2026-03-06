@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuthState } from "../auth/useAuthState";
 import { createApiClient } from "../api/client";
+import { CurrencySelect } from "../components/inputs/CurrencySelect";
+import { MoneyInput } from "../components/inputs/MoneyInput";
 import { Wizard } from "../components/wizard/Wizard";
 import { WizardNav } from "../components/wizard/WizardNav";
 import { WizardStep } from "../components/wizard/WizardStep";
@@ -99,76 +101,63 @@ export function StressTestPage() {
         >
           {currentStep === 0 ? (
             <WizardStep id="wizard-step-1" title="Currencies and FX spots">
-              <label htmlFor="reporting-currency">
-                Reporting currency
-                <select
-                  id="reporting-currency"
-                  aria-label="Reporting currency"
-                  aria-describedby={formErrorId}
-                  value={form.reporting_currency}
-                  onChange={(event) =>
-                    setForm((prev) => {
-                      const reporting = event.target.value as (typeof currencies)[number];
-                      return {
-                        ...prev,
-                        reporting_currency: reporting,
-                        fx_spot_rates: {
-                          ...prev.fx_spot_rates,
-                          [reporting]: 1
-                        }
-                      };
-                    })
-                  }
-                >
-                  {currencies.map((currency) => (
-                    <option key={currency} value={currency}>
-                      {currency}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label htmlFor="income-currency">
-                Income currency
-                <select
-                  id="income-currency"
-                  aria-label="Income currency"
-                  aria-describedby={formErrorId}
-                  value={form.household_monthly_net_income_currency}
-                  onChange={(event) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      household_monthly_net_income_currency: event.target.value as (typeof currencies)[number]
-                    }))
-                  }
-                >
-                  {currencies.map((currency) => (
-                    <option key={currency} value={currency}>
-                      {currency}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label htmlFor="essentials-currency">
-                Essentials currency
-                <select
-                  id="essentials-currency"
-                  aria-label="Essentials currency"
-                  aria-describedby={formErrorId}
-                  value={form.household_monthly_essential_spend_currency}
-                  onChange={(event) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      household_monthly_essential_spend_currency: event.target.value as (typeof currencies)[number]
-                    }))
-                  }
-                >
-                  {currencies.map((currency) => (
-                    <option key={currency} value={currency}>
-                      {currency}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <CurrencySelect
+                id="reporting-currency"
+                label="Reporting currency"
+                value={form.reporting_currency}
+                currencies={currencies}
+                ariaDescribedBy={formErrorId}
+                onChange={(reporting) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    reporting_currency: reporting,
+                    fx_spot_rates: {
+                      ...prev.fx_spot_rates,
+                      [reporting]: 1
+                    }
+                  }))
+                }
+              />
+              <MoneyInput
+                idPrefix="income"
+                label="Income"
+                amount={form.household_monthly_net_income_gbp}
+                currency={form.household_monthly_net_income_currency}
+                currencies={currencies}
+                ariaDescribedBy={formErrorId}
+                onAmountChange={(amount) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    household_monthly_net_income_gbp: amount
+                  }))
+                }
+                onCurrencyChange={(currency) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    household_monthly_net_income_currency: currency
+                  }))
+                }
+              />
+              <MoneyInput
+                idPrefix="essentials"
+                label="Essentials"
+                amount={form.household_monthly_essential_spend_gbp}
+                currency={form.household_monthly_essential_spend_currency}
+                currencies={currencies}
+                ariaDescribedBy={formErrorId}
+                onAmountChange={(amount) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    household_monthly_essential_spend_gbp: amount
+                  }))
+                }
+                onCurrencyChange={(currency) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    household_monthly_essential_spend_currency: currency
+                  }))
+                }
+              />
               <label htmlFor="debt-currency">
                 Debt currency
                 <select

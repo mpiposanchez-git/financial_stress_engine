@@ -50,6 +50,28 @@
 - Smoke automation requires a valid short-lived `SMOKE_TEST_BEARER_TOKEN` secret.
 - Post-deploy observability remains log-driven until metrics dashboards are introduced.
 
+## 2026-03-06 — WS2-02 Money Inputs + Currency Select Components
+
+### Completed
+- WS2-02: Added reusable `MoneyInput` and `CurrencySelect` components with accessible labels and `aria-describedby` support for error association.
+- WS2-02: Integrated `MoneyInput` for household monthly income and essentials values/currencies in `StressTestPage` wizard step 1.
+- WS2-02: Added `MoneyInput` unit tests and kept existing stress page navigation/submission tests green.
+
+### In progress
+- WS2-03: Mortgage step UI extraction and validation wiring.
+
+### Test evidence
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`11 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`42 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+
+### Decisions made
+- Use shared input components for amount/currency pairs to reduce duplicate form logic ahead of additional wizard steps.
+
+### Risks / Blockers
+- Amount fields currently map directly to existing `*_gbp` API fields; true per-currency normalization remains a future enhancement.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

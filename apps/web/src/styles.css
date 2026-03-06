@@ -101,6 +101,12 @@ form {
   gap: 0.75rem;
 }
 
+.money-input {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 1fr;
+}
+
 .wizard-nav {
   display: flex;
   gap: 0.65rem;
@@ -252,5 +258,12 @@ a:focus-visible {
 
   .result-card {
     padding: 0.85rem;
+  }
+}
+
+@media (min-width: 641px) {
+  .money-input {
+    grid-template-columns: minmax(0, 1.6fr) minmax(120px, 0.7fr);
+    align-items: end;
   }
 }
