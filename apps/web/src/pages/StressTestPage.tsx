@@ -8,6 +8,7 @@ import { CurrencySelect } from "../components/inputs/CurrencySelect";
 import { MortgageInputs } from "../components/inputs/MortgageInputs";
 import { MoneyInput } from "../components/inputs/MoneyInput";
 import { PercentSlider } from "../components/inputs/PercentSlider";
+import { ScenarioTabs } from "../components/scenarios/ScenarioTabs";
 import { Wizard } from "../components/wizard/Wizard";
 import { WizardNav } from "../components/wizard/WizardNav";
 import { WizardStep } from "../components/wizard/WizardStep";
@@ -15,6 +16,7 @@ import { buildDeterministicPayload } from "../lib/buildPayload";
 import { InputParameters, ResultsRouteState } from "../types";
 
 const currencies = ["GBP", "EUR", "USD"] as const;
+type ScenarioId = "base" | "a" | "b" | "c";
 
 function parseFiniteNumber(value: string): number | null {
   const parsed = Number(value);
@@ -54,16 +56,49 @@ const defaultInput: InputParameters = {
   inflation_shock_std_percent: 1
 };
 
+function cloneInput(input: InputParameters): InputParameters {
+  return {
+    ...input,
+    fx_spot_rates: { ...input.fx_spot_rates },
+    fx_stress_bps: { ...input.fx_stress_bps }
+  };
+}
+
 export function StressTestPage() {
-  const [form, setForm] = useState<InputParameters>(defaultInput);
+  const [scenarioDrafts, setScenarioDrafts] = useState<Record<ScenarioId, InputParameters | null>>({
+    base: cloneInput(defaultInput),
+    a: null,
+    b: null,
+    c: null
+  });
+  const [activeScenario, setActiveScenario] = useState<ScenarioId>("base");
+  const [form, setScenarioForm] = useState<InputParameters>(cloneInput(defaultInput));
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const navigate = useNavigate();
   const { getToken } = useAuthState();
+  const premiumUnlocked = false;
   const formErrorId = "stress-form-error";
   const totalSteps = 3;
   const stepTitles = ["Currencies and FX spots", "Mortgage inputs", "FX stress and review"] as const;
+  const scenarioHasDraft = {
+    base: scenarioDrafts.base !== null,
+    a: scenarioDrafts.a !== null,
+    b: scenarioDrafts.b !== null,
+    c: scenarioDrafts.c !== null
+  };
+
+  const setForm = (updater: (previous: InputParameters) => InputParameters) => {
+    setScenarioForm((previous) => {
+      const next = updater(previous);
+      setScenarioDrafts((drafts) => ({
+        ...drafts,
+        [activeScenario]: cloneInput(next)
+      }));
+      return next;
+    });
+  };
 
   const api = useMemo(() => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
@@ -87,11 +122,44 @@ export function StressTestPage() {
     }
   };
 
+  const onSelectScenario = (scenario: ScenarioId) => {
+    if (scenario !== "base" && !premiumUnlocked) {
+      return;
+    }
+
+    const draft = scenarioDrafts[scenario];
+    if (!draft) {
+      return;
+    }
+
+    setActiveScenario(scenario);
+    setScenarioForm(cloneInput(draft));
+  };
+
+  const onCloneFromBase = (scenario: Exclude<ScenarioId, "base">) => {
+    const baseDraft = scenarioDrafts.base ?? cloneInput(defaultInput);
+    const cloned = cloneInput(baseDraft);
+    setScenarioDrafts((drafts) => ({
+      ...drafts,
+      [scenario]: cloned
+    }));
+    setActiveScenario(scenario);
+    setScenarioForm(cloneInput(cloned));
+    setCurrentStep(0);
+  };
+
   return (
     <main>
       <h1>Stress Test</h1>
       <p>Run an illustrative simulation. This is not financial advice.</p>
       <form onSubmit={onSubmit} aria-describedby={formErrorId}>
+        <ScenarioTabs
+          activeScenario={activeScenario}
+          premiumUnlocked={premiumUnlocked}
+          scenarioHasDraft={scenarioHasDraft}
+          onSelect={onSelectScenario}
+          onCloneFromBase={onCloneFromBase}
+        />
         <Wizard
           currentStep={currentStep}
           totalSteps={totalSteps}

@@ -72,6 +72,9 @@ describe("StressTestPage", () => {
     );
     const ui = within(container);
 
+    expect(ui.getByRole("tab", { name: "Base" })).toHaveAttribute("aria-selected", "true");
+    expect(ui.getByRole("tab", { name: "A (Premium)" })).toBeDisabled();
+
     expect(ui.getByText("Step 1 of 3")).toBeInTheDocument();
     expect(ui.getByRole("heading", { name: "Currencies and FX spots" })).toBeInTheDocument();
 

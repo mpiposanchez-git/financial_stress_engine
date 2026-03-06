@@ -299,6 +299,30 @@
 ### Risks / Blockers
 - Resource list is intentionally minimal for this task and may need expansion/localization for broader coverage.
 
+## 2026-03-06 — WS4-01 Scenario Tabs UI
+
+### Completed
+- WS4-01: Added `ScenarioTabs` component for Base/A/B/C scenario selection UI.
+- WS4-01: Added Base-clone prompt/action flow for empty premium scenarios (A/B/C).
+- WS4-01: Integrated scenario tab state into `StressTestPage`, including per-scenario draft storage and active-scenario editing state.
+- WS4-01: Applied premium gating in UI for non-base scenarios (A/B/C disabled when premium is not unlocked).
+- WS4-01: Added tests for tab behavior (selection + clone flow under premium, and lock behavior when premium is unavailable).
+
+### In progress
+- WS4-02: Scenario compare backend endpoint (premium gated).
+
+### Test evidence
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`30 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`42 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+
+### Decisions made
+- Scenario drafts are stored client-side and cloned from Base using a deep copy of FX objects to avoid shared-reference edits.
+
+### Risks / Blockers
+- Premium unlock is currently static (`false`) in UI wiring and should later bind to real entitlement signals.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
