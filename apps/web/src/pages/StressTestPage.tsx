@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuthState } from "../auth/useAuthState";
 import { createApiClient } from "../api/client";
+import { Wizard } from "../components/wizard/Wizard";
+import { WizardNav } from "../components/wizard/WizardNav";
+import { WizardStep } from "../components/wizard/WizardStep";
 import { InputParameters, ResultsRouteState } from "../types";
 
 const currencies = ["GBP", "EUR", "USD"] as const;
@@ -49,9 +52,11 @@ export function StressTestPage() {
   const [form, setForm] = useState<InputParameters>(defaultInput);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
   const navigate = useNavigate();
   const { getToken } = useAuthState();
   const formErrorId = "stress-form-error";
+  const totalSteps = 2;
 
   const api = useMemo(() => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
@@ -87,238 +92,265 @@ export function StressTestPage() {
       <h1>Stress Test</h1>
       <p>Run an illustrative simulation. This is not financial advice.</p>
       <form onSubmit={onSubmit} aria-describedby={formErrorId}>
-        <label htmlFor="reporting-currency">
-          Reporting currency
-          <select
-            id="reporting-currency"
-            aria-describedby={formErrorId}
-            value={form.reporting_currency}
-            onChange={(event) =>
-              setForm((prev) => {
-                const reporting = event.target.value as (typeof currencies)[number];
-                return {
-                  ...prev,
-                  reporting_currency: reporting,
-                  fx_spot_rates: {
-                    ...prev.fx_spot_rates,
-                    [reporting]: 1
+        <Wizard
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          title={currentStep === 0 ? "Currencies and FX spots" : "FX stress and review"}
+        >
+          {currentStep === 0 ? (
+            <WizardStep id="wizard-step-1" title="Currencies and FX spots">
+              <label htmlFor="reporting-currency">
+                Reporting currency
+                <select
+                  id="reporting-currency"
+                  aria-label="Reporting currency"
+                  aria-describedby={formErrorId}
+                  value={form.reporting_currency}
+                  onChange={(event) =>
+                    setForm((prev) => {
+                      const reporting = event.target.value as (typeof currencies)[number];
+                      return {
+                        ...prev,
+                        reporting_currency: reporting,
+                        fx_spot_rates: {
+                          ...prev.fx_spot_rates,
+                          [reporting]: 1
+                        }
+                      };
+                    })
                   }
-                };
-              })
-            }
-          >
-            {currencies.map((currency) => (
-              <option key={currency} value={currency}>
-                {currency}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label htmlFor="income-currency">
-          Income currency
-          <select
-            id="income-currency"
-            aria-describedby={formErrorId}
-            value={form.household_monthly_net_income_currency}
-            onChange={(event) =>
-              setForm((prev) => ({
-                ...prev,
-                household_monthly_net_income_currency: event.target.value as (typeof currencies)[number]
-              }))
-            }
-          >
-            {currencies.map((currency) => (
-              <option key={currency} value={currency}>
-                {currency}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label htmlFor="essentials-currency">
-          Essentials currency
-          <select
-            id="essentials-currency"
-            aria-describedby={formErrorId}
-            value={form.household_monthly_essential_spend_currency}
-            onChange={(event) =>
-              setForm((prev) => ({
-                ...prev,
-                household_monthly_essential_spend_currency: event.target.value as (typeof currencies)[number]
-              }))
-            }
-          >
-            {currencies.map((currency) => (
-              <option key={currency} value={currency}>
-                {currency}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label htmlFor="debt-currency">
-          Debt currency
-          <select
-            id="debt-currency"
-            aria-describedby={formErrorId}
-            value={form.household_monthly_debt_payments_currency}
-            onChange={(event) =>
-              setForm((prev) => ({
-                ...prev,
-                household_monthly_debt_payments_currency: event.target.value as (typeof currencies)[number]
-              }))
-            }
-          >
-            {currencies.map((currency) => (
-              <option key={currency} value={currency}>
-                {currency}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label htmlFor="savings-currency">
-          Savings currency
-          <select
-            id="savings-currency"
-            aria-describedby={formErrorId}
-            value={form.cash_savings_currency}
-            onChange={(event) =>
-              setForm((prev) => ({
-                ...prev,
-                cash_savings_currency: event.target.value as (typeof currencies)[number]
-              }))
-            }
-          >
-            {currencies.map((currency) => (
-              <option key={currency} value={currency}>
-                {currency}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label htmlFor="mortgage-currency">
-          Mortgage currency
-          <select
-            id="mortgage-currency"
-            aria-describedby={formErrorId}
-            value={form.mortgage_balance_currency}
-            onChange={(event) =>
-              setForm((prev) => ({
-                ...prev,
-                mortgage_balance_currency: event.target.value as (typeof currencies)[number]
-              }))
-            }
-          >
-            {currencies.map((currency) => (
-              <option key={currency} value={currency}>
-                {currency}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label htmlFor="fx-spot-eur">
-          FX spot EUR to reporting
-          <input
-            id="fx-spot-eur"
-            aria-describedby={formErrorId}
-            type="number"
-            step="0.0001"
-            value={form.fx_spot_rates.EUR}
-            onChange={(event) =>
-              setForm((prev) => {
-                const next = parseFiniteNumber(event.target.value);
-                if (next === null) {
-                  return prev;
-                }
+                >
+                  {currencies.map((currency) => (
+                    <option key={currency} value={currency}>
+                      {currency}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label htmlFor="income-currency">
+                Income currency
+                <select
+                  id="income-currency"
+                  aria-label="Income currency"
+                  aria-describedby={formErrorId}
+                  value={form.household_monthly_net_income_currency}
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      household_monthly_net_income_currency: event.target.value as (typeof currencies)[number]
+                    }))
+                  }
+                >
+                  {currencies.map((currency) => (
+                    <option key={currency} value={currency}>
+                      {currency}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label htmlFor="essentials-currency">
+                Essentials currency
+                <select
+                  id="essentials-currency"
+                  aria-label="Essentials currency"
+                  aria-describedby={formErrorId}
+                  value={form.household_monthly_essential_spend_currency}
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      household_monthly_essential_spend_currency: event.target.value as (typeof currencies)[number]
+                    }))
+                  }
+                >
+                  {currencies.map((currency) => (
+                    <option key={currency} value={currency}>
+                      {currency}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label htmlFor="debt-currency">
+                Debt currency
+                <select
+                  id="debt-currency"
+                  aria-label="Debt currency"
+                  aria-describedby={formErrorId}
+                  value={form.household_monthly_debt_payments_currency}
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      household_monthly_debt_payments_currency: event.target.value as (typeof currencies)[number]
+                    }))
+                  }
+                >
+                  {currencies.map((currency) => (
+                    <option key={currency} value={currency}>
+                      {currency}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label htmlFor="savings-currency">
+                Savings currency
+                <select
+                  id="savings-currency"
+                  aria-label="Savings currency"
+                  aria-describedby={formErrorId}
+                  value={form.cash_savings_currency}
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      cash_savings_currency: event.target.value as (typeof currencies)[number]
+                    }))
+                  }
+                >
+                  {currencies.map((currency) => (
+                    <option key={currency} value={currency}>
+                      {currency}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label htmlFor="mortgage-currency">
+                Mortgage currency
+                <select
+                  id="mortgage-currency"
+                  aria-label="Mortgage currency"
+                  aria-describedby={formErrorId}
+                  value={form.mortgage_balance_currency}
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      mortgage_balance_currency: event.target.value as (typeof currencies)[number]
+                    }))
+                  }
+                >
+                  {currencies.map((currency) => (
+                    <option key={currency} value={currency}>
+                      {currency}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label htmlFor="fx-spot-eur">
+                FX spot EUR to reporting
+                <input
+                  id="fx-spot-eur"
+                  aria-label="FX spot EUR to reporting"
+                  aria-describedby={formErrorId}
+                  type="number"
+                  step="0.0001"
+                  value={form.fx_spot_rates.EUR}
+                  onChange={(event) =>
+                    setForm((prev) => {
+                      const next = parseFiniteNumber(event.target.value);
+                      if (next === null) {
+                        return prev;
+                      }
 
-                return {
-                  ...prev,
-                  fx_spot_rates: {
-                    ...prev.fx_spot_rates,
-                    EUR: next
+                      return {
+                        ...prev,
+                        fx_spot_rates: {
+                          ...prev.fx_spot_rates,
+                          EUR: next
+                        }
+                      };
+                    })
                   }
-                };
-              })
-            }
-          />
-        </label>
-        <label htmlFor="fx-spot-usd">
-          FX spot USD to reporting
-          <input
-            id="fx-spot-usd"
-            aria-describedby={formErrorId}
-            type="number"
-            step="0.0001"
-            value={form.fx_spot_rates.USD}
-            onChange={(event) =>
-              setForm((prev) => {
-                const next = parseFiniteNumber(event.target.value);
-                if (next === null) {
-                  return prev;
-                }
+                />
+              </label>
+              <label htmlFor="fx-spot-usd">
+                FX spot USD to reporting
+                <input
+                  id="fx-spot-usd"
+                  aria-label="FX spot USD to reporting"
+                  aria-describedby={formErrorId}
+                  type="number"
+                  step="0.0001"
+                  value={form.fx_spot_rates.USD}
+                  onChange={(event) =>
+                    setForm((prev) => {
+                      const next = parseFiniteNumber(event.target.value);
+                      if (next === null) {
+                        return prev;
+                      }
 
-                return {
-                  ...prev,
-                  fx_spot_rates: {
-                    ...prev.fx_spot_rates,
-                    USD: next
+                      return {
+                        ...prev,
+                        fx_spot_rates: {
+                          ...prev.fx_spot_rates,
+                          USD: next
+                        }
+                      };
+                    })
                   }
-                };
-              })
-            }
-          />
-        </label>
-        <label htmlFor="fx-stress-eur">
-          FX stress EUR (bps)
-          <input
-            id="fx-stress-eur"
-            aria-describedby={formErrorId}
-            type="number"
-            value={form.fx_stress_bps.EUR ?? 0}
-            onChange={(event) =>
-              setForm((prev) => {
-                const next = parseFiniteNumber(event.target.value);
-                if (next === null) {
-                  return prev;
-                }
+                />
+              </label>
+            </WizardStep>
+          ) : (
+            <WizardStep id="wizard-step-2" title="FX stress and review">
+              <label htmlFor="fx-stress-eur">
+                FX stress EUR (bps)
+                <input
+                  id="fx-stress-eur"
+                  aria-label="FX stress EUR (bps)"
+                  aria-describedby={formErrorId}
+                  type="number"
+                  value={form.fx_stress_bps.EUR ?? 0}
+                  onChange={(event) =>
+                    setForm((prev) => {
+                      const next = parseFiniteNumber(event.target.value);
+                      if (next === null) {
+                        return prev;
+                      }
 
-                return {
-                  ...prev,
-                  fx_stress_bps: {
-                    ...prev.fx_stress_bps,
-                    EUR: next
+                      return {
+                        ...prev,
+                        fx_stress_bps: {
+                          ...prev.fx_stress_bps,
+                          EUR: next
+                        }
+                      };
+                    })
                   }
-                };
-              })
-            }
-          />
-        </label>
-        <label htmlFor="fx-stress-usd">
-          FX stress USD (bps)
-          <input
-            id="fx-stress-usd"
-            aria-describedby={formErrorId}
-            type="number"
-            value={form.fx_stress_bps.USD ?? 0}
-            onChange={(event) =>
-              setForm((prev) => {
-                const next = parseFiniteNumber(event.target.value);
-                if (next === null) {
-                  return prev;
-                }
+                />
+              </label>
+              <label htmlFor="fx-stress-usd">
+                FX stress USD (bps)
+                <input
+                  id="fx-stress-usd"
+                  aria-label="FX stress USD (bps)"
+                  aria-describedby={formErrorId}
+                  type="number"
+                  value={form.fx_stress_bps.USD ?? 0}
+                  onChange={(event) =>
+                    setForm((prev) => {
+                      const next = parseFiniteNumber(event.target.value);
+                      if (next === null) {
+                        return prev;
+                      }
 
-                return {
-                  ...prev,
-                  fx_stress_bps: {
-                    ...prev.fx_stress_bps,
-                    USD: next
+                      return {
+                        ...prev,
+                        fx_stress_bps: {
+                          ...prev.fx_stress_bps,
+                          USD: next
+                        }
+                      };
+                    })
                   }
-                };
-              })
-            }
-          />
-        </label>
-        <button type="submit" disabled={loading}>
-          {loading ? "Running…" : "Run simulation"}
-        </button>
+                />
+              </label>
+            </WizardStep>
+          )}
+        </Wizard>
+        <WizardNav
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          onBack={() => setCurrentStep((prev) => Math.max(0, prev - 1))}
+          onNext={() => setCurrentStep((prev) => Math.min(totalSteps - 1, prev + 1))}
+          isSubmitting={loading}
+        />
       </form>
       <p id={formErrorId} role="alert" aria-live="assertive" className={error ? "form-error" : "sr-only"}>
         {error ?? "No validation errors."}

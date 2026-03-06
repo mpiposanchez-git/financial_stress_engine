@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 
@@ -87,31 +87,53 @@ vi.mock("../api/client", () => ({
 }));
 
 describe("StressTestPage", () => {
-  it("provides explicit labels and error descriptors for form controls", () => {
-    render(
+  it("supports wizard step navigation", () => {
+    const { container } = render(
       <MemoryRouter>
         <StressTestPage />
       </MemoryRouter>
     );
+    const ui = within(container);
 
-    const reportingCurrency = screen.getByLabelText("Reporting currency");
-    const incomeCurrency = screen.getByLabelText("Income currency");
-    const fxSpotEur = screen.getByLabelText("FX spot EUR to reporting");
+    expect(ui.getByText("Step 1 of 2")).toBeInTheDocument();
+    expect(ui.getByRole("heading", { name: "Currencies and FX spots" })).toBeInTheDocument();
+
+    fireEvent.click(ui.getByRole("button", { name: "Next" }));
+    expect(ui.getByText("Step 2 of 2")).toBeInTheDocument();
+    expect(ui.getByRole("heading", { name: "FX stress and review" })).toBeInTheDocument();
+
+    fireEvent.click(ui.getByRole("button", { name: "Back" }));
+    expect(ui.getByText("Step 1 of 2")).toBeInTheDocument();
+  });
+
+  it("provides explicit labels and error descriptors for form controls", () => {
+    const { container } = render(
+      <MemoryRouter>
+        <StressTestPage />
+      </MemoryRouter>
+    );
+    const ui = within(container);
+
+    const reportingCurrency = ui.getByRole("combobox", { name: "Reporting currency" });
+    const incomeCurrency = ui.getByRole("combobox", { name: "Income currency" });
+    const fxSpotEur = ui.getByLabelText("FX spot EUR to reporting");
 
     expect(reportingCurrency).toHaveAttribute("aria-describedby", "stress-form-error");
     expect(incomeCurrency).toHaveAttribute("aria-describedby", "stress-form-error");
     expect(fxSpotEur).toHaveAttribute("aria-describedby", "stress-form-error");
-    expect(screen.getByRole("alert")).toHaveAttribute("id", "stress-form-error");
+    expect(ui.getByRole("alert")).toHaveAttribute("id", "stress-form-error");
   });
 
   it("navigates to results with deterministic and montecarlo state", async () => {
-    render(
+    const { container } = render(
       <MemoryRouter>
         <StressTestPage />
       </MemoryRouter>
     );
+    const ui = within(container);
 
-    fireEvent.click(screen.getAllByRole("button", { name: "Run simulation" })[0]);
+    fireEvent.click(ui.getByRole("button", { name: "Next" }));
+    fireEvent.click(ui.getByRole("button", { name: "Run simulation" }));
 
     await waitFor(() => {
       expect(mockRunDeterministic).toHaveBeenCalledTimes(1);
