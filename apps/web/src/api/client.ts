@@ -7,6 +7,43 @@ import type {
 
 type TokenProvider = () => Promise<string | null>;
 
+type ApiErrorBody = {
+  detail?: string;
+};
+
+async function extractErrorDetail(response: Response): Promise<string | null> {
+  try {
+    const payload = (await response.json()) as ApiErrorBody;
+    if (typeof payload.detail === "string" && payload.detail.trim().length > 0) {
+      return payload.detail;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
+function buildErrorMessage(statusCode: number, detail: string | null): string {
+  if (statusCode === 401) {
+    return "Authentication failed. Please sign in again and retry from the official app URL.";
+  }
+
+  if (statusCode === 429) {
+    return "Too many requests. Please wait a moment and try again.";
+  }
+
+  if (statusCode === 504) {
+    return "Simulation timed out. Reduce input size and retry.";
+  }
+
+  if (detail) {
+    return `Request failed (${statusCode}): ${detail}`;
+  }
+
+  return `Request failed with status ${statusCode}`;
+}
+
 export function createApiClient(baseUrl: string, getToken: TokenProvider) {
   const postJson = async <T>(path: string, payload: unknown): Promise<T> => {
     const token = await getToken();
@@ -25,7 +62,8 @@ export function createApiClient(baseUrl: string, getToken: TokenProvider) {
     });
 
     if (!response.ok) {
-      throw new Error(`Request failed with status ${response.status}`);
+      const detail = await extractErrorDetail(response);
+      throw new Error(buildErrorMessage(response.status, detail));
     }
 
     return (await response.json()) as T;

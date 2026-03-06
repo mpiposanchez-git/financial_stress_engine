@@ -21,8 +21,8 @@ describe("ResultsPage", () => {
         mortgage_payment_stress_pence: 150000,
         mortgage_payment_stress_formatted: "£1,500.00",
         runway_months: 12.5,
-        savings_path_pence: [123456],
-        savings_path_formatted: ["£1,234.56"],
+        savings_path_pence: [123456, 120000],
+        savings_path_formatted: ["£1,234.56", "£1,200.00"],
         min_savings_pence: 123456,
         min_savings_formatted: "£1,234.56",
         month_of_depletion: null,
@@ -62,6 +62,8 @@ describe("ResultsPage", () => {
       screen.getByText(/Min savings p50: £2,222.22 \(222222 pence\)/)
     ).toBeInTheDocument();
     expect(screen.getByText(/Month of depletion p50: 13/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Runway distribution (months)" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Deterministic savings path" })).toBeInTheDocument();
   });
 
   it("shows fallback message when no route state is present", () => {

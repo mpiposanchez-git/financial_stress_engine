@@ -25,6 +25,31 @@
 
 ---
 
+## 2026-03-06 — Immediate Next Steps Execution (POC Follow-Through)
+
+### Completed
+- POC-Release-Readiness: Frozen deployment configuration snapshot in the runbook, including canonical release tag/date and deployment variables.
+- POC-Results-UI: Implemented chart-based Results view for Monte Carlo percentiles and deterministic savings path with responsive readability improvements.
+- POC-Smoke-Automation: Added script and GitHub workflow for post-deploy smoke checks (`/health`, authenticated deterministic run, authenticated Monte Carlo run).
+- POC-Auth-Diagnostics: Improved non-sensitive auth failure diagnostics in backend and frontend user-facing API error handling.
+- POC-Observability-Basics: Documented baseline error-rate and latency checks and integrated latency thresholds into smoke automation.
+- POC-Compliance-Docs: Refined disclaimer consistency to reflect current multi-currency behavior and refreshed review dates.
+
+### In progress
+- Introduce richer historical trend charts once persistent run history is available.
+
+### Test evidence
+- Frontend: `npm --prefix apps/web test -- --run` (to be re-run after changes)
+- Backend: `uv run pytest services/api/tests -q` (to be re-run after changes)
+
+### Decisions made
+- Use non-sensitive auth diagnostics only (no token/body echo in UI or logs).
+- Keep smoke checks manual-dispatch for now to avoid hard coupling with deployment timing across services.
+
+### Risks / Blockers
+- Smoke automation requires a valid short-lived `SMOKE_TEST_BEARER_TOKEN` secret.
+- Post-deploy observability remains log-driven until metrics dashboards are introduced.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

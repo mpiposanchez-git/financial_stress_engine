@@ -1,0 +1,29 @@
+name: Post-Deploy Smoke Checks
+
+on:
+  workflow_run:
+    workflows: ["Deploy Web to GitHub Pages"]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      STRESS_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+      STRESS_API_TOKEN: ${{ secrets.SMOKE_TEST_BEARER_TOKEN }}
+      STRESS_SMOKE_MAX_LATENCY_MS: "3000"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run smoke checks
+        run: python services/api/scripts/post_deploy_smoke.py

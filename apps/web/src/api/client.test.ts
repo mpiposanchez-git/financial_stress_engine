@@ -44,4 +44,19 @@ describe("createApiClient", () => {
     const [, options] = fetchMock.mock.calls[0] as [string, RequestInit];
     expect((options.headers as Record<string, string>).Authorization).toBe("Bearer token-123");
   });
+
+  it("returns a safe auth diagnostic for 401 responses", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 401,
+      json: async () => ({ detail: "Invalid or expired token" })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const client = createApiClient("https://api.example.com", async () => "token-123");
+
+    await expect(client.runDeterministic({ input_parameters: inputParameters })).rejects.toThrow(
+      "Authentication failed. Please sign in again and retry from the official app URL."
+    );
+  });
 });

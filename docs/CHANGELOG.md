@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented in this file.
 
+## v0.1.1-poc4 — 2026-03-06
+
+### Added
+- Frontend: Added Results visualization cards and chart-based rendering for Monte Carlo percentile bands and deterministic savings path in [apps/web/src/pages/ResultsPage.tsx](apps/web/src/pages/ResultsPage.tsx).
+- Frontend: Added responsive shared styling for readability improvements across pages in [apps/web/src/styles.css](apps/web/src/styles.css).
+- Operations: Added post-deploy smoke automation script for `/health`, deterministic, and Monte Carlo checks in [services/api/scripts/post_deploy_smoke.py](services/api/scripts/post_deploy_smoke.py).
+- CI/CD: Added manual smoke-check workflow in [\.github/workflows/post-deploy-smoke.yml](.github/workflows/post-deploy-smoke.yml).
+
+### Changed
+- Frontend: Improved API error handling with non-sensitive auth diagnostics and status-specific guidance in [apps/web/src/api/client.ts](apps/web/src/api/client.ts).
+- Backend: Refined authentication error detail messages for clearer but non-sensitive troubleshooting in [services/api/app/auth.py](services/api/app/auth.py).
+- Documentation: Frozen deployment snapshot and added smoke/observability runbook sections in [docs/deployment_runbook.md](docs/deployment_runbook.md).
+- Documentation: Refined disclaimer consistency for multi-currency support and review dates in [docs/disclaimers/regulatory_disclaimer.md](docs/disclaimers/regulatory_disclaimer.md), [docs/disclaimers/proprietary_license_and_terms.md](docs/disclaimers/proprietary_license_and_terms.md), and [docs/disclaimers/privacy.md](docs/disclaimers/privacy.md).
+
 ## v0.1.0-poc3 — 2026-03-04
 
 ### Added

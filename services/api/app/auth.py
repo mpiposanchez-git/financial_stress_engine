@@ -43,7 +43,7 @@ def require_auth(
     if credentials is None or credentials.scheme.lower() != "bearer":
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Missing or invalid authentication token",
+            detail="Missing bearer token",
         )
 
     try:
@@ -51,14 +51,14 @@ def require_auth(
     except InvalidTokenError as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
+            detail="Invalid or expired token",
         ) from exc
 
     subject = str(claims.get("sub") or "")
     if not subject:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token subject",
+            detail="Token subject claim missing",
         )
 
     request.state.auth_subject = subject

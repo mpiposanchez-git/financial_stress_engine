@@ -1,6 +1,6 @@
 # Deployment Runbook (Single Source of Truth)
 
-Last reviewed: 2026-03-04
+Last reviewed: 2026-03-06
 
 This runbook provides the exact configuration needed to deploy and operate this project with authentication enabled.
 
@@ -10,9 +10,9 @@ This runbook provides the exact configuration needed to deploy and operate this 
 
 Use this section at release time to tie deployment actions to a specific version.
 
-- Release tag: `v0.1.0-poc3` (update per release)
-- Release date: `2026-03-04`
-- Scope: `POC-001`, `POC-002`, `POC-003`
+- Release tag: `v0.1.1-poc4`
+- Release date: `2026-03-06`
+- Scope: `POC-Deployment`, `POC-Results-UI`, `POC-Smoke-Automation`, `POC-Auth-Diagnostics`
 - Release notes: `docs/CHANGELOG.md`
 - Session logs: `docs/progress_log.md`
 
@@ -124,8 +124,61 @@ Use Render **Web Service** (Python runtime), not Docker service, for this baseli
 
 ---
 
-## 8) Security/Operations Notes
+## 8) Post-Deploy Smoke Automation
+
+Runbook baseline now includes smoke automation for:
+
+1. `GET /health`
+2. Authenticated deterministic run
+3. Authenticated Monte Carlo run
+
+### Local execution
+
+```bash
+python services/api/scripts/post_deploy_smoke.py \
+	--base-url https://<your-render-service>.onrender.com \
+	--token <bearer-token>
+```
+
+### GitHub Actions execution
+
+- Workflow: `.github/workflows/post-deploy-smoke.yml`
+- Triggers:
+	- Automatic: after successful `Deploy Web to GitHub Pages` workflow completion
+	- Manual: `workflow_dispatch`
+- Required repo secret: `SMOKE_TEST_BEARER_TOKEN`
+- Uses `vars.VITE_API_BASE_URL` for target API base URL.
+
+The smoke script reports endpoint latency and fails when thresholds are exceeded.
+
+---
+
+## 9) Observability Baseline
+
+Current baseline checks:
+
+- Access logs include `method`, `path`, `status_code`, and `duration_ms`.
+- Smoke automation validates endpoint health and captures latency.
+- Error-rate and latency watch guidance:
+	- Investigate repeated `401` and `429` responses.
+	- Investigate endpoint latency above smoke threshold (`3000ms` default).
+	- Investigate `5xx` immediately after deploy.
+
+---
+
+## 10) Security/Operations Notes
 
 - Do not log raw bearer tokens.
 - If a token was exposed in logs/chat, sign out and re-authenticate to rotate session token.
 - Keep VPN/content filtering from blocking Clerk domains during auth troubleshooting.
+
+### Smoke Token Rotation
+
+- Secret name: `SMOKE_TEST_BEARER_TOKEN`
+- Recommended rotation cadence: at least every 14 days or immediately after any suspected exposure.
+- Rotation process:
+	1. Sign in with dedicated smoke-check user.
+	2. Generate a fresh bearer token from that session.
+	3. Update GitHub Actions secret `SMOKE_TEST_BEARER_TOKEN`.
+	4. Invalidate old sessions for that user.
+	5. Trigger `.github/workflows/post-deploy-smoke.yml` manually once to confirm token validity.
