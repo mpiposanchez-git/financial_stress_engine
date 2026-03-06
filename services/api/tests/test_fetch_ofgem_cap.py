@@ -85,17 +85,28 @@ def test_refresh_all_stores_ofgem_snapshot_in_cache() -> None:
             },
         )()
 
+    def _fake_hbai_fetcher():
+        return type(
+            "HbaiSnapshot",
+            (),
+            {
+                "zip_bytes": b"PK\\x03\\x04FAKEZIP",
+                "source_url": "https://example.test/hbai-zip",
+            },
+        )()
+
     result = refresh_all(
         cache=cache,
         bank_rate_fetcher=_fake_rate_fetcher,
         boe_fx_fetcher=_fake_fx_fetcher,
         ons_cpi_fetcher=_fake_ons_fetcher,
         ofgem_cap_fetcher=_fake_ofgem_fetcher,
+        hbai_zip_fetcher=_fake_hbai_fetcher,
     )
 
     entry = cache.get("ofgem_price_cap")
 
-    assert result["updated"][-1] == "ofgem_price_cap"
+    assert "ofgem_price_cap" in result["updated"]
     assert entry is not None
     assert entry.value == {
         "region": "Great Britain",

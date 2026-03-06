@@ -8,6 +8,7 @@ from datetime import UTC, datetime
 from .data_cache import DATA_CACHE, CacheMeta, InMemoryDataCache
 from .fetchers.boe_bank_rate import BankRateSnapshot, fetch_boe_bank_rate
 from .fetchers.boe_fx import BofxSnapshot, fetch_boe_fx_spot
+from .fetchers.dwp_hbai import DwpHbaiZipSnapshot, fetch_dwp_hbai_zip
 from .fetchers.ofgem_cap import OfgemCapSnapshot, fetch_ofgem_price_cap
 from .fetchers.ons_cpi import OnsCpihSnapshot, fetch_ons_cpih_12m
 
@@ -23,6 +24,7 @@ def refresh_all(
     boe_fx_fetcher: Callable[[], BofxSnapshot] = fetch_boe_fx_spot,
     ons_cpi_fetcher: Callable[[], OnsCpihSnapshot] = fetch_ons_cpih_12m,
     ofgem_cap_fetcher: Callable[[], OfgemCapSnapshot] = fetch_ofgem_price_cap,
+    hbai_zip_fetcher: Callable[[], DwpHbaiZipSnapshot] = fetch_dwp_hbai_zip,
 ) -> dict[str, object]:
     bank_rate = bank_rate_fetcher()
 
@@ -100,11 +102,25 @@ def refresh_all(
         ),
     )
 
+    hbai_zip = hbai_zip_fetcher()
+    hbai_sha256 = hashlib.sha256(hbai_zip.zip_bytes).hexdigest()
+
+    cache.set(
+        "dwp_hbai_zip_raw",
+        hbai_zip.zip_bytes,
+        CacheMeta(
+            fetched_at_utc=_utc_now_iso(),
+            source_url=hbai_zip.source_url,
+            sha256=hbai_sha256,
+        ),
+    )
+
     return {
         "updated": [
             "boe_bank_rate",
             "boe_fx_spot",
             "ons_cpih_12m",
             "ofgem_price_cap",
+            "dwp_hbai_zip_raw",
         ]
     }

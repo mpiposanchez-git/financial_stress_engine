@@ -787,6 +787,32 @@
 ### Risks / Blockers
 - Ofgem page wording and layout changes can impact regex extraction reliability; a structured parser may be required in later hardening passes.
 
+## 2026-03-06 — WS6-A01-07 Fetcher: DWP HBAI ZIP (Raw Storage)
+
+### Completed
+- WS6-A01-07: Added `services/api/app/fetchers/dwp_hbai.py` to download DWP HBAI ZIP payload and return raw bytes.
+- WS6-A01-07: Integrated HBAI ZIP fetcher into `services/api/app/data_fetcher.py` `refresh_all(...)` flow.
+- WS6-A01-07: Added raw-bytes cache write under key `dwp_hbai_zip_raw`.
+- WS6-A01-07: Added SHA-256 computation from raw ZIP bytes and persisted provenance metadata (`fetched_at_utc`, `source_url`, `sha256`).
+- WS6-A01-07: Updated existing refresh integration tests to inject mocked HBAI fetchers and updated expected refreshed-key lists.
+- WS6-A01-07: Added mocked unit tests in `services/api/tests/test_fetch_hbai_zip.py` for raw download behavior, empty payload guard, and cache integration.
+
+### In progress
+- WS6-A01-08: Defaults endpoint + override integration.
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`77 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`46 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Stored HBAI payload as raw bytes in cache (no parsing) to preserve WS6/WS7 separation and allow parser evolution without refetch coupling.
+- Kept SHA-256 generation in refresh orchestration for consistency with other dataset cache writes.
+
+### Risks / Blockers
+- The GOV.UK landing page URL may change and may not always directly serve ZIP bytes; downloader endpoint hardening may be needed before production scheduling.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
