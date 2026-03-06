@@ -150,6 +150,14 @@ class UkPercentileResponse(BaseModel):
     caveats: list[str]
 
 
+class PdfReportRequest(BaseModel):
+    inputs: dict[str, object]
+    outputs: dict[str, object]
+    disclaimers: list[str] = Field(default_factory=list)
+    provenance: dict[str, object] = Field(default_factory=dict)
+    app_version: str = Field(default="0.1.1", min_length=1)
+
+
 class DeterministicRunResponse(BaseModel):
     reporting_currency: str
     fx_spot_rates_used: dict[str, float]

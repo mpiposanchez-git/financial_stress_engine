@@ -976,6 +976,28 @@
 ### Risks / Blockers
 - Future richer layouts may require pagination/wrapping hardening for very large payloads.
 
+## 2026-03-06 — WS8-F06-02 PDF API Endpoint (Premium)
+
+### Completed
+- WS8-F06-02: Added `PdfReportRequest` DTO in `services/api/app/models.py`.
+- WS8-F06-02: Added premium-gated endpoint `POST /api/v1/reports/pdf` in `services/api/app/routes.py`.
+- WS8-F06-02: Integrated endpoint with `generate_pdf_report(...)` and returned `application/pdf` with attachment content-disposition.
+- WS8-F06-02: Added `services/api/tests/test_pdf_endpoint.py` for non-premium `403` and premium `200` with correct content-type.
+
+### In progress
+- WS8-F06-03: PDF download UI (premium).
+
+### Test evidence
+- Backend tests: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests/test_pdf_endpoint.py -q` ✅ (`2 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check services/api/app/models.py services/api/app/routes.py services/api/tests/test_pdf_endpoint.py` ✅
+
+### Decisions made
+- Kept endpoint payload explicit (`inputs`, `outputs`, `disclaimers`, `provenance`, `app_version`) to support deterministic report generation and straightforward client mapping.
+- Used premium gating consistent with other premium compute/export endpoints.
+
+### Risks / Blockers
+- Request payload size can grow materially for richer report data; if needed later, enforce request-size bounds or server-side composition.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

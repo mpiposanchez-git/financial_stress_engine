@@ -4,11 +4,12 @@ import asyncio
 import secrets
 import time
 
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Response, status
 
 from shared.engine.deterministic import run_deterministic
 from shared.engine.money import format_currency_from_pence
 from shared.engine.montecarlo import run_montecarlo
+from shared.engine.reports.pdf_report import generate_pdf_report
 from shared.engine.sensitivity import compute_sensitivity
 
 from .auth import AuthContext, require_auth
@@ -28,6 +29,7 @@ from .models import (
     MonteCarloMetrics,
     MonteCarloRunRequest,
     MonteCarloRunResponse,
+    PdfReportRequest,
     RunwayPercentileTriplet,
     SensitivityDriverImpact,
     SensitivityRunRequest,
@@ -118,6 +120,26 @@ def uk_income_percentile(
         reporting_currency=payload.reporting_currency,
     )
     return UkPercentileResponse.model_validate(result)
+
+
+@router.post("/api/v1/reports/pdf")
+def create_pdf_report(
+    payload: PdfReportRequest,
+    auth: AuthContext = Depends(require_premium),
+) -> Response:
+    _ = auth
+    pdf_bytes = generate_pdf_report(
+        inputs=payload.inputs,
+        outputs=payload.outputs,
+        disclaimers=payload.disclaimers,
+        provenance=payload.provenance,
+        app_version=payload.app_version,
+    )
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": 'attachment; filename="stress-report.pdf"'},
+    )
 
 
 @router.get("/api/v1/me")
