@@ -31,6 +31,24 @@ def test_health_returns_ok(client):
     assert response.json() == {"status": "ok"}
 
 
+def test_data_registry_returns_datasets(client):
+    response = client.get("/api/v1/data/registry")
+    assert response.status_code == 200
+
+    body = response.json()
+    datasets = body["datasets"]
+    assert isinstance(datasets, list)
+    assert len(datasets) >= 4
+
+    first = datasets[0]
+    assert isinstance(first["name"], str)
+    assert isinstance(first["provider"], str)
+    assert isinstance(first["url"], str)
+    assert isinstance(first["refresh_cadence"], str)
+    assert isinstance(first["license_note"], str)
+    assert isinstance(first["verification_steps"], list)
+
+
 def test_auth_rejects_missing_token(client):
     payload = {"input_parameters": _base_input()}
     response = client.post("/api/v1/deterministic/run", json=payload)
@@ -136,3 +154,29 @@ def test_montecarlo_seed_reproducibility(authenticated_client):
     assert second.status_code == 200
     assert first.json()["metrics"] == second.json()["metrics"]
     assert first.json()["seed"] == second.json()["seed"]
+
+
+def test_deterministic_accepts_category_inflation_inputs(authenticated_client):
+    payload = {
+        "input_parameters": {
+            **_base_input(),
+            "household_monthly_net_income_gbp": 2000,
+            "household_monthly_essential_spend_gbp": 1,
+            "household_monthly_debt_payments_gbp": 100,
+            "mortgage_balance_gbp": 0,
+            "mortgage_term_years_remaining": 0,
+            "shock_monthly_income_drop_percent": 0,
+            "essentials_categories": {
+                "food": {"monthly_spend_gbp": 1000, "inflation_bps": 0},
+                "energy": {"monthly_spend_gbp": 500, "inflation_bps": 2000},
+            },
+        }
+    }
+
+    response = authenticated_client.post("/api/v1/deterministic/run", json=payload)
+
+    assert response.status_code == 200
+    body = response.json()
+
+    # Categories override single-bucket essentials in stress calculation.
+    assert body["monthly_cashflow_stress_pence"] == 30000

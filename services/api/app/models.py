@@ -2,8 +2,18 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
-from shared.engine.inputs import DeterministicInput, MonteCarloInput
+from shared.engine.inputs import (
+    DebtItem,
+    DeterministicInput,
+    EssentialsCategory,
+    MonteCarloInput,
+)
 from shared.engine.money import gbp_to_pence, percent_to_bps, years_to_months
+
+
+class EssentialsCategoryInputParameters(BaseModel):
+    monthly_spend_gbp: float = Field(..., ge=0)
+    inflation_bps: int = Field(..., ge=0, le=10_000)
 
 
 class DeterministicInputParameters(BaseModel):
@@ -28,6 +38,8 @@ class DeterministicInputParameters(BaseModel):
         default_factory=lambda: {"GBP": 1.0, "EUR": 0.86, "USD": 0.78}
     )
     fx_stress_bps: dict[str, int] = Field(default_factory=dict)
+    essentials_categories: dict[str, EssentialsCategoryInputParameters] | None = None
+    debts: list[DebtItem] | None = None
 
     def to_engine_input(self, horizon_months: int = 24) -> DeterministicInput:
         return DeterministicInput(
@@ -56,6 +68,18 @@ class DeterministicInputParameters(BaseModel):
             reporting_currency=self.reporting_currency,
             fx_spot_rates=self.fx_spot_rates,
             fx_stress_bps=self.fx_stress_bps,
+            debts=self.debts,
+            essentials_categories=(
+                {
+                    name: EssentialsCategory(
+                        monthly_spend_pence=gbp_to_pence(category.monthly_spend_gbp),
+                        inflation_bps=category.inflation_bps,
+                    )
+                    for name, category in self.essentials_categories.items()
+                }
+                if self.essentials_categories is not None
+                else None
+            ),
             horizon_months=horizon_months,
         )
 
@@ -102,6 +126,7 @@ class DeterministicRunResponse(BaseModel):
     runway_months: float | None
     savings_path_pence: list[int]
     savings_path_formatted: list[str]
+    debt_balance_path_pence: list[int] | None = None
     min_savings_pence: int
     min_savings_formatted: str
     month_of_depletion: int | None

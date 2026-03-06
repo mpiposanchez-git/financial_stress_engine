@@ -585,6 +585,83 @@
 ### Risks / Blockers
 - Category maps currently require non-empty names and non-empty payload; any future UX support for optional/partial category forms must align with this strict validation behavior.
 
+## 2026-03-06 — WS5-F08-02 Category Inflation UI (Premium)
+
+### Completed
+- WS5-F08-02: Added `CategoryInflationEditor` component with premium lock teaser and premium-only toggle for category inflation mode.
+- WS5-F08-02: Added category spend/inflation-bps inputs for core categories (food, energy, housing, transport) with basic numeric input guards.
+- WS5-F08-02: Integrated category inflation editor into `StressTestPage` wizard and preserved deep cloning of category maps across scenario drafts.
+- WS5-F08-02: Extended frontend input typing to include optional `essentials_categories` payload shape.
+- WS5-F08-02: Extended backend deterministic request model to accept `essentials_categories` and convert category spend/inflation inputs into engine pence/bps schema.
+- WS5-F08-02: Added frontend tests for editor rendering/change behavior and backend API contract test for category inflation payload acceptance.
+
+### In progress
+- WS5-F14-01: Debt schedule engine (simple amortisation).
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`56 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`45 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Kept premium gating explicit in-page with a locked teaser card and only render editable category controls when premium is unlocked.
+- Used `inflation_bps` directly in UI/API category schema to align with model precision and avoid repeated percent-bps conversions for category overrides.
+
+### Risks / Blockers
+- Premium entitlement remains statically set in stress-page wiring (`premiumUnlocked = false`), so live category editing remains functionally locked until entitlement integration is wired.
+
+## 2026-03-06 — WS5-F14-01 Debt Schedule Engine (Simple Amortisation)
+
+### Completed
+- WS5-F14-01: Added `shared/engine/debt.py` with monthly unsecured debt amortisation logic (interest accrual then capped payment application).
+- WS5-F14-01: Extended deterministic input schema with optional `debts` list (`balance_pence`, `apr_bps`, `min_payment_pence`).
+- WS5-F14-01: Updated deterministic engine to use debt-payment series in monthly stressed cashflow and to return optional `debt_balance_path_pence`.
+- WS5-F14-01: Extended deterministic API models/routes to accept optional debts and return optional debt balance path.
+- WS5-F14-01: Added debt schedule tests for both payoff behavior and interest-accrual behavior.
+
+### In progress
+- WS6-A01-01: Data registry (static) + Data Sources page.
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`58 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`45 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Debt schedules are treated as authoritative debt outflow when provided, preserving legacy fixed monthly debt behavior when `debts` is absent.
+- Debt amortisation uses monthly APR accrual with round-half-up integer arithmetic to remain consistent with pence/bps precision rules.
+
+### Risks / Blockers
+- Debt schedule items currently assume pence values directly in engine/API schema; if UI capture is added, currency/normalization rules will need explicit contract alignment.
+
+## 2026-03-06 — WS6-A01-01 Data Registry (Static) + Data Sources Page
+
+### Completed
+- WS6-A01-01: Added static backend data registry module `services/api/app/data_registry.py` with dataset metadata fields (name, provider, URL, refresh cadence, license note, verification steps).
+- WS6-A01-01: Added `GET /api/v1/data/registry` endpoint in API routes returning `datasets` payload.
+- WS6-A01-01: Added backend API contract test validating registry endpoint availability and dataset shape.
+- WS6-A01-01: Added frontend `DataSourcesPage` to fetch and render registry entries with URLs and verification steps.
+- WS6-A01-01: Added app route `/data-sources` and navigation link from home page.
+- WS6-A01-01: Added frontend test asserting dataset names and URLs render from mocked API response.
+
+### In progress
+- WS6-A01-02: Data cache abstraction.
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`59 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`46 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Kept registry response read-only and unauthenticated for transparency use-cases and lightweight frontend rendering.
+- Encoded verification steps as ordered lists in payload to preserve source-audit workflow context.
+
+### Risks / Blockers
+- Data Sources page currently performs direct `fetch` without shared client retry policy; if network resilience requirements increase, migrate to a shared API utility.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

@@ -12,6 +12,7 @@ from shared.engine.montecarlo import run_montecarlo
 from shared.engine.sensitivity import compute_sensitivity
 
 from .auth import AuthContext, require_auth
+from .data_registry import DATA_REGISTRY
 from .entitlements import is_premium, require_premium
 from .models import (
     CompareRunRequest,
@@ -38,6 +39,11 @@ router = APIRouter()
 @router.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@router.get("/api/v1/data/registry")
+def data_registry() -> dict[str, list[dict[str, object]]]:
+    return {"datasets": [entry.model_dump() for entry in DATA_REGISTRY]}
 
 
 @router.get("/api/v1/me")
@@ -116,6 +122,7 @@ async def run_deterministic_route(
         runway_months=result.runway_months,
         savings_path_pence=result.savings_path_pence,
         savings_path_formatted=result.savings_path_formatted,
+        debt_balance_path_pence=result.debt_balance_path_pence,
         min_savings_pence=result.min_savings_pence,
         min_savings_formatted=result.min_savings_formatted,
         month_of_depletion=result.month_of_depletion,

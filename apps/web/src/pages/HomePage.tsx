@@ -30,6 +30,9 @@ export function HomePage() {
           <li>
             <Link to="/about">About / Disclaimer</Link>
           </li>
+          <li>
+            <Link to="/data-sources">Data Sources</Link>
+          </li>
         </ul>
       </nav>
     </main>

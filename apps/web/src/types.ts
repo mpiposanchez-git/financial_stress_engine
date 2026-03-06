@@ -21,6 +21,13 @@ export type InputParameters = {
   income_shock_std_percent: number;
   rate_shock_std_percent: number;
   inflation_shock_std_percent: number;
+  essentials_categories?: Record<
+    string,
+    {
+      monthly_spend_gbp: number;
+      inflation_bps: number;
+    }
+  >;
 };
 
 export type DeterministicRequest = {

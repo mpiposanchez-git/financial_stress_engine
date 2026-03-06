@@ -148,5 +148,6 @@ describe("StressTestPage", () => {
     const ui = within(container);
 
     expect(ui.getByText("Saved only on this device.")).toBeInTheDocument();
+    expect(ui.getByText(/Premium unlock required to split essentials/i)).toBeInTheDocument();
   });
 });

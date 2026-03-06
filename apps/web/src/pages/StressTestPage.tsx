@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuthState } from "../auth/useAuthState";
 import { createApiClient } from "../api/client";
 import { DiagnosticsPanel } from "../components/DiagnosticsPanel";
+import { CategoryInflationMap, CategoryInflationEditor } from "../components/inputs/CategoryInflationEditor";
 import { CurrencySelect } from "../components/inputs/CurrencySelect";
 import { MortgageInputs } from "../components/inputs/MortgageInputs";
 import { MoneyInput } from "../components/inputs/MoneyInput";
@@ -59,10 +60,30 @@ const defaultInput: InputParameters = {
 };
 
 function cloneInput(input: InputParameters): InputParameters {
+  const categories = input.essentials_categories
+    ? Object.fromEntries(
+        Object.entries(input.essentials_categories).map(([name, values]) => [name, { ...values }])
+      )
+    : undefined;
+
   return {
     ...input,
     fx_spot_rates: { ...input.fx_spot_rates },
-    fx_stress_bps: { ...input.fx_stress_bps }
+    fx_stress_bps: { ...input.fx_stress_bps },
+    essentials_categories: categories
+  };
+}
+
+function buildDefaultCategoryInflation(form: InputParameters): CategoryInflationMap {
+  const totalEssentials = Math.max(0, form.household_monthly_essential_spend_gbp);
+  const perCategory = Number((totalEssentials / 4).toFixed(2));
+  const inflationBps = Math.round(form.inflation_monthly_essentials_increase_percent * 100);
+
+  return {
+    food: { monthly_spend_gbp: perCategory, inflation_bps: inflationBps },
+    energy: { monthly_spend_gbp: perCategory, inflation_bps: inflationBps },
+    housing: { monthly_spend_gbp: perCategory, inflation_bps: inflationBps },
+    transport: { monthly_spend_gbp: perCategory, inflation_bps: inflationBps }
   };
 }
 
@@ -269,6 +290,24 @@ export function StressTestPage() {
                     household_monthly_essential_spend_currency: currency
                   }))
                 }
+              />
+              <CategoryInflationEditor
+                premiumUnlocked={premiumUnlocked}
+                enabled={Boolean(form.essentials_categories)}
+                value={form.essentials_categories ?? {}}
+                ariaDescribedBy={formErrorId}
+                onEnabledChange={(enabled) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    essentials_categories: enabled ? buildDefaultCategoryInflation(prev) : undefined
+                  }));
+                }}
+                onChange={(nextCategories) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    essentials_categories: nextCategories
+                  }));
+                }}
               />
               <label htmlFor="debt-currency">
                 Debt currency
