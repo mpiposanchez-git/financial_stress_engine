@@ -16,6 +16,10 @@ from shared.engine.fx import (
     stressed_rate,
     validate_currency,
 )
+from shared.engine.inflation_categories import (
+    categories_total_pence,
+    stressed_categories_total_pence,
+)
 from shared.engine.inputs import DeterministicInput
 from shared.engine.money import (
     apply_bps,
@@ -120,8 +124,13 @@ def run_deterministic(inputs: DeterministicInput) -> DeterministicOutput:
         inputs.household_monthly_net_income_currency,
         fx_spot_rates_used,
     )
+    essentials_base_source = (
+        categories_total_pence(inputs.essentials_categories)
+        if inputs.essentials_categories
+        else inputs.household_monthly_essential_spend_pence
+    )
     essentials_base = _convert_to_reporting(
-        inputs.household_monthly_essential_spend_pence,
+        essentials_base_source,
         inputs.household_monthly_essential_spend_currency,
         fx_spot_rates_used,
     )
@@ -158,10 +167,15 @@ def run_deterministic(inputs: DeterministicInput) -> DeterministicOutput:
             inputs.household_monthly_net_income_pence,
             10_000 - income_shock_levels[month_idx],
         )
-        stressed_essentials_source = apply_bps(
-            inputs.household_monthly_essential_spend_pence,
-            10_000 + inflation_levels[month_idx],
-        )
+        if inputs.essentials_categories:
+            stressed_essentials_source = stressed_categories_total_pence(
+                inputs.essentials_categories
+            )
+        else:
+            stressed_essentials_source = apply_bps(
+                inputs.household_monthly_essential_spend_pence,
+                10_000 + inflation_levels[month_idx],
+            )
         stressed_income = _convert_to_reporting(
             stressed_income_source,
             inputs.household_monthly_net_income_currency,

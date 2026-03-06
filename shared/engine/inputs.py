@@ -43,6 +43,11 @@ class ShockSchedule(BaseModel):
         return self
 
 
+class EssentialsCategory(BaseModel):
+    monthly_spend_pence: int = Field(..., ge=0)
+    inflation_bps: int = Field(..., ge=0, le=10_000)
+
+
 class DeterministicInput(BaseModel):
     household_monthly_net_income_pence: int = Field(
         ..., ge=0, description="Monthly net household income in pence"
@@ -83,6 +88,7 @@ class DeterministicInput(BaseModel):
         default_factory=lambda: {"GBP": 1.0, "EUR": 0.86, "USD": 0.78}
     )
     fx_stress_bps: dict[str, int] = Field(default_factory=dict)
+    essentials_categories: dict[str, EssentialsCategory] | None = None
     income_shock_schedule: ShockSchedule | None = None
     inflation_shock_schedule: ShockSchedule | None = None
     mortgage_rate_stress_schedule: ShockSchedule | None = None
@@ -119,6 +125,13 @@ class DeterministicInput(BaseModel):
         for code, shock in self.fx_stress_bps.items():
             if shock < -9_999 or shock > 10_000:
                 raise ValueError(f"fx_stress_bps for {code} must be between -9999 and 10000")
+
+        if self.essentials_categories is not None:
+            if len(self.essentials_categories) == 0:
+                raise ValueError("essentials_categories must not be empty when provided")
+            for name in self.essentials_categories:
+                if not name.strip():
+                    raise ValueError("essentials_categories keys must be non-empty")
 
         return self
 

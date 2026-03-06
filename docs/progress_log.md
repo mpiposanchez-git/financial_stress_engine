@@ -562,6 +562,29 @@
 ### Risks / Blockers
 - Schedule-aware mean paths currently apply to stress dimensions only; any future category/debt schedule features must align mean-path conventions to avoid drift across model modules.
 
+## 2026-03-06 — WS5-F08-01 Category Inflation Model (Engine Only)
+
+### Completed
+- WS5-F08-01: Extended deterministic input schema with optional `essentials_categories` map and `EssentialsCategory` entries (`monthly_spend_pence`, `inflation_bps`).
+- WS5-F08-01: Added category-inflation helper module (`shared/engine/inflation_categories.py`) for base and stressed category totals.
+- WS5-F08-01: Updated deterministic engine to use category totals when `essentials_categories` is provided, while preserving existing single-bucket behavior when not provided.
+- WS5-F08-01: Added engine tests validating (a) single-category equivalence with legacy single-bucket behavior and (b) per-category inflation override behavior.
+
+### In progress
+- WS5-F08-02: Category inflation API surface and contract behavior.
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`55 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`43 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Category totals are authoritative when provided, enabling finer-grained inflation stress without breaking existing deterministic input contracts.
+
+### Risks / Blockers
+- Category maps currently require non-empty names and non-empty payload; any future UX support for optional/partial category forms must align with this strict validation behavior.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
