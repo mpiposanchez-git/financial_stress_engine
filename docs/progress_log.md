@@ -254,6 +254,28 @@
 ### Risks / Blockers
 - Tooltip-based definitions rely on hover/title affordance and may later need explicit tap-target alternatives for mobile-first glossary UX.
 
+## 2026-03-06 — WS3-05 Assumptions Panel
+
+### Completed
+- WS3-05: Added `AssumptionsPanel` component that surfaces model horizon, pence/bps conventions, rounding policy, Monte Carlo cap transparency, and a data-timestamp placeholder.
+- WS3-05: Integrated assumptions panel into `ResultsPage` with available run context (`horizon_months` when present).
+- WS3-05: Added a basic unit test validating assumptions/limits content rendering.
+
+### In progress
+- WS3-06: Official resource signposting panel.
+
+### Test evidence
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`27 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`42 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+
+### Decisions made
+- Assumptions panel wording is explicitly educational/transparency-focused and avoids prescriptive language.
+
+### Risks / Blockers
+- Monte Carlo cap/premium lock text is currently static and should eventually be bound to entitlement/config values.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

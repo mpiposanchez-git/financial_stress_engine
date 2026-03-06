@@ -327,6 +327,13 @@ a:focus-visible {
   cursor: help;
 }
 
+.assumptions-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

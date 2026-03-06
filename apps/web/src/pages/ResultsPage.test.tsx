@@ -66,6 +66,7 @@ describe("ResultsPage", () => {
     expect(screen.getByRole("heading", { name: "Mortgage stress impact" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Emergency fund adequacy" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Explain the result" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Assumptions and limits" })).toBeInTheDocument();
     expect(screen.getByText("runway")).toHaveAttribute(
       "title",
       "Estimated months until savings are depleted under model assumptions."

@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 
 import { PercentileDisclosure } from "../components/benchmarks/PercentileDisclosure";
+import { AssumptionsPanel } from "../components/AssumptionsPanel";
 import { EmergencyFundCard } from "../components/EmergencyFundCard";
 import { ExplainResult } from "../components/ExplainResult";
 import { SavingsPathChart } from "../components/charts/SavingsPathChart";
@@ -146,6 +147,13 @@ export function ResultsPage() {
         cashflowBaseFormatted={state.deterministic.monthly_cashflow_base_formatted}
         cashflowStressFormatted={state.deterministic.monthly_cashflow_stress_formatted}
         hasMonteCarlo={hasMonteCarlo}
+      />
+
+      <AssumptionsPanel
+        horizonMonths={state.montecarlo?.horizon_months}
+        monteCarloSimulationCap={1000}
+        premiumUnlocked={false}
+        dataTimestamp="Not provided"
       />
 
       {state.deterministic.warnings.length > 0 ? (
