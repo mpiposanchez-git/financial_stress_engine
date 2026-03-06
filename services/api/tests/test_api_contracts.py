@@ -105,6 +105,26 @@ def test_data_defaults_returns_required_keys(client):
     }
 
 
+def test_uk_reference_values_returns_required_keys(client):
+    response = client.get("/api/v1/benchmarks/uk/reference")
+    assert response.status_code == 200
+
+    body = response.json()
+    assert set(body.keys()) == {
+        "income_median_bhc",
+        "income_deciles_bhc_gbp",
+        "provenance",
+    }
+    assert set(body["income_median_bhc"].keys()) == {"year_label", "amount_gbp"}
+    assert set(body["provenance"].keys()) == {
+        "dataset_key",
+        "source_url",
+        "fetched_at_utc",
+        "sha256",
+        "status",
+    }
+
+
 def test_auth_rejects_missing_token(client):
     payload = {"input_parameters": _base_input()}
     response = client.post("/api/v1/deterministic/run", json=payload)

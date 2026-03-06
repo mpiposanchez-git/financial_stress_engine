@@ -118,6 +118,25 @@ class DataDefaultsResponse(BaseModel):
     fetched_at: dict[str, str | None]
 
 
+class IncomeMedianBhc(BaseModel):
+    year_label: str
+    amount_gbp: float
+
+
+class ReferenceProvenance(BaseModel):
+    dataset_key: str
+    source_url: str
+    fetched_at_utc: str | None
+    sha256: str | None
+    status: str
+
+
+class UkReferenceValuesResponse(BaseModel):
+    income_median_bhc: IncomeMedianBhc
+    income_deciles_bhc_gbp: list[float] | None = None
+    provenance: ReferenceProvenance
+
+
 class DeterministicRunResponse(BaseModel):
     reporting_currency: str
     fx_spot_rates_used: dict[str, float]

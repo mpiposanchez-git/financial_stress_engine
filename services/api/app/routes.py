@@ -12,6 +12,7 @@ from shared.engine.montecarlo import run_montecarlo
 from shared.engine.sensitivity import compute_sensitivity
 
 from .auth import AuthContext, require_auth
+from .benchmarks.reference_values import get_uk_reference_values
 from .data_cache import DATA_CACHE
 from .data_registry import DATA_REGISTRY
 from .entitlements import is_premium, require_premium
@@ -30,6 +31,7 @@ from .models import (
     SensitivityDriverImpact,
     SensitivityRunRequest,
     SensitivityRunResponse,
+    UkReferenceValuesResponse,
 )
 from .rate_limit import rate_limiter
 from .settings import Settings, get_settings
@@ -95,6 +97,11 @@ def data_defaults() -> DataDefaultsResponse:
             "ofgem_price_cap": ofgem_entry.meta.fetched_at_utc if ofgem_entry else None,
         },
     )
+
+
+@router.get("/api/v1/benchmarks/uk/reference", response_model=UkReferenceValuesResponse)
+def uk_reference_values() -> UkReferenceValuesResponse:
+    return UkReferenceValuesResponse.model_validate(get_uk_reference_values())
 
 
 @router.get("/api/v1/me")

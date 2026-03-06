@@ -861,6 +861,29 @@
 ### Risks / Blockers
 - Cron cadence must remain conservative to avoid over-polling upstream public sources and triggering availability/rate-limit issues.
 
+## 2026-03-06 — WS7-A02-01 UK Reference Values Endpoint (Free)
+
+### Completed
+- WS7-A02-01: Added `services/api/app/benchmarks/reference_values.py` to provide UK benchmark reference payloads with provenance metadata.
+- WS7-A02-01: Added `GET /api/v1/benchmarks/uk/reference` in `services/api/app/routes.py`.
+- WS7-A02-01: Added typed models in `services/api/app/models.py` for reference values and provenance.
+- WS7-A02-01: Added unit tests in `services/api/tests/test_reference_values.py` for cache-provenance and fallback behavior.
+- WS7-A02-01: Added API contract coverage in `services/api/tests/test_api_contracts.py` for response key shape.
+
+### In progress
+- WS7-A02-02: HBAI ZIP parser (extract table).
+
+### Test evidence
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check services/api/app/benchmarks/reference_values.py services/api/app/routes.py services/api/app/models.py services/api/tests/test_reference_values.py services/api/tests/test_api_contracts.py` ✅
+- Backend tests: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests/test_reference_values.py services/api/tests/test_api_contracts.py -q` ✅ (`11 passed`)
+
+### Decisions made
+- Used a static placeholder median BHC value in WS7-A02-01 while preserving full provenance wiring, as allowed by backlog until WS7-A02-02 parser extraction is implemented.
+- Anchored provenance to cache key `dwp_hbai_zip_raw` so parser rollout can replace placeholders without contract churn.
+
+### Risks / Blockers
+- Placeholder income values are not yet parsed from HBAI tables and must be replaced by parser-derived values in WS7-A02-02/03 to avoid stale benchmark assumptions.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
