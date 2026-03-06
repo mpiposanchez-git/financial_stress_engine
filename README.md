@@ -52,5 +52,6 @@ cd apps/web && npm run test
 ## References
 
 - Architecture and implementation spec: [docs/system_architecture_instructions.md](docs/system_architecture_instructions.md)
-- Privacy: [docs/privacy.md](docs/privacy.md)
-- Regulatory disclaimer: [docs/regulatory_disclaimer.md](docs/regulatory_disclaimer.md)
+- Model Development Document (BRD + MDR + RTM): [docs/model_development_document.md](docs/model_development_document.md)
+- Privacy: [docs/disclaimers/privacy.md](docs/disclaimers/privacy.md)
+- Regulatory disclaimer: [docs/disclaimers/regulatory_disclaimer.md](docs/disclaimers/regulatory_disclaimer.md)

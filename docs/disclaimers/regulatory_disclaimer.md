@@ -26,7 +26,7 @@ If you require financial advice, you should consult a qualified financial advise
 
 This tool is designed for use in the context of UK household finances:
 
-- All monetary values are in **British Pounds Sterling (GBP, £)**.
+- The model is UK-focused, while reporting can be shown in **GBP, EUR, or USD** using user-provided FX assumptions.
 - Mortgage assumptions are based on common UK mortgage structures (repayment and interest-only).
 - Stress scenarios are illustrative and do not reflect Bank of England stress testing methodology.
 
@@ -73,4 +73,4 @@ If you are experiencing financial difficulty, please contact:
 
 ---
 
-*Last reviewed: 2026-03-03. This disclaimer should be reviewed periodically to ensure it remains accurate and compliant with applicable UK law and regulatory guidance.*
+*Last reviewed: 2026-03-06. This disclaimer should be reviewed periodically to ensure it remains accurate and compliant with applicable UK law and regulatory guidance.*

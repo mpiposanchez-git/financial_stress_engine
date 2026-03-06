@@ -129,4 +129,4 @@ This privacy policy may be updated from time to time. Changes will be reflected 
 
 ---
 
-*Last reviewed: 2026-03-04.*
+*Last reviewed: 2026-03-06.*
