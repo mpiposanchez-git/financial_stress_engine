@@ -1077,6 +1077,27 @@
 ### Risks / Blockers
 - Pattern-based tests can produce occasional false positives/negatives if logging patterns evolve significantly; revisit regex coverage as logging architecture changes.
 
+## 2026-03-06 — WS9-02 Secrets Hygiene (Lightweight Pre-Commit)
+
+### Completed
+- WS9-02: Added `.pre-commit-config.yaml` with:
+	- `ruff` hook (auto-fix enabled),
+	- lightweight regex-based secrets pattern check.
+- WS9-02: Updated `README.md` with pre-commit install/run steps and lightweight intent.
+
+### In progress
+- WS9-03: Evidence pack and release checklist docs.
+
+### Test evidence
+- Configuration validation: manual review of `.pre-commit-config.yaml` hook scope and excludes ✅
+
+### Decisions made
+- Kept hooks intentionally minimal to reduce friction while still guarding against common accidental secret commits.
+- Excluded volatile changelog/progress docs from simple regex secrets scanning to reduce false-positive noise.
+
+### Risks / Blockers
+- Regex-based secrets checks are lightweight and may miss advanced credential patterns; stronger scanning can be added later if needed.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

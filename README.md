@@ -43,6 +43,23 @@ uv run pytest services/api/tests -v
 cd apps/web && npm run test
 ```
 
+## Lightweight Pre-Commit Hooks
+
+This repository includes lightweight pre-commit checks for:
+
+- `ruff` (with safe auto-fix)
+- basic secrets-pattern detection
+
+Install and enable:
+
+```bash
+uv run pip install pre-commit
+uv run pre-commit install
+uv run pre-commit run --all-files
+```
+
+The hook set is intentionally lightweight to avoid blocking day-to-day development.
+
 ## Key Endpoints
 
 - `GET /health`
