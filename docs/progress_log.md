@@ -884,6 +884,27 @@
 ### Risks / Blockers
 - Placeholder income values are not yet parsed from HBAI tables and must be replaced by parser-derived values in WS7-A02-02/03 to avoid stale benchmark assumptions.
 
+## 2026-03-06 — WS7-A02-02 HBAI ZIP Parser (BHC Deciles)
+
+### Completed
+- WS7-A02-02: Added `shared/engine/benchmarks/hbai_parser.py` to locate an ODS inside raw HBAI ZIP bytes and parse numeric decile-threshold candidates from ODS `content.xml`.
+- WS7-A02-02: Added parser API `parse_bhc_decile_thresholds_from_hbai_zip(...)` returning an ordered 9-value decile-threshold series.
+- WS7-A02-02: Added parser tests in `services/api/tests/test_hbai_parser.py` with synthetic ODS+ZIP fixtures and missing-ODS failure coverage.
+
+### In progress
+- WS7-A02-03: Percentile computation endpoint (premium).
+
+### Test evidence
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check shared/engine/benchmarks/hbai_parser.py services/api/tests/test_hbai_parser.py` ✅
+- Backend tests: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests/test_hbai_parser.py -q` ✅ (`2 passed`)
+
+### Decisions made
+- Used a synthetic fixture approach for unit tests to avoid licensing/distribution concerns around storing official ODS fixtures in-repo.
+- Implemented a deterministic ordered-window extraction heuristic as a POC parser baseline, to be hardened against real-table variability in later slices.
+
+### Risks / Blockers
+- Real HBAI ODS table structures may require stronger table-label matching than the current numeric-window heuristic.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
