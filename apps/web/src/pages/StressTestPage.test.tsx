@@ -95,15 +95,19 @@ describe("StressTestPage", () => {
     );
     const ui = within(container);
 
-    expect(ui.getByText("Step 1 of 2")).toBeInTheDocument();
+    expect(ui.getByText("Step 1 of 3")).toBeInTheDocument();
     expect(ui.getByRole("heading", { name: "Currencies and FX spots" })).toBeInTheDocument();
 
     fireEvent.click(ui.getByRole("button", { name: "Next" }));
-    expect(ui.getByText("Step 2 of 2")).toBeInTheDocument();
+    expect(ui.getByText("Step 2 of 3")).toBeInTheDocument();
+    expect(ui.getByRole("heading", { name: "Mortgage inputs" })).toBeInTheDocument();
+
+    fireEvent.click(ui.getByRole("button", { name: "Next" }));
+    expect(ui.getByText("Step 3 of 3")).toBeInTheDocument();
     expect(ui.getByRole("heading", { name: "FX stress and review" })).toBeInTheDocument();
 
     fireEvent.click(ui.getByRole("button", { name: "Back" }));
-    expect(ui.getByText("Step 1 of 2")).toBeInTheDocument();
+    expect(ui.getByText("Step 2 of 3")).toBeInTheDocument();
   });
 
   it("provides explicit labels and error descriptors for form controls", () => {
@@ -132,6 +136,7 @@ describe("StressTestPage", () => {
     );
     const ui = within(container);
 
+    fireEvent.click(ui.getByRole("button", { name: "Next" }));
     fireEvent.click(ui.getByRole("button", { name: "Next" }));
     fireEvent.click(ui.getByRole("button", { name: "Run simulation" }));
 

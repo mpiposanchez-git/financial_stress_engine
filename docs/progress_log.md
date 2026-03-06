@@ -72,6 +72,28 @@
 ### Risks / Blockers
 - Amount fields currently map directly to existing `*_gbp` API fields; true per-currency normalization remains a future enhancement.
 
+## 2026-03-06 — WS2-03 Mortgage Step UI
+
+### Completed
+- WS2-03: Added `MortgageInputs` component covering mortgage balance + currency, mortgage type, term remaining (years), current rate, and stressed rate.
+- WS2-03: Wired `MortgageInputs` into `StressTestPage` as a dedicated middle wizard step; updated wizard flow from 2 to 3 steps.
+- WS2-03: Added mortgage input unit tests for rendering and validation messages (`term required when balance > 0`, `rate >= 0`).
+
+### In progress
+- WS2-04: Stress slider controls for shock/stress parameter tuning.
+
+### Test evidence
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`13 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`42 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+
+### Decisions made
+- Keep mortgage term capture in years to align with existing API shape (`mortgage_term_years_remaining`) while satisfying term capture requirements.
+
+### Risks / Blockers
+- If future API changes require term in months, a conversion or additional UI control will be needed.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

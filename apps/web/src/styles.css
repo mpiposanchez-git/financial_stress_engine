@@ -107,6 +107,17 @@ form {
   grid-template-columns: 1fr;
 }
 
+.mortgage-inputs {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.field-error {
+  margin: -0.15rem 0 0;
+  color: #9f1239;
+  font-size: 0.92rem;
+}
+
 .wizard-nav {
   display: flex;
   gap: 0.65rem;

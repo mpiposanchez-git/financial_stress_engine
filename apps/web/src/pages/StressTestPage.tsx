@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuthState } from "../auth/useAuthState";
 import { createApiClient } from "../api/client";
 import { CurrencySelect } from "../components/inputs/CurrencySelect";
+import { MortgageInputs } from "../components/inputs/MortgageInputs";
 import { MoneyInput } from "../components/inputs/MoneyInput";
 import { Wizard } from "../components/wizard/Wizard";
 import { WizardNav } from "../components/wizard/WizardNav";
@@ -58,7 +59,8 @@ export function StressTestPage() {
   const navigate = useNavigate();
   const { getToken } = useAuthState();
   const formErrorId = "stress-form-error";
-  const totalSteps = 2;
+  const totalSteps = 3;
+  const stepTitles = ["Currencies and FX spots", "Mortgage inputs", "FX stress and review"] as const;
 
   const api = useMemo(() => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
@@ -97,7 +99,7 @@ export function StressTestPage() {
         <Wizard
           currentStep={currentStep}
           totalSteps={totalSteps}
-          title={currentStep === 0 ? "Currencies and FX spots" : "FX stress and review"}
+          title={stepTitles[currentStep]}
         >
           {currentStep === 0 ? (
             <WizardStep id="wizard-step-1" title="Currencies and FX spots">
@@ -200,27 +202,6 @@ export function StressTestPage() {
                   ))}
                 </select>
               </label>
-              <label htmlFor="mortgage-currency">
-                Mortgage currency
-                <select
-                  id="mortgage-currency"
-                  aria-label="Mortgage currency"
-                  aria-describedby={formErrorId}
-                  value={form.mortgage_balance_currency}
-                  onChange={(event) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      mortgage_balance_currency: event.target.value as (typeof currencies)[number]
-                    }))
-                  }
-                >
-                  {currencies.map((currency) => (
-                    <option key={currency} value={currency}>
-                      {currency}
-                    </option>
-                  ))}
-                </select>
-              </label>
               <label htmlFor="fx-spot-eur">
                 FX spot EUR to reporting
                 <input
@@ -276,8 +257,57 @@ export function StressTestPage() {
                 />
               </label>
             </WizardStep>
+          ) : currentStep === 1 ? (
+            <WizardStep id="wizard-step-2" title="Mortgage inputs">
+              <MortgageInputs
+                balance={form.mortgage_balance_gbp}
+                balanceCurrency={form.mortgage_balance_currency}
+                mortgageType={form.mortgage_type}
+                termYearsRemaining={form.mortgage_term_years_remaining}
+                currentRatePercent={form.mortgage_rate_percent_current}
+                stressRatePercent={form.mortgage_rate_percent_stress}
+                currencies={currencies}
+                ariaDescribedBy={formErrorId}
+                onBalanceChange={(value) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    mortgage_balance_gbp: value
+                  }))
+                }
+                onBalanceCurrencyChange={(value) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    mortgage_balance_currency: value
+                  }))
+                }
+                onMortgageTypeChange={(value) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    mortgage_type: value
+                  }))
+                }
+                onTermYearsRemainingChange={(value) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    mortgage_term_years_remaining: value
+                  }))
+                }
+                onCurrentRatePercentChange={(value) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    mortgage_rate_percent_current: value
+                  }))
+                }
+                onStressRatePercentChange={(value) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    mortgage_rate_percent_stress: value
+                  }))
+                }
+              />
+            </WizardStep>
           ) : (
-            <WizardStep id="wizard-step-2" title="FX stress and review">
+            <WizardStep id="wizard-step-3" title="FX stress and review">
               <label htmlFor="fx-stress-eur">
                 FX stress EUR (bps)
                 <input
