@@ -1,20 +1,75 @@
+import { useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
 
+import { createApiClient } from "../api/client";
+import { useAuthState } from "../auth/useAuthState";
 import { AssumptionsPanel } from "../components/AssumptionsPanel";
 import { EmergencyFundCard } from "../components/EmergencyFundCard";
 import { ExplainResult } from "../components/ExplainResult";
 import { FanChart } from "../components/charts/FanChart";
 import { SavingsPathChart } from "../components/charts/SavingsPathChart";
+import { TornadoChart } from "../components/charts/TornadoChart";
 import { MortgageStressPanel } from "../components/MortgageStressPanel";
 import { OfficialResources } from "../components/OfficialResources";
 import { ScenarioCompareTable } from "../components/scenarios/ScenarioCompareTable";
-import { ResultsRouteState } from "../types";
+import { SensitivityDriverImpact, ResultsRouteState } from "../types";
 
 export function ResultsPage() {
   const location = useLocation();
   const state = location.state as ResultsRouteState | null;
+  const inputParameters = state?.inputParameters;
   const hasMonteCarlo = Boolean(state?.montecarlo);
   const premiumUnlocked = Boolean(state?.premiumUnlocked);
+  const { getToken } = useAuthState();
+  const [sensitivityImpacts, setSensitivityImpacts] = useState<SensitivityDriverImpact[] | null>(null);
+  const [sensitivityLoading, setSensitivityLoading] = useState(false);
+  const [sensitivityError, setSensitivityError] = useState<string | null>(null);
+
+  const api = useMemo(() => {
+    const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
+    return createApiClient(baseUrl, getToken);
+  }, [getToken]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!premiumUnlocked || !inputParameters) {
+      setSensitivityImpacts(null);
+      setSensitivityLoading(false);
+      setSensitivityError(null);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const loadSensitivity = async () => {
+      setSensitivityLoading(true);
+      setSensitivityError(null);
+      try {
+        const response = await api.runSensitivity({
+          input_parameters: inputParameters,
+          horizon_months: state.montecarlo?.horizon_months ?? 24,
+          delta_bps: 100
+        });
+        if (!cancelled) {
+          setSensitivityImpacts(response.impacts);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setSensitivityError(error instanceof Error ? error.message : "Sensitivity request failed");
+        }
+      } finally {
+        if (!cancelled) {
+          setSensitivityLoading(false);
+        }
+      }
+    };
+
+    void loadSensitivity();
+    return () => {
+      cancelled = true;
+    };
+  }, [api, premiumUnlocked, inputParameters, state?.montecarlo?.horizon_months]);
 
   if (!state) {
     return (
@@ -77,6 +132,34 @@ export function ResultsPage() {
           </section>
         )
       ) : null}
+
+      {premiumUnlocked ? (
+        inputParameters ? (
+          sensitivityLoading ? (
+            <section className="result-card" aria-label="Sensitivity loading">
+              <h2>Tornado sensitivity chart</h2>
+              <p>Loading sensitivity analysis...</p>
+            </section>
+          ) : sensitivityError ? (
+            <section className="result-card" aria-label="Sensitivity error">
+              <h2>Tornado sensitivity chart</h2>
+              <p>{sensitivityError}</p>
+            </section>
+          ) : sensitivityImpacts && sensitivityImpacts.length > 0 ? (
+            <TornadoChart impacts={sensitivityImpacts} />
+          ) : null
+        ) : (
+          <section className="result-card" aria-label="Sensitivity unavailable">
+            <h2>Tornado sensitivity chart</h2>
+            <p>Sensitivity input unavailable for this run.</p>
+          </section>
+        )
+      ) : (
+        <section className="result-card" aria-label="Tornado chart locked">
+          <h2>Tornado sensitivity chart</h2>
+          <p>Premium unlock required to view tornado sensitivity chart.</p>
+        </section>
+      )}
 
       <SavingsPathChart
         values={state.deterministic.savings_path_pence}

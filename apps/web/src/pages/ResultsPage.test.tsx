@@ -1,10 +1,73 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ResultsPage } from "./ResultsPage";
 
+const { mockGetToken, mockRunSensitivity } = vi.hoisted(() => ({
+  mockGetToken: vi.fn(),
+  mockRunSensitivity: vi.fn().mockResolvedValue({
+    impacts: [
+      {
+        driver: "mortgage_rate_stress_bps",
+        delta_bps: 100,
+        base_runway_months: 10.2,
+        perturbed_runway_months: 9.4,
+        runway_months_impact: -0.8,
+        base_min_savings_pence: 250000,
+        perturbed_min_savings_pence: 190000,
+        min_savings_impact_pence: -60000
+      }
+    ]
+  })
+}));
+
+vi.mock("../auth/useAuthState", () => ({
+  useAuthState: () => ({
+    isLoaded: true,
+    isSignedIn: true,
+    getToken: mockGetToken
+  })
+}));
+
+vi.mock("../api/client", () => ({
+  createApiClient: () => ({
+    runDeterministic: vi.fn(),
+    runMonteCarlo: vi.fn(),
+    runSensitivity: mockRunSensitivity
+  })
+}));
+
+const inputParameters = {
+  household_monthly_net_income_gbp: 4000,
+  household_monthly_essential_spend_gbp: 1500,
+  household_monthly_debt_payments_gbp: 200,
+  cash_savings_gbp: 10000,
+  mortgage_balance_gbp: 250000,
+  mortgage_term_years_remaining: 25,
+  mortgage_rate_percent_current: 4.5,
+  mortgage_rate_percent_stress: 6,
+  mortgage_type: "repayment" as const,
+  shock_monthly_income_drop_percent: 10,
+  inflation_monthly_essentials_increase_percent: 5,
+  household_monthly_net_income_currency: "GBP" as const,
+  household_monthly_essential_spend_currency: "GBP" as const,
+  household_monthly_debt_payments_currency: "GBP" as const,
+  cash_savings_currency: "GBP" as const,
+  mortgage_balance_currency: "GBP" as const,
+  reporting_currency: "GBP" as const,
+  fx_spot_rates: { GBP: 1, EUR: 0.86, USD: 0.78 },
+  fx_stress_bps: { GBP: 0, EUR: 0, USD: 0 },
+  income_shock_std_percent: 5,
+  rate_shock_std_percent: 0.5,
+  inflation_shock_std_percent: 1
+};
+
 describe("ResultsPage", () => {
+  beforeEach(() => {
+    mockRunSensitivity.mockClear();
+  });
+
   it("renders formatted and pence money fields from route state", () => {
     const state = {
       premiumUnlocked: true,
@@ -335,5 +398,86 @@ describe("ResultsPage", () => {
 
     expect(ui.getByText("Premium unlock required to view summary percentile fan chart.")).toBeInTheDocument();
     expect(ui.queryByRole("table", { name: "Monte Carlo summary percentiles" })).not.toBeInTheDocument();
+  });
+
+  it("fetches and renders tornado sensitivity chart for premium runs", async () => {
+    const state = {
+      premiumUnlocked: true,
+      inputParameters,
+      deterministic: {
+        reporting_currency: "GBP",
+        fx_spot_rates_used: { GBP: 1, EUR: 0.86, USD: 0.78 },
+        fx_stressed_rates_used: { GBP: 1, EUR: 0.86, USD: 0.78 },
+        fx_stress_bps: { GBP: 0, EUR: 0, USD: 0 },
+        monthly_cashflow_base_pence: 100000,
+        monthly_cashflow_base_formatted: "£1,000.00",
+        monthly_cashflow_stress_pence: 50000,
+        monthly_cashflow_stress_formatted: "£500.00",
+        mortgage_payment_current_pence: 120000,
+        mortgage_payment_current_formatted: "£1,200.00",
+        mortgage_payment_stress_pence: 150000,
+        mortgage_payment_stress_formatted: "£1,500.00",
+        runway_months: 12.5,
+        savings_path_pence: [123456, 120000],
+        savings_path_formatted: ["£1,234.56", "£1,200.00"],
+        min_savings_pence: 123456,
+        min_savings_formatted: "£1,234.56",
+        month_of_depletion: null,
+        warnings: []
+      }
+    };
+
+    const { container } = render(
+      <MemoryRouter initialEntries={[{ pathname: "/results", state }]}> 
+        <Routes>
+          <Route path="/results" element={<ResultsPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+    const ui = within(container);
+
+    await waitFor(() => {
+      expect(mockRunSensitivity).toHaveBeenCalledTimes(1);
+      expect(ui.getByRole("heading", { name: "Tornado sensitivity chart" })).toBeInTheDocument();
+      expect(ui.getByText(/Top sensitivity driver:/)).toBeInTheDocument();
+    });
+  });
+
+  it("shows tornado locked card for non-premium", () => {
+    const state = {
+      premiumUnlocked: false,
+      deterministic: {
+        reporting_currency: "GBP",
+        fx_spot_rates_used: { GBP: 1, EUR: 0.86, USD: 0.78 },
+        fx_stressed_rates_used: { GBP: 1, EUR: 0.86, USD: 0.78 },
+        fx_stress_bps: { GBP: 0, EUR: 0, USD: 0 },
+        monthly_cashflow_base_pence: 90000,
+        monthly_cashflow_base_formatted: "£900.00",
+        monthly_cashflow_stress_pence: 40000,
+        monthly_cashflow_stress_formatted: "£400.00",
+        mortgage_payment_current_pence: 120000,
+        mortgage_payment_current_formatted: "£1,200.00",
+        mortgage_payment_stress_pence: 150000,
+        mortgage_payment_stress_formatted: "£1,500.00",
+        runway_months: 9.2,
+        savings_path_pence: [90000, 87000],
+        savings_path_formatted: ["£900.00", "£870.00"],
+        min_savings_pence: 87000,
+        min_savings_formatted: "£870.00",
+        month_of_depletion: null,
+        warnings: []
+      }
+    };
+
+    const { container } = render(
+      <MemoryRouter initialEntries={[{ pathname: "/results", state }]}> 
+        <Routes>
+          <Route path="/results" element={<ResultsPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+    const ui = within(container);
+
+    expect(ui.getByText("Premium unlock required to view tornado sensitivity chart.")).toBeInTheDocument();
   });
 });

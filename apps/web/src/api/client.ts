@@ -3,7 +3,9 @@ import type {
   DeterministicResponse,
   InputParameters,
   MonteCarloRequest,
-  MonteCarloResponse
+  MonteCarloResponse,
+  SensitivityRequest,
+  SensitivityResponse
 } from "../types";
 
 type TokenProvider = () => Promise<string | null>;
@@ -104,6 +106,8 @@ export function createApiClient(baseUrl: string, getToken: TokenProvider) {
     runDeterministicFromInput: (inputParameters: InputParameters) =>
       postJson<DeterministicResponse>("/api/v1/deterministic/run", { input_parameters: inputParameters }),
     runMonteCarlo: (payload: MonteCarloRequest) =>
-      postJson<MonteCarloResponse>("/api/v1/montecarlo/run", payload)
+      postJson<MonteCarloResponse>("/api/v1/montecarlo/run", payload),
+    runSensitivity: (payload: SensitivityRequest) =>
+      postJson<SensitivityResponse>("/api/v1/sensitivity/run", payload)
   };
 }

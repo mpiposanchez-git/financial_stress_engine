@@ -34,6 +34,12 @@ export type MonteCarloRequest = {
   seed?: number;
 };
 
+export type SensitivityRequest = {
+  input_parameters: InputParameters;
+  horizon_months?: number;
+  delta_bps?: number;
+};
+
 export type DeterministicResponse = {
   reporting_currency: "GBP" | "EUR" | "USD";
   fx_spot_rates_used: Record<string, number>;
@@ -112,8 +118,24 @@ export type CompareRunResponse = {
   scenarios: CompareScenarioResult[];
 };
 
+export type SensitivityDriverImpact = {
+  driver: string;
+  delta_bps: number;
+  base_runway_months: number | null;
+  perturbed_runway_months: number | null;
+  runway_months_impact: number | null;
+  base_min_savings_pence: number;
+  perturbed_min_savings_pence: number;
+  min_savings_impact_pence: number;
+};
+
+export type SensitivityResponse = {
+  impacts: SensitivityDriverImpact[];
+};
+
 export type ResultsRouteState = {
   deterministic: DeterministicResponse;
+  inputParameters?: InputParameters;
   montecarlo?: MonteCarloResponse;
   compare?: CompareRunResponse;
   premiumUnlocked?: boolean;

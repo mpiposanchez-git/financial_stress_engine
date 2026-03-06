@@ -116,7 +116,11 @@ export function StressTestPage() {
     try {
       const deterministicPayload = buildDeterministicPayload(form);
       const deterministic = await api.runDeterministic(deterministicPayload);
-      const resultState: ResultsRouteState = { deterministic };
+      const resultState: ResultsRouteState = {
+        deterministic,
+        inputParameters: cloneInput(form),
+        premiumUnlocked
+      };
       navigate("/results", { state: resultState });
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Request failed");

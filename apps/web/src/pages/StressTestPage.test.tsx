@@ -127,9 +127,14 @@ describe("StressTestPage", () => {
     await waitFor(() => {
       expect(mockRunDeterministic).toHaveBeenCalledTimes(1);
       expect(mockNavigate).toHaveBeenCalledWith("/results", {
-        state: {
-          deterministic: deterministicResponse
-        }
+        state: expect.objectContaining({
+          deterministic: deterministicResponse,
+          premiumUnlocked: false,
+          inputParameters: expect.objectContaining({
+            reporting_currency: "GBP",
+            mortgage_type: "repayment"
+          })
+        })
       });
     });
   });

@@ -489,6 +489,31 @@
 ### Risks / Blockers
 - Endpoint currently returns deterministic ranking sorted by min-savings impact from engine output; if a different ranking policy is required by UI, both endpoint and tests should be aligned explicitly.
 
+## 2026-03-06 — WS5-F12-03 Tornado Chart UI
+
+### Completed
+- WS5-F12-03: Added `TornadoChart` component rendering ranked sensitivity bars and an accessible summary line for the top driver.
+- WS5-F12-03: Wired `ResultsPage` to call `/api/v1/sensitivity/run` via API client for premium runs when input parameters are available.
+- WS5-F12-03: Added loading/error/unavailable states for sensitivity fetch flow in `ResultsPage`.
+- WS5-F12-03: Added premium-locked card state for tornado chart when premium is not unlocked.
+- WS5-F12-03: Extended frontend route-state typing to carry original input parameters into results page API workflows.
+- WS5-F12-03: Added tests for tornado component rendering and results-page premium sensitivity fetch/locked behavior.
+
+### In progress
+- WS5-F13-01: Schedule schema + deterministic engine application.
+
+### Test evidence
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`43 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`48 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+
+### Decisions made
+- Sensitivity API invocation is executed from results page only when premium is unlocked and source input parameters are present, preventing unnecessary premium endpoint calls.
+
+### Risks / Blockers
+- Tornado bars currently visualize min-savings impact magnitude; if product requirements shift toward runway-first visual ranking, chart labels and sorting semantics should be updated together.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
