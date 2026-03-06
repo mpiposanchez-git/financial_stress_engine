@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 from collections.abc import Callable
@@ -124,3 +125,27 @@ def refresh_all(
             "dwp_hbai_zip_raw",
         ]
     }
+
+
+def _build_cli_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Data refresh utilities")
+    subcommands = parser.add_subparsers(dest="command", required=True)
+    subcommands.add_parser("refresh-all", help="Refresh and cache all external datasets")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = _build_cli_parser()
+    args = parser.parse_args(argv)
+
+    if args.command == "refresh-all":
+        result = refresh_all()
+        print(json.dumps(result, sort_keys=True))
+        return 0
+
+    parser.error("Unknown command")
+    return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

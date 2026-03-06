@@ -839,6 +839,28 @@
 ### Risks / Blockers
 - Defaults currently map policy/market reference series to simulation fields heuristically (for example, Bank Rate as a mortgage-rate default proxy), so messaging clarity is important to avoid over-interpretation.
 
+## 2026-03-06 — WS6-A01-09 Cron Refresh Command Wiring (Render)
+
+### Completed
+- WS6-A01-09: Added CLI module entrypoint support in `services/api/app/data_fetcher.py` with `refresh-all` subcommand.
+- WS6-A01-09: Enabled command invocation via `python -m services.api.app.data_fetcher refresh-all` and stable JSON output for scheduler logs.
+- WS6-A01-09: Added unit test `services/api/tests/test_data_fetcher_cli.py` to verify CLI wiring invokes refresh orchestration.
+- WS6-A01-09: Added `docs/data_refresh.md` with Render Cron Job setup and verification guidance.
+
+### In progress
+- WS7-A02-01: Reference values endpoint (free).
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests/test_data_fetcher_cli.py -q` ✅
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check services/api/app/data_fetcher.py services/api/tests/test_data_fetcher_cli.py` ✅
+
+### Decisions made
+- Used subcommand-based CLI structure to keep future refresh operations extensible (for example, per-source refresh commands).
+- Emitted deterministic JSON output for cron log readability and smoke verification.
+
+### Risks / Blockers
+- Cron cadence must remain conservative to avoid over-polling upstream public sources and triggering availability/rate-limit issues.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
