@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 DISCLAIMER = (
     "EDUCATIONAL SIMULATION ONLY. This output is not financial advice, investment advice, "
@@ -24,8 +24,12 @@ class DeterministicOutput(BaseModel):
     mortgage_payment_current_formatted: str
     mortgage_payment_stress_pence: int
     mortgage_payment_stress_formatted: str
-    savings_path_pence: list[int]
-    savings_path_formatted: list[str]
+    savings_path_pence: list[int] = Field(
+        ..., description="Savings path including month 0 (initial) through horizon month"
+    )
+    savings_path_formatted: list[str] = Field(
+        ..., description="Formatted savings path values aligned with savings_path_pence"
+    )
     min_savings_pence: int
     min_savings_formatted: str
     month_of_depletion: int | None

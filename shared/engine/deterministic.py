@@ -24,6 +24,7 @@ from shared.engine.money import (
 )
 from shared.engine.mortgage import mortgage_payment_interest_only, mortgage_payment_repayment
 from shared.engine.outputs import DISCLAIMER, DeterministicOutput
+from shared.engine.savings_path import compute_savings_path, min_savings, month_of_depletion
 
 
 def _monthly_mortgage_payment(
@@ -56,24 +57,6 @@ def _compute_runway(monthly_cashflow_pence: int, cash_savings_pence: int) -> Dec
     if monthly_cashflow_pence >= 0:
         return None
     return Decimal(cash_savings_pence) / Decimal(abs(monthly_cashflow_pence))
-
-
-def _compute_savings_path(
-    initial_savings_pence: int,
-    monthly_cashflow_stress_pence: int,
-    horizon_months: int,
-) -> tuple[list[int], int, int | None]:
-    savings_path = [initial_savings_pence]
-    current_savings = initial_savings_pence
-    month_of_depletion: int | None = 0 if initial_savings_pence == 0 else None
-
-    for month in range(1, horizon_months + 1):
-        current_savings = max(0, current_savings + monthly_cashflow_stress_pence)
-        savings_path.append(current_savings)
-        if month_of_depletion is None and current_savings == 0:
-            month_of_depletion = month
-
-    return savings_path, min(savings_path), month_of_depletion
 
 
 def _convert_to_reporting(
@@ -186,11 +169,12 @@ def run_deterministic(inputs: DeterministicInput) -> DeterministicOutput:
 
     runway_base = _compute_runway(cashflow_base, cash_savings_base)
     runway_stress = _compute_runway(cashflow_stress, cash_savings_stress)
-    savings_path_pence, min_savings_pence, month_of_depletion = _compute_savings_path(
+    savings_path_pence = compute_savings_path(
         cash_savings_stress,
-        cashflow_stress,
-        inputs.horizon_months,
+        [cashflow_stress] * inputs.horizon_months,
     )
+    min_savings_pence = min_savings(savings_path_pence)
+    depletion_month = month_of_depletion(savings_path_pence)
 
     # Build summary
     if cashflow_stress >= 0:
@@ -244,7 +228,7 @@ def run_deterministic(inputs: DeterministicInput) -> DeterministicOutput:
         ],
         min_savings_pence=min_savings_pence,
         min_savings_formatted=format_currency_from_pence(min_savings_pence, symbol=symbol),
-        month_of_depletion=month_of_depletion,
+        month_of_depletion=depletion_month,
         runway_months=(
             float(round_half_up_decimal(runway_stress, 2)) if runway_stress is not None else None
         ),
