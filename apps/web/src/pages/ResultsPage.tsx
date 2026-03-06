@@ -6,6 +6,7 @@ import { EmergencyFundCard } from "../components/EmergencyFundCard";
 import { ExplainResult } from "../components/ExplainResult";
 import { SavingsPathChart } from "../components/charts/SavingsPathChart";
 import { MortgageStressPanel } from "../components/MortgageStressPanel";
+import { OfficialResources } from "../components/OfficialResources";
 import { ResultsRouteState } from "../types";
 
 type PercentileChartProps = {
@@ -155,6 +156,8 @@ export function ResultsPage() {
         premiumUnlocked={false}
         dataTimestamp="Not provided"
       />
+
+      <OfficialResources />
 
       {state.deterministic.warnings.length > 0 ? (
         <section className="result-card">

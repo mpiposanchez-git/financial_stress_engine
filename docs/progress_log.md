@@ -276,6 +276,29 @@
 ### Risks / Blockers
 - Monte Carlo cap/premium lock text is currently static and should eventually be bound to entitlement/config values.
 
+## 2026-03-06 — WS3-06 Official Resource Signposting
+
+### Completed
+- WS3-06: Added `OfficialResources` component with curated links to MoneyHelper and Citizens Advice.
+- WS3-06: Included explicit "information only" disclaimer to reinforce non-advice framing.
+- WS3-06: Integrated official-resources section into `ResultsPage`.
+- WS3-06: Added unit test coverage for resource links and disclaimer text.
+
+### In progress
+- WS4-01: Scenario tabs UI scaffolding.
+
+### Test evidence
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`28 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`42 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+
+### Decisions made
+- External links open in a new tab with `rel="noreferrer"` to keep navigation intent clear and reduce referrer leakage.
+
+### Risks / Blockers
+- Resource list is intentionally minimal for this task and may need expansion/localization for broader coverage.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
