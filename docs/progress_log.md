@@ -662,6 +662,29 @@
 ### Risks / Blockers
 - Data Sources page currently performs direct `fetch` without shared client retry policy; if network resilience requirements increase, migrate to a shared API utility.
 
+## 2026-03-06 — WS6-A01-02 Data Cache Abstraction
+
+### Completed
+- WS6-A01-02: Added `services/api/app/data_cache.py` with a simple in-memory cache implementation (`InMemoryDataCache`).
+- WS6-A01-02: Implemented required cache API: `get(key)` and `set(key, value, meta)`.
+- WS6-A01-02: Added strict metadata schema (`fetched_at_utc`, `source_url`, `sha256`) via `CacheMeta` validation.
+- WS6-A01-02: Added tests for set/get round-trip behavior, missing-key behavior, and metadata validation failures.
+
+### In progress
+- WS6-A01-03: Fetcher for BoE Bank Rate.
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`62 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`46 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Kept the cache implementation intentionally in-process and synchronous for POC simplicity, while preserving metadata required for source traceability.
+
+### Risks / Blockers
+- In-memory cache is process-local and non-persistent; multi-instance deployments or restarts will require a shared backend cache in later phases.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
