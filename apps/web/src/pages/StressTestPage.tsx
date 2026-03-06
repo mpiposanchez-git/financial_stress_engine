@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuthState } from "../auth/useAuthState";
@@ -98,6 +98,8 @@ export function StressTestPage() {
   const [form, setScenarioForm] = useState<InputParameters>(cloneInput(defaultInput));
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [useDefaults, setUseDefaults] = useState(true);
+  const [defaultsFetchedAt, setDefaultsFetchedAt] = useState<Record<string, string | null>>({});
   const [currentStep, setCurrentStep] = useState(0);
   const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>(() => getSavedScenarios());
   const navigate = useNavigate();
@@ -128,6 +130,43 @@ export function StressTestPage() {
     const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
     return createApiClient(baseUrl, getToken);
   }, [getToken]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadDefaults = async () => {
+      try {
+        const defaults = await api.getDefaults();
+        if (cancelled) {
+          return;
+        }
+
+        setDefaultsFetchedAt(defaults.fetched_at);
+        setForm((prev) => ({
+          ...prev,
+          mortgage_rate_percent_current: defaults.bank_rate_bps / 100,
+          inflation_monthly_essentials_increase_percent: defaults.cpih_12m_bps / 100,
+          fx_spot_rates: {
+            ...prev.fx_spot_rates,
+            EUR: defaults.fx_spot_rates.EUR,
+            USD: defaults.fx_spot_rates.USD
+          }
+        }));
+      } catch {
+        if (!cancelled) {
+          setDefaultsFetchedAt({});
+        }
+      }
+    };
+
+    if (useDefaults) {
+      void loadDefaults();
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [api, useDefaults]);
 
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -227,6 +266,21 @@ export function StressTestPage() {
           onLoad={onLoadScenario}
           onDelete={onDeleteScenario}
         />
+        <label htmlFor="use-defaults-toggle">
+          <input
+            id="use-defaults-toggle"
+            aria-label="Use defaults"
+            type="checkbox"
+            checked={useDefaults}
+            onChange={(event) => {
+              setUseDefaults(event.target.checked);
+            }}
+          />
+          Use defaults
+        </label>
+        <p>
+          Defaults fetched at: {defaultsFetchedAt.boe_bank_rate ?? "n/a"}
+        </p>
         <Wizard
           currentStep={currentStep}
           totalSteps={totalSteps}

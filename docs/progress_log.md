@@ -813,6 +813,32 @@
 ### Risks / Blockers
 - The GOV.UK landing page URL may change and may not always directly serve ZIP bytes; downloader endpoint hardening may be needed before production scheduling.
 
+## 2026-03-06 — WS6-A01-08 Defaults Endpoint + Override Integration
+
+### Completed
+- WS6-A01-08: Added `GET /api/v1/data/defaults` in `services/api/app/routes.py` to return latest defaults for bank rate, CPIH 12m, FX EUR/USD spots, optional energy reference values, and dataset fetched-at timestamps.
+- WS6-A01-08: Added `DataDefaultsResponse` model in `services/api/app/models.py` and wired response validation for the defaults endpoint.
+- WS6-A01-08: Added API contract coverage in `services/api/tests/test_api_contracts.py` to seed cache values and verify defaults payload shape/value mapping.
+- WS6-A01-08: Extended frontend API client with `getDefaults()` in `apps/web/src/api/client.ts` and added `DataDefaultsResponse` in `apps/web/src/types.ts`.
+- WS6-A01-08: Updated `apps/web/src/pages/StressTestPage.tsx` to fetch defaults, add a “Use defaults” toggle, prefill key input assumptions (bank-rate proxy, CPIH proxy, FX spots), and keep manual field override behavior.
+- WS6-A01-08: Added UI test coverage in `apps/web/src/pages/StressTestPage.test.tsx` for defaults prefill and manual override.
+
+### In progress
+- WS6-A01-09: Cron refresh command wiring (Render) + docs.
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`78 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`47 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Used cache-backed defaults with safe fallbacks to avoid endpoint failure when refresh jobs have not yet populated all datasets.
+- Kept override behavior user-controlled in the wizard so defaults accelerate input but do not block manual scenario tuning.
+
+### Risks / Blockers
+- Defaults currently map policy/market reference series to simulation fields heuristically (for example, Bank Rate as a mortgage-rate default proxy), so messaging clarity is important to avoid over-interpretation.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

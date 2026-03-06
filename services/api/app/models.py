@@ -110,6 +110,14 @@ class DeterministicRunRequest(BaseModel):
     horizon_months: int = Field(default=24, ge=1)
 
 
+class DataDefaultsResponse(BaseModel):
+    bank_rate_bps: int
+    cpih_12m_bps: int
+    fx_spot_rates: dict[str, float]
+    energy_reference_values: dict[str, float] | None = None
+    fetched_at: dict[str, str | None]
+
+
 class DeterministicRunResponse(BaseModel):
     reporting_currency: str
     fx_spot_rates_used: dict[str, float]

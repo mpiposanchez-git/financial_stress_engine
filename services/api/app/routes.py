@@ -12,12 +12,14 @@ from shared.engine.montecarlo import run_montecarlo
 from shared.engine.sensitivity import compute_sensitivity
 
 from .auth import AuthContext, require_auth
+from .data_cache import DATA_CACHE
 from .data_registry import DATA_REGISTRY
 from .entitlements import is_premium, require_premium
 from .models import (
     CompareRunRequest,
     CompareRunResponse,
     CompareScenarioResult,
+    DataDefaultsResponse,
     DeterministicRunRequest,
     DeterministicRunResponse,
     MoneyPercentileTriplet,
@@ -44,6 +46,55 @@ def health() -> dict[str, str]:
 @router.get("/api/v1/data/registry")
 def data_registry() -> dict[str, list[dict[str, object]]]:
     return {"datasets": [entry.model_dump() for entry in DATA_REGISTRY]}
+
+
+@router.get("/api/v1/data/defaults", response_model=DataDefaultsResponse)
+def data_defaults() -> DataDefaultsResponse:
+    bank_rate_entry = DATA_CACHE.get("boe_bank_rate")
+    cpih_entry = DATA_CACHE.get("ons_cpih_12m")
+    fx_entry = DATA_CACHE.get("boe_fx_spot")
+    ofgem_entry = DATA_CACHE.get("ofgem_price_cap")
+
+    bank_rate_bps = 450
+    if bank_rate_entry and isinstance(bank_rate_entry.value, dict):
+        rate_percent = bank_rate_entry.value.get("rate_percent")
+        if isinstance(rate_percent, (int, float)):
+            bank_rate_bps = int(round(float(rate_percent) * 100))
+
+    cpih_12m_bps = 500
+    if cpih_entry and isinstance(cpih_entry.value, dict):
+        annual_rate_percent = cpih_entry.value.get("annual_rate_percent")
+        if isinstance(annual_rate_percent, (int, float)):
+            cpih_12m_bps = int(round(float(annual_rate_percent) * 100))
+
+    eur = 0.86
+    usd = 0.78
+    if fx_entry and isinstance(fx_entry.value, dict):
+        eur_value = fx_entry.value.get("eur")
+        usd_value = fx_entry.value.get("usd")
+        if isinstance(eur_value, (int, float)):
+            eur = float(eur_value)
+        if isinstance(usd_value, (int, float)):
+            usd = float(usd_value)
+
+    energy_reference_values: dict[str, float] | None = None
+    if ofgem_entry and isinstance(ofgem_entry.value, dict):
+        annual_bill_gbp = ofgem_entry.value.get("annual_bill_gbp")
+        if isinstance(annual_bill_gbp, (int, float)):
+            energy_reference_values = {"annual_bill_gbp": float(annual_bill_gbp)}
+
+    return DataDefaultsResponse(
+        bank_rate_bps=bank_rate_bps,
+        cpih_12m_bps=cpih_12m_bps,
+        fx_spot_rates={"EUR": eur, "USD": usd},
+        energy_reference_values=energy_reference_values,
+        fetched_at={
+            "boe_bank_rate": bank_rate_entry.meta.fetched_at_utc if bank_rate_entry else None,
+            "ons_cpih_12m": cpih_entry.meta.fetched_at_utc if cpih_entry else None,
+            "boe_fx_spot": fx_entry.meta.fetched_at_utc if fx_entry else None,
+            "ofgem_price_cap": ofgem_entry.meta.fetched_at_utc if ofgem_entry else None,
+        },
+    )
 
 
 @router.get("/api/v1/me")

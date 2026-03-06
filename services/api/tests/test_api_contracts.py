@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from services.api.app.data_cache import DATA_CACHE, CacheMeta
+
 
 def _base_input() -> dict:
     return {
@@ -47,6 +49,60 @@ def test_data_registry_returns_datasets(client):
     assert isinstance(first["refresh_cadence"], str)
     assert isinstance(first["license_note"], str)
     assert isinstance(first["verification_steps"], list)
+
+
+def test_data_defaults_returns_required_keys(client):
+    DATA_CACHE.set(
+        "boe_bank_rate",
+        {"rate_percent": 4.75, "as_of_date": "2026-03-01"},
+        CacheMeta(
+            fetched_at_utc="2026-03-01T00:00:00Z",
+            source_url="https://example.test/boe",
+            sha256="abc",
+        ),
+    )
+    DATA_CACHE.set(
+        "ons_cpih_12m",
+        {"annual_rate_percent": 3.4, "month": "2026-01"},
+        CacheMeta(
+            fetched_at_utc="2026-03-01T00:00:00Z",
+            source_url="https://example.test/ons",
+            sha256="def",
+        ),
+    )
+    DATA_CACHE.set(
+        "boe_fx_spot",
+        {"eur": 0.88, "usd": 0.79, "base_currency": "GBP", "as_of_date": "2026-03-01"},
+        CacheMeta(
+            fetched_at_utc="2026-03-01T00:00:00Z",
+            source_url="https://example.test/fx",
+            sha256="ghi",
+        ),
+    )
+    DATA_CACHE.set(
+        "ofgem_price_cap",
+        {"region": "GB", "annual_bill_gbp": 1738, "period_start": "2025-01-01"},
+        CacheMeta(
+            fetched_at_utc="2026-03-01T00:00:00Z",
+            source_url="https://example.test/ofgem",
+            sha256="jkl",
+        ),
+    )
+
+    response = client.get("/api/v1/data/defaults")
+    assert response.status_code == 200
+
+    body = response.json()
+    assert body["bank_rate_bps"] == 475
+    assert body["cpih_12m_bps"] == 340
+    assert body["fx_spot_rates"] == {"EUR": 0.88, "USD": 0.79}
+    assert body["energy_reference_values"] == {"annual_bill_gbp": 1738.0}
+    assert set(body["fetched_at"].keys()) == {
+        "boe_bank_rate",
+        "ons_cpih_12m",
+        "boe_fx_spot",
+        "ofgem_price_cap",
+    }
 
 
 def test_auth_rejects_missing_token(client):

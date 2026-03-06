@@ -7,6 +7,7 @@ import { StressTestPage } from "./StressTestPage";
 const {
   mockNavigate,
   mockRunDeterministic,
+  mockGetDefaults,
   mockGetToken,
   deterministicResponse
 } = vi.hoisted(() => {
@@ -35,6 +36,13 @@ const {
   return {
     mockNavigate: vi.fn(),
     mockRunDeterministic: vi.fn().mockResolvedValue(deterministic),
+    mockGetDefaults: vi.fn().mockResolvedValue({
+      bank_rate_bps: 525,
+      cpih_12m_bps: 310,
+      fx_spot_rates: { EUR: 0.91, USD: 0.83 },
+      energy_reference_values: { annual_bill_gbp: 1738 },
+      fetched_at: { boe_bank_rate: "2026-03-06T00:00:00Z" }
+    }),
     mockGetToken: vi.fn(),
     deterministicResponse: deterministic
   };
@@ -58,6 +66,7 @@ vi.mock("../auth/useAuthState", () => ({
 
 vi.mock("../api/client", () => ({
   createApiClient: () => ({
+    getDefaults: mockGetDefaults,
     runDeterministic: mockRunDeterministic,
     runMonteCarlo: vi.fn()
   })
@@ -66,6 +75,25 @@ vi.mock("../api/client", () => ({
 describe("StressTestPage", () => {
   beforeEach(() => {
     window.localStorage.clear();
+    mockGetDefaults.mockClear();
+  });
+
+  it("prefills defaults and allows manual override", async () => {
+    render(
+      <MemoryRouter>
+        <StressTestPage />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(mockGetDefaults).toHaveBeenCalledTimes(1);
+      expect(screen.getByLabelText("FX spot EUR to reporting")).toHaveValue(0.91);
+      expect(screen.getByLabelText("Use defaults")).toBeChecked();
+    });
+
+    const eurInput = screen.getByLabelText("FX spot EUR to reporting");
+    fireEvent.change(eurInput, { target: { value: "0.95" } });
+    expect(eurInput).toHaveValue(0.95);
   });
 
   it("supports wizard step navigation", () => {

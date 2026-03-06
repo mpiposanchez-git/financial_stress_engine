@@ -34,6 +34,16 @@ export type DeterministicRequest = {
   input_parameters: InputParameters;
 };
 
+export type DataDefaultsResponse = {
+  bank_rate_bps: number;
+  cpih_12m_bps: number;
+  fx_spot_rates: Record<"EUR" | "USD", number>;
+  energy_reference_values: {
+    annual_bill_gbp: number;
+  } | null;
+  fetched_at: Record<string, string | null>;
+};
+
 export type MonteCarloRequest = {
   input_parameters: InputParameters;
   n_sims: number;

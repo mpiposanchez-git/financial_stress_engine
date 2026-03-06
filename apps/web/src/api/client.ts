@@ -1,4 +1,5 @@
 import type {
+  DataDefaultsResponse,
   DeterministicRequest,
   DeterministicResponse,
   InputParameters,
@@ -76,6 +77,27 @@ function buildErrorMessage(statusCode: number, detail: string | null): string {
 }
 
 export function createApiClient(baseUrl: string, getToken: TokenProvider) {
+  const getJson = async <T>(path: string): Promise<T> => {
+    const token = await getToken();
+    const headers: Record<string, string> = {};
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${baseUrl}${path}`, {
+      method: "GET",
+      headers
+    });
+
+    if (!response.ok) {
+      const detail = await extractErrorDetail(response);
+      throw new Error(buildErrorMessage(response.status, detail));
+    }
+
+    return (await response.json()) as T;
+  };
+
   const postJson = async <T>(path: string, payload: unknown): Promise<T> => {
     const token = await getToken();
     const headers: Record<string, string> = {
@@ -101,6 +123,7 @@ export function createApiClient(baseUrl: string, getToken: TokenProvider) {
   };
 
   return {
+    getDefaults: () => getJson<DataDefaultsResponse>("/api/v1/data/defaults"),
     runDeterministic: (payload: DeterministicRequest) =>
       postJson<DeterministicResponse>("/api/v1/deterministic/run", payload),
     runDeterministicFromInput: (inputParameters: InputParameters) =>
