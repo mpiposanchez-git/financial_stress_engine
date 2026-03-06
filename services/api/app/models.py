@@ -105,7 +105,6 @@ class DeterministicRunResponse(BaseModel):
     min_savings_pence: int
     min_savings_formatted: str
     month_of_depletion: int | None
-    month_by_month: list[int]
     warnings: list[str]
 
 

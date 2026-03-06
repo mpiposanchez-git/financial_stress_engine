@@ -36,16 +36,3 @@ class DeterministicOutput(BaseModel):
     runway_months: float | None
     summary: str
     disclaimer: str = DISCLAIMER
-
-
-class MonteCarloOutput(BaseModel):
-    p10_monthly_cashflow_pence: int
-    p50_monthly_cashflow_pence: int
-    p90_monthly_cashflow_pence: int
-    p10_runway_months: float | None
-    p50_runway_months: float | None
-    p90_runway_months: float | None
-    probability_negative_cashflow: float
-    probability_runway_lt_3_months: float
-    num_trials: int
-    disclaimer: str = DISCLAIMER

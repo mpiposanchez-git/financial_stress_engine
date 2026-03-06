@@ -60,10 +60,8 @@ def test_deterministic_returns_required_keys(authenticated_client):
     assert "min_savings_pence" in body
     assert "min_savings_formatted" in body
     assert "month_of_depletion" in body
-    assert "month_by_month" in body
     assert "warnings" in body
     assert len(body["savings_path_pence"]) == 25
-    assert body["month_by_month"] == body["savings_path_pence"]
 
 
 def test_montecarlo_returns_metrics_percentiles(authenticated_client):

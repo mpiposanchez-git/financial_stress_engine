@@ -112,7 +112,6 @@ async def run_deterministic_route(
         min_savings_pence=result.min_savings_pence,
         min_savings_formatted=result.min_savings_formatted,
         month_of_depletion=result.month_of_depletion,
-        month_by_month=result.savings_path_pence,
         warnings=warnings,
     )
     record_deterministic_run((time.perf_counter() - started) * 1000.0)

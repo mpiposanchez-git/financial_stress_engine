@@ -26,7 +26,6 @@ describe("ResultsPage", () => {
         min_savings_pence: 123456,
         min_savings_formatted: "£1,234.56",
         month_of_depletion: null,
-        month_by_month: [],
         warnings: ["Educational simulation only. Not financial advice."]
       },
       montecarlo: {

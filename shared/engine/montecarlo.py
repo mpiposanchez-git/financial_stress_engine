@@ -9,6 +9,7 @@ import numpy as np
 from .fx import get_spot_rate_to_reporting, stressed_rate, validate_currency
 from .inputs import MonteCarloInput
 from .mortgage import mortgage_payment_interest_only, mortgage_payment_repayment
+from .shock_process import generate_shock_paths, round_half_up_int_array
 
 
 @dataclass(frozen=True)
@@ -39,10 +40,6 @@ class MonteCarloResult:
 def _round_half_up_float(value: float, places: int = 2) -> float:
     factor = 10**places
     return math.floor(value * factor + 0.5) / factor
-
-
-def _round_half_up_int_array(values: np.ndarray) -> np.ndarray:
-    return np.floor(values + 0.5).astype(np.int64)
 
 
 def _percentiles_float(values: np.ndarray) -> PercentileTriplet:
@@ -87,35 +84,6 @@ def _monthly_mortgage_payment_from_bps(
         dtype=np.int64,
         count=annual_rate_bps.size,
     )
-
-
-def _generate_shock_paths(
-    rng: np.random.Generator,
-    mean_bps: int,
-    std_bps: int,
-    n_sims: int,
-    horizon_months: int,
-    dynamics: str,
-    ar1_phi: float,
-    clip_low: int,
-    clip_high: int,
-) -> np.ndarray:
-    if std_bps == 0:
-        values = np.full((n_sims, horizon_months), mean_bps, dtype=np.int64)
-        return np.clip(values, clip_low, clip_high)
-
-    eps = rng.normal(0.0, std_bps, size=(n_sims, horizon_months))
-    paths = np.zeros((n_sims, horizon_months), dtype=np.float64)
-
-    if dynamics == "ar1":
-        paths[:, 0] = mean_bps + eps[:, 0]
-        for month in range(1, horizon_months):
-            paths[:, month] = mean_bps + ar1_phi * (paths[:, month - 1] - mean_bps) + eps[:, month]
-    else:
-        paths = mean_bps + eps
-
-    rounded = _round_half_up_int_array(paths)
-    return np.clip(rounded, clip_low, clip_high)
 
 
 def _build_fx_paths(
@@ -166,7 +134,7 @@ def _build_fx_paths(
 
 
 def _convert_array_to_reporting(amount_pence: np.ndarray, fx_rate_path: np.ndarray) -> np.ndarray:
-    return _round_half_up_int_array(amount_pence.astype(np.float64) * fx_rate_path)
+    return round_half_up_int_array(amount_pence.astype(np.float64) * fx_rate_path)
 
 
 def run_montecarlo(
@@ -178,7 +146,7 @@ def run_montecarlo(
     start = time.perf_counter()
     rng = np.random.default_rng(seed)
 
-    income_drop = _generate_shock_paths(
+    income_drop = generate_shock_paths(
         rng,
         inputs.shock_monthly_income_drop_bps,
         inputs.income_shock_std_bps,
@@ -189,7 +157,7 @@ def run_montecarlo(
         0,
         10_000,
     )
-    inflation = _generate_shock_paths(
+    inflation = generate_shock_paths(
         rng,
         inputs.inflation_monthly_essentials_increase_bps,
         inputs.inflation_shock_std_bps,
@@ -200,7 +168,7 @@ def run_montecarlo(
         0,
         10_000,
     )
-    rate_bps = _generate_shock_paths(
+    rate_bps = generate_shock_paths(
         rng,
         inputs.mortgage_rate_bps_stress,
         inputs.rate_shock_std_bps,

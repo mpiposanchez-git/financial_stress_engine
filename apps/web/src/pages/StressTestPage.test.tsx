@@ -31,7 +31,6 @@ const {
     min_savings_pence: 125000,
     min_savings_formatted: "£1,250.00",
     month_of_depletion: null,
-    month_by_month: [],
     warnings: ["Educational simulation only. Not financial advice."]
   };
 

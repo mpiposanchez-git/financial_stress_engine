@@ -53,7 +53,6 @@ export type DeterministicResponse = {
   min_savings_pence: number;
   min_savings_formatted: string;
   month_of_depletion: number | null;
-  month_by_month: number[];
   warnings: string[];
 };
 
