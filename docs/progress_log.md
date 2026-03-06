@@ -442,6 +442,30 @@
 ### Risks / Blockers
 - Fan chart currently uses percentile summary values (not full monthly percentile paths); richer fan-surface detail depends on future path-level percentile outputs.
 
+## 2026-03-06 — WS5-F12-01 Sensitivity Engine Perturbation Calculator
+
+### Completed
+- WS5-F12-01: Added `shared/engine/sensitivity.py` with `compute_sensitivity(...)` for deterministic one-factor perturbation analysis.
+- WS5-F12-01: Implemented perturbations for income shock, inflation shock, stressed mortgage rate, and FX stress, each shifted by `delta_bps` with guardrail clamping.
+- WS5-F12-01: Added ranked sensitivity output model including runway impact and min-savings impact per driver.
+- WS5-F12-01: Ranking is deterministic and ordered by absolute min-savings impact (descending), with stable tie-break by driver name.
+- WS5-F12-01: Added `services/api/tests/test_sensitivity.py` covering driver coverage/ranking and deterministic repeatability.
+
+### In progress
+- WS5-F12-02: Sensitivity API endpoint (premium gated).
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`46 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`40 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Used one-direction `+delta_bps` perturbations per factor for predictable comparison semantics and deterministic ranking.
+
+### Risks / Blockers
+- Current ranking key emphasizes min-savings sensitivity; if product preference shifts to runway-first ranking, sorting policy should be updated consistently across API/UI consumers.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
