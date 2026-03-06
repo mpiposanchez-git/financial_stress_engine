@@ -19,11 +19,10 @@ from shared.engine.fx import (
 from shared.engine.inputs import DeterministicInput
 from shared.engine.money import (
     apply_bps,
-    divide_round_half_up,
     format_currency_from_pence,
     round_half_up_decimal,
-    round_half_up_int,
 )
+from shared.engine.mortgage import mortgage_payment_interest_only, mortgage_payment_repayment
 from shared.engine.outputs import DISCLAIMER, DeterministicOutput
 
 
@@ -43,17 +42,9 @@ def _monthly_mortgage_payment(
         return 0
 
     if mortgage_type == "interest_only":
-        return divide_round_half_up(balance_pence * annual_rate_bps, 120_000)
+        return mortgage_payment_interest_only(balance_pence, annual_rate_bps)
 
-    # Repayment (amortising)
-    if annual_rate_bps == 0:
-        return divide_round_half_up(balance_pence, term_months) if term_months > 0 else 0
-
-    principal = Decimal(balance_pence)
-    monthly_rate = Decimal(annual_rate_bps) / Decimal(120_000)
-    factor = (Decimal("1") + monthly_rate) ** term_months
-    payment = principal * (monthly_rate * factor) / (factor - Decimal("1"))
-    return round_half_up_int(payment)
+    return mortgage_payment_repayment(balance_pence, annual_rate_bps, term_months)
 
 
 def _compute_runway(monthly_cashflow_pence: int, cash_savings_pence: int) -> Decimal | None:

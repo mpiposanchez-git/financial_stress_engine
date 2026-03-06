@@ -8,7 +8,7 @@ import numpy as np
 
 from .fx import get_spot_rate_to_reporting, stressed_rate, validate_currency
 from .inputs import MonteCarloInput
-from .money import divide_round_half_up
+from .mortgage import mortgage_payment_interest_only, mortgage_payment_repayment
 
 
 @dataclass(frozen=True)
@@ -73,21 +73,20 @@ def _monthly_mortgage_payment_from_bps(
         return np.zeros_like(annual_rate_bps, dtype=np.int64)
 
     if mortgage_type == "interest_only":
-        return ((balance_pence * annual_rate_bps + 60_000) // 120_000).astype(np.int64)
-
-    zero_mask = annual_rate_bps == 0
-    payments = np.zeros_like(annual_rate_bps, dtype=np.float64)
-    if np.any(~zero_mask):
-        rates = annual_rate_bps[~zero_mask].astype(np.float64) / 120_000.0
-        factor = np.power(1.0 + rates, term_months)
-        payments[~zero_mask] = balance_pence * (rates * factor) / (factor - 1.0)
-
-    if np.any(zero_mask):
-        payments[zero_mask] = (
-            divide_round_half_up(balance_pence, term_months) if term_months > 0 else 0
+        return np.fromiter(
+            (mortgage_payment_interest_only(balance_pence, int(rate)) for rate in annual_rate_bps),
+            dtype=np.int64,
+            count=annual_rate_bps.size,
         )
 
-    return _round_half_up_int_array(payments)
+    return np.fromiter(
+        (
+            mortgage_payment_repayment(balance_pence, int(rate), term_months)
+            for rate in annual_rate_bps
+        ),
+        dtype=np.int64,
+        count=annual_rate_bps.size,
+    )
 
 
 def _generate_shock_paths(
