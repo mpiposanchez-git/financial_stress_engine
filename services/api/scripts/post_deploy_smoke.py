@@ -111,17 +111,23 @@ def run(base_url: str, token: str, max_latency_ms: float) -> int:
             "health",
             status,
             elapsed,
-            None if status == 200 and body == {"status": "ok"} else f"Expected {{'status': 'ok'}}, got {_summarize_body(body)}",
+            None
+            if status == 200 and body == {"status": "ok"}
+            else f"Expected {{'status': 'ok'}}, got {_summarize_body(body)}",
         )
     )
 
     det_payload = {"input_parameters": _base_input()}
-    status, body, elapsed = _request_json("POST", det_url, headers=_headers(token), payload=det_payload)
+    status, body, elapsed = _request_json(
+        "POST", det_url, headers=_headers(token), payload=det_payload
+    )
     _print_result("deterministic", status, elapsed)
     det_error = None
     if status != 200:
         det_error = f"Unexpected status/body: status={status}, body={_summarize_body(body)}"
-    elif not isinstance(body, dict) or "runway_months" not in body or "min_savings_pence" not in body:
+    elif (
+        not isinstance(body, dict) or "runway_months" not in body or "min_savings_pence" not in body
+    ):
         det_error = f"Missing deterministic response keys, body={_summarize_body(body)}"
     checks.append(("deterministic", status, elapsed, det_error))
 
@@ -131,7 +137,9 @@ def run(base_url: str, token: str, max_latency_ms: float) -> int:
         "horizon_months": 24,
         "seed": 314159,
     }
-    status, body, elapsed = _request_json("POST", mc_url, headers=_headers(token), payload=mc_payload)
+    status, body, elapsed = _request_json(
+        "POST", mc_url, headers=_headers(token), payload=mc_payload
+    )
     _print_result("montecarlo", status, elapsed)
     mc_error = None
     if status != 200:
@@ -145,7 +153,9 @@ def run(base_url: str, token: str, max_latency_ms: float) -> int:
         if status >= 400:
             failures.append(f"{label}: HTTP {status}")
         if elapsed > max_latency_ms:
-            failures.append(f"{label}: latency {elapsed:.2f}ms exceeded threshold {max_latency_ms:.2f}ms")
+            failures.append(
+                f"{label}: latency {elapsed:.2f}ms exceeded threshold {max_latency_ms:.2f}ms"
+            )
         if error:
             failures.append(f"{label}: {error}")
 
@@ -165,10 +175,24 @@ def run(base_url: str, token: str, max_latency_ms: float) -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Post-deploy smoke checks for API health and core endpoints")
-    parser.add_argument("--base-url", default=os.getenv("STRESS_API_BASE_URL"), help="Backend base URL, e.g. https://service.onrender.com")
-    parser.add_argument("--token", default=os.getenv("STRESS_API_TOKEN"), help="Bearer token used for authenticated endpoint checks")
-    parser.add_argument("--max-latency-ms", type=float, default=float(os.getenv("STRESS_SMOKE_MAX_LATENCY_MS", "3000")))
+    parser = argparse.ArgumentParser(
+        description="Post-deploy smoke checks for API health and core endpoints"
+    )
+    parser.add_argument(
+        "--base-url",
+        default=os.getenv("STRESS_API_BASE_URL"),
+        help="Backend base URL, e.g. https://service.onrender.com",
+    )
+    parser.add_argument(
+        "--token",
+        default=os.getenv("STRESS_API_TOKEN"),
+        help="Bearer token used for authenticated endpoint checks",
+    )
+    parser.add_argument(
+        "--max-latency-ms",
+        type=float,
+        default=float(os.getenv("STRESS_SMOKE_MAX_LATENCY_MS", "3000")),
+    )
     args = parser.parse_args()
 
     if not args.base_url:
