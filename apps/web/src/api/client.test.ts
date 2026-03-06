@@ -59,4 +59,26 @@ describe("createApiClient", () => {
       "Authentication failed. Please sign in again and retry from the official app URL."
     );
   });
+
+  it("maps 422 validation detail arrays to actionable input messages", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: false,
+      status: 422,
+      json: async () => ({
+        detail: [
+          {
+            loc: ["body", "input_parameters", "mortgage_rate_percent_current"],
+            msg: "Input should be less than or equal to 100"
+          }
+        ]
+      })
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const client = createApiClient("https://api.example.com", async () => "token-123");
+
+    await expect(client.runDeterministic({ input_parameters: inputParameters })).rejects.toThrow(
+      "Invalid simulation input: body.input_parameters.mortgage_rate_percent_current: Input should be less than or equal to 100"
+    );
+  });
 });

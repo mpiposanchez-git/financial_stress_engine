@@ -7,6 +7,11 @@ import { InputParameters, ResultsRouteState } from "../types";
 
 const currencies = ["GBP", "EUR", "USD"] as const;
 
+function parseFiniteNumber(value: string): number | null {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 const defaultInput: InputParameters = {
   household_monthly_net_income_gbp: 4000,
   household_monthly_essential_spend_gbp: 1500,
@@ -203,13 +208,20 @@ export function StressTestPage() {
             step="0.0001"
             value={form.fx_spot_rates.EUR}
             onChange={(event) =>
-              setForm((prev) => ({
-                ...prev,
-                fx_spot_rates: {
-                  ...prev.fx_spot_rates,
-                  EUR: Number(event.target.value)
+              setForm((prev) => {
+                const next = parseFiniteNumber(event.target.value);
+                if (next === null) {
+                  return prev;
                 }
-              }))
+
+                return {
+                  ...prev,
+                  fx_spot_rates: {
+                    ...prev.fx_spot_rates,
+                    EUR: next
+                  }
+                };
+              })
             }
           />
         </label>
@@ -220,13 +232,20 @@ export function StressTestPage() {
             step="0.0001"
             value={form.fx_spot_rates.USD}
             onChange={(event) =>
-              setForm((prev) => ({
-                ...prev,
-                fx_spot_rates: {
-                  ...prev.fx_spot_rates,
-                  USD: Number(event.target.value)
+              setForm((prev) => {
+                const next = parseFiniteNumber(event.target.value);
+                if (next === null) {
+                  return prev;
                 }
-              }))
+
+                return {
+                  ...prev,
+                  fx_spot_rates: {
+                    ...prev.fx_spot_rates,
+                    USD: next
+                  }
+                };
+              })
             }
           />
         </label>
@@ -236,13 +255,20 @@ export function StressTestPage() {
             type="number"
             value={form.fx_stress_bps.EUR ?? 0}
             onChange={(event) =>
-              setForm((prev) => ({
-                ...prev,
-                fx_stress_bps: {
-                  ...prev.fx_stress_bps,
-                  EUR: Number(event.target.value)
+              setForm((prev) => {
+                const next = parseFiniteNumber(event.target.value);
+                if (next === null) {
+                  return prev;
                 }
-              }))
+
+                return {
+                  ...prev,
+                  fx_stress_bps: {
+                    ...prev.fx_stress_bps,
+                    EUR: next
+                  }
+                };
+              })
             }
           />
         </label>
@@ -252,13 +278,20 @@ export function StressTestPage() {
             type="number"
             value={form.fx_stress_bps.USD ?? 0}
             onChange={(event) =>
-              setForm((prev) => ({
-                ...prev,
-                fx_stress_bps: {
-                  ...prev.fx_stress_bps,
-                  USD: Number(event.target.value)
+              setForm((prev) => {
+                const next = parseFiniteNumber(event.target.value);
+                if (next === null) {
+                  return prev;
                 }
-              }))
+
+                return {
+                  ...prev,
+                  fx_stress_bps: {
+                    ...prev.fx_stress_bps,
+                    USD: next
+                  }
+                };
+              })
             }
           />
         </label>

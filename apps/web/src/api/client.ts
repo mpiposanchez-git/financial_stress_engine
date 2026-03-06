@@ -8,14 +8,35 @@ import type {
 type TokenProvider = () => Promise<string | null>;
 
 type ApiErrorBody = {
-  detail?: string;
+  detail?: string | ApiValidationIssue[];
 };
+
+type ApiValidationIssue = {
+  loc?: Array<string | number>;
+  msg?: string;
+  type?: string;
+};
+
+function formatValidationIssues(issues: ApiValidationIssue[]): string | null {
+  if (!issues.length) {
+    return null;
+  }
+
+  const first = issues[0];
+  const location = Array.isArray(first.loc) ? first.loc.join(".") : "request";
+  const message = typeof first.msg === "string" ? first.msg : "Invalid input";
+  return `${location}: ${message}`;
+}
 
 async function extractErrorDetail(response: Response): Promise<string | null> {
   try {
     const payload = (await response.json()) as ApiErrorBody;
     if (typeof payload.detail === "string" && payload.detail.trim().length > 0) {
       return payload.detail;
+    }
+
+    if (Array.isArray(payload.detail)) {
+      return formatValidationIssues(payload.detail);
     }
   } catch {
     return null;
@@ -25,6 +46,13 @@ async function extractErrorDetail(response: Response): Promise<string | null> {
 }
 
 function buildErrorMessage(statusCode: number, detail: string | null): string {
+    if (statusCode === 422) {
+      if (detail) {
+        return `Invalid simulation input: ${detail}`;
+      }
+      return "Invalid simulation input. Please check numeric fields and retry.";
+    }
+
   if (statusCode === 401) {
     return "Authentication failed. Please sign in again and retry from the official app URL.";
   }
