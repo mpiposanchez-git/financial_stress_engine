@@ -1026,6 +1026,36 @@
 ### Risks / Blockers
 - Browser download handling relies on client-side blob/object URL behavior and may require cross-browser QA in release hardening.
 
+## 2026-03-06 — WS8-JSON-01 JSON Export Hardening (Always On)
+
+### Completed
+- WS8-JSON-01: Added `apps/web/src/lib/exportJson.ts` helper for:
+	- complete export bundle assembly,
+	- JSON file download,
+	- deterministic filename format with UTC date and reporting currency.
+- WS8-JSON-01: Updated `apps/web/src/pages/ResultsPage.tsx` to add always-on JSON download card/button.
+- WS8-JSON-01: Export bundle now includes:
+	- input payload,
+	- deterministic outputs,
+	- premium-gated Monte Carlo/sensitivity outputs,
+	- provenance metadata,
+	- app/model version metadata.
+- WS8-JSON-01: Added unit tests in `apps/web/src/lib/exportJson.test.ts` for filename and required bundle keys.
+
+### In progress
+- WS9-01: Logging and sensitive-data guards review.
+
+### Test evidence
+- Frontend tests: `npm --prefix apps/web test -- --run src/lib/exportJson.test.ts src/pages/ResultsPage.test.tsx` ✅ (`10 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Used UTC date (not time) and reporting currency in filenames to satisfy reproducible naming requirements while avoiding timestamp churn.
+- Kept premium payload sections explicitly null for free users to preserve stable bundle shape and simplify downstream consumers.
+
+### Risks / Blockers
+- JSON bundle size may increase as additional analytics blocks are added; optional compression/streaming can be evaluated later.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

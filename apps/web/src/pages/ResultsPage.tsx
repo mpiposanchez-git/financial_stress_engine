@@ -15,6 +15,7 @@ import { MortgageStressPanel } from "../components/MortgageStressPanel";
 import { OfficialResources } from "../components/OfficialResources";
 import { PdfDownloadButton } from "../components/PdfDownloadButton";
 import { ScenarioCompareTable } from "../components/scenarios/ScenarioCompareTable";
+import { buildExportBundle, downloadJsonBundle, formatJsonExportFilename } from "../lib/exportJson";
 import { ResultsRouteState, SensitivityDriverImpact, UkPercentileResponse, UkReferenceValuesResponse } from "../types";
 
 export function ResultsPage() {
@@ -194,6 +195,25 @@ export function ResultsPage() {
     }
   };
 
+  const onDownloadJson = () => {
+    const bundle = buildExportBundle({
+      inputParameters,
+      deterministic: state.deterministic,
+      montecarlo: state.montecarlo,
+      sensitivityImpacts,
+      premiumUnlocked,
+      provenance: {
+        data_reference_fetched_at_utc: ukReference?.provenance.fetched_at_utc ?? null,
+        data_reference_source_url: ukReference?.provenance.source_url ?? null,
+      },
+      appVersion: "0.1.1",
+      modelVersion: "deterministic-v1",
+    });
+
+    const filename = formatJsonExportFilename(state.deterministic.reporting_currency);
+    downloadJsonBundle(bundle, filename);
+  };
+
   return (
     <main className="page-shell">
       <h1>Results</h1>
@@ -315,6 +335,13 @@ export function ResultsPage() {
         premiumUnlocked={false}
         dataTimestamp="Not provided"
       />
+
+      <section className="result-card" aria-label="JSON export">
+        <h2>JSON export</h2>
+        <button type="button" onClick={onDownloadJson}>
+          Download JSON bundle
+        </button>
+      </section>
 
       {premiumUnlocked ? (
         <PdfDownloadButton onDownload={onDownloadPdf} loading={pdfLoading} />
