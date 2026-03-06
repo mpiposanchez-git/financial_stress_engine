@@ -112,6 +112,44 @@ form {
   margin-top: 0;
 }
 
+.saved-scenarios {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.saved-scenarios-form {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.saved-scenario-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.saved-scenario-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  border: 1px solid #d8e1eb;
+  border-radius: 0.65rem;
+  padding: 0.55rem 0.65rem;
+  background: #f8fbff;
+}
+
+.saved-scenario-item p {
+  margin: 0.2rem 0 0;
+}
+
+.saved-scenario-actions {
+  display: flex;
+  gap: 0.45rem;
+}
+
 .wizard-shell {
   display: grid;
   gap: 0.75rem;

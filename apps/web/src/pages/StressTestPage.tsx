@@ -8,11 +8,13 @@ import { CurrencySelect } from "../components/inputs/CurrencySelect";
 import { MortgageInputs } from "../components/inputs/MortgageInputs";
 import { MoneyInput } from "../components/inputs/MoneyInput";
 import { PercentSlider } from "../components/inputs/PercentSlider";
+import { SavedScenarios } from "../components/scenarios/SavedScenarios";
 import { ScenarioTabs } from "../components/scenarios/ScenarioTabs";
 import { Wizard } from "../components/wizard/Wizard";
 import { WizardNav } from "../components/wizard/WizardNav";
 import { WizardStep } from "../components/wizard/WizardStep";
 import { buildDeterministicPayload } from "../lib/buildPayload";
+import { deleteScenario, getSavedScenarios, saveScenario, SavedScenario } from "../lib/storage/localScenarioStore";
 import { InputParameters, ResultsRouteState } from "../types";
 
 const currencies = ["GBP", "EUR", "USD"] as const;
@@ -76,6 +78,7 @@ export function StressTestPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [savedScenarios, setSavedScenarios] = useState<SavedScenario[]>(() => getSavedScenarios());
   const navigate = useNavigate();
   const { getToken } = useAuthState();
   const premiumUnlocked = false;
@@ -148,6 +151,38 @@ export function StressTestPage() {
     setCurrentStep(0);
   };
 
+  const onSaveScenario = (name: string) => {
+    const result = saveScenario({
+      name,
+      input: form,
+      premiumUnlocked
+    });
+
+    setSavedScenarios(result.scenarios);
+    if (!result.ok) {
+      setError("Free plan save limit reached. Premium unlocks unlimited saved scenarios.");
+      return;
+    }
+
+    setError(null);
+  };
+
+  const onLoadScenario = (scenario: SavedScenario) => {
+    const loaded = cloneInput(scenario.input);
+    setScenarioForm(loaded);
+    setScenarioDrafts((drafts) => ({
+      ...drafts,
+      [activeScenario]: loaded
+    }));
+    setCurrentStep(0);
+    setError(null);
+  };
+
+  const onDeleteScenario = (scenarioId: string) => {
+    const next = deleteScenario(scenarioId);
+    setSavedScenarios(next);
+  };
+
   return (
     <main>
       <h1>Stress Test</h1>
@@ -159,6 +194,13 @@ export function StressTestPage() {
           scenarioHasDraft={scenarioHasDraft}
           onSelect={onSelectScenario}
           onCloneFromBase={onCloneFromBase}
+        />
+        <SavedScenarios
+          scenarios={savedScenarios}
+          premiumUnlocked={premiumUnlocked}
+          onSave={onSaveScenario}
+          onLoad={onLoadScenario}
+          onDelete={onDeleteScenario}
         />
         <Wizard
           currentStep={currentStep}

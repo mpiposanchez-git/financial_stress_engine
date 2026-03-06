@@ -369,6 +369,30 @@
 ### Risks / Blockers
 - `ResultsPage` rendering currently relies on compare data being present in route state; end-to-end compare fetch wiring is expected in subsequent workflow tasks.
 
+## 2026-03-06 — WS4-04 Local-only Scenario Store (Hybrid)
+
+### Completed
+- WS4-04: Added browser-only scenario persistence utility `localScenarioStore` with robust read/parse handling and cloning safeguards.
+- WS4-04: Implemented free-vs-premium save limits in storage flow (`2` scenarios on free plan, unlimited when premium is unlocked).
+- WS4-04: Added `SavedScenarios` UI to save, list, load, and delete local scenario snapshots from the wizard flow.
+- WS4-04: Integrated saved-scenario load/save/delete into `StressTestPage` and surfaced explicit device-local warning text: `Saved only on this device.`
+- WS4-04: Added tests for local storage limit behavior and saved-scenarios UI interactions/warning text.
+
+### In progress
+- WS5-F05-01: Monte Carlo DTO alignment and API contract hardening.
+
+### Test evidence
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`38 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`44 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+
+### Decisions made
+- Kept scenario persistence local-only via `localStorage` and did not introduce backend persistence to preserve the privacy/device-local scope for this task.
+
+### Risks / Blockers
+- Premium entitlement source is still static in page wiring; when entitlement service wiring is added, UI limits should be bound to real auth claims.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

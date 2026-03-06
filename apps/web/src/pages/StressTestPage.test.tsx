@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { StressTestPage } from "./StressTestPage";
 
@@ -64,6 +64,10 @@ vi.mock("../api/client", () => ({
 }));
 
 describe("StressTestPage", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
   it("supports wizard step navigation", () => {
     const { container } = render(
       <MemoryRouter>
@@ -128,5 +132,16 @@ describe("StressTestPage", () => {
         }
       });
     });
+  });
+
+  it("shows saved-scenarios local device warning", () => {
+    const { container } = render(
+      <MemoryRouter>
+        <StressTestPage />
+      </MemoryRouter>
+    );
+    const ui = within(container);
+
+    expect(ui.getByText("Saved only on this device.")).toBeInTheDocument();
   });
 });
