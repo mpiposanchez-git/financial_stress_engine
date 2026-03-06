@@ -9,6 +9,7 @@ import numpy as np
 from .fx import get_spot_rate_to_reporting, stressed_rate, validate_currency
 from .inputs import MonteCarloInput
 from .mortgage import mortgage_payment_interest_only, mortgage_payment_repayment
+from .schedules import resolve_schedule_levels
 from .shock_process import generate_shock_paths, round_half_up_int_array
 
 
@@ -146,9 +147,34 @@ def run_montecarlo(
     start = time.perf_counter()
     rng = np.random.default_rng(seed)
 
+    income_mu = np.array(
+        resolve_schedule_levels(
+            inputs.shock_monthly_income_drop_bps,
+            horizon_months,
+            inputs.income_shock_schedule,
+        ),
+        dtype=np.int64,
+    )
+    inflation_mu = np.array(
+        resolve_schedule_levels(
+            inputs.inflation_monthly_essentials_increase_bps,
+            horizon_months,
+            inputs.inflation_shock_schedule,
+        ),
+        dtype=np.int64,
+    )
+    rate_mu = np.array(
+        resolve_schedule_levels(
+            inputs.mortgage_rate_bps_stress,
+            horizon_months,
+            inputs.mortgage_rate_stress_schedule,
+        ),
+        dtype=np.int64,
+    )
+
     income_drop = generate_shock_paths(
         rng,
-        inputs.shock_monthly_income_drop_bps,
+        income_mu,
         inputs.income_shock_std_bps,
         n_sims,
         horizon_months,
@@ -159,7 +185,7 @@ def run_montecarlo(
     )
     inflation = generate_shock_paths(
         rng,
-        inputs.inflation_monthly_essentials_increase_bps,
+        inflation_mu,
         inputs.inflation_shock_std_bps,
         n_sims,
         horizon_months,
@@ -170,7 +196,7 @@ def run_montecarlo(
     )
     rate_bps = generate_shock_paths(
         rng,
-        inputs.mortgage_rate_bps_stress,
+        rate_mu,
         inputs.rate_shock_std_bps,
         n_sims,
         horizon_months,

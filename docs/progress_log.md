@@ -538,6 +538,30 @@
 ### Risks / Blockers
 - Backward-compatible first-month stress summary may under-represent later-month schedule severity; if needed, summary contract can be extended in a future non-backward-compatible revision.
 
+## 2026-03-06 — WS5-F13-02 Schedules in Monte Carlo Monthly Paths
+
+### Completed
+- WS5-F13-02: Updated Monte Carlo shock generation to support time-varying monthly mean paths (`mu_t`) for income shock, inflation shock, and mortgage-rate stress.
+- WS5-F13-02: Extended `generate_shock_paths` in `shock_process.py` to accept either scalar means or per-month mean arrays.
+- WS5-F13-02: Implemented AR(1) behavior around moving means using prior-step deviation from prior mean (`mu_{t-1}`).
+- WS5-F13-02: Wired schedule-derived mean paths from input schedules into Monte Carlo run flow.
+- WS5-F13-02: Added schedule-focused Monte Carlo tests for fixed-seed reproducibility and schedule-effect behavior under zero-volatility settings.
+
+### In progress
+- WS5-F08-01: Category inflation model (engine only).
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`53 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`43 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Reproducibility assertions compare deterministic output metrics and seed metadata while intentionally excluding runtime timing variance.
+
+### Risks / Blockers
+- Schedule-aware mean paths currently apply to stress dimensions only; any future category/debt schedule features must align mean-path conventions to avoid drift across model modules.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
