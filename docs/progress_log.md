@@ -955,6 +955,27 @@
 ### Risks / Blockers
 - Ranking quality remains dependent on replacing placeholder deciles with parsed HBAI thresholds in subsequent integration slices.
 
+## 2026-03-06 — WS8-F06-01 PDF Generator Core (ReportLab)
+
+### Completed
+- WS8-F06-01: Added `shared/engine/reports/pdf_report.py` implementing deterministic PDF byte generation from inputs, outputs, disclaimers, provenance, and app version.
+- WS8-F06-01: Added `services/api/tests/test_pdf_report.py` validating PDF generation size and key heading presence.
+- WS8-F06-01: Added `reportlab` runtime dependency in `pyproject.toml`.
+
+### In progress
+- WS8-F06-02: PDF API endpoint (premium).
+
+### Test evidence
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check shared/engine/reports/pdf_report.py services/api/tests/test_pdf_report.py pyproject.toml` ✅
+- Backend tests: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests/test_pdf_report.py -q` ✅ (`1 passed`)
+
+### Decisions made
+- Disabled PDF page compression to keep heading text visible for deterministic best-effort byte-level assertions in unit tests.
+- Kept generation content timestamp-free and random-id-free to preserve deterministic output expectations for identical inputs.
+
+### Risks / Blockers
+- Future richer layouts may require pagination/wrapping hardening for very large payloads.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
