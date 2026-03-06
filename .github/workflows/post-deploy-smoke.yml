@@ -20,6 +20,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Validate smoke inputs
+        shell: bash
+        run: |
+          if [ -z "${STRESS_API_BASE_URL}" ]; then
+            echo "Missing STRESS_API_BASE_URL (repo variable VITE_API_BASE_URL)."
+            exit 1
+          fi
+          if [ -z "${STRESS_API_TOKEN}" ]; then
+            echo "Missing STRESS_API_TOKEN (repo secret SMOKE_TEST_BEARER_TOKEN)."
+            exit 1
+          fi
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:

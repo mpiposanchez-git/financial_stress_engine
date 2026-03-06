@@ -17,7 +17,12 @@ def _headers(token: str | None = None) -> dict[str, str]:
     return headers
 
 
-def _request_json(method: str, url: str, headers: dict[str, str], payload: dict[str, Any] | None = None) -> tuple[int, Any, float]:
+def _request_json(
+    method: str,
+    url: str,
+    headers: dict[str, str],
+    payload: dict[str, Any] | None = None,
+) -> tuple[int, Any, float]:
     body = None if payload is None else json.dumps(payload).encode("utf-8")
     request = urllib.request.Request(url=url, data=body, method=method, headers=headers)
     started = time.perf_counter()
@@ -38,6 +43,24 @@ def _request_json(method: str, url: str, headers: dict[str, str], payload: dict[
             except json.JSONDecodeError:
                 parsed = raw
         return http_error.code, parsed, elapsed_ms
+    except urllib.error.URLError as url_error:
+        elapsed_ms = (time.perf_counter() - started) * 1000.0
+        return 0, {"network_error": str(url_error.reason)}, elapsed_ms
+
+
+def _summarize_body(body: Any) -> str:
+    if body is None:
+        return "<empty>"
+
+    try:
+        rendered = json.dumps(body, ensure_ascii=True)
+    except TypeError:
+        rendered = str(body)
+
+    if len(rendered) > 240:
+        return f"{rendered[:237]}..."
+
+    return rendered
 
 
 def _base_input() -> dict[str, Any]:
@@ -72,6 +95,9 @@ def _print_result(label: str, status: int, elapsed_ms: float) -> None:
 
 
 def run(base_url: str, token: str, max_latency_ms: float) -> int:
+    print(f"Smoke target: {base_url}")
+    print(f"Max latency threshold: {max_latency_ms:.2f}ms")
+
     health_url = f"{base_url}/health"
     det_url = f"{base_url}/api/v1/deterministic/run"
     mc_url = f"{base_url}/api/v1/montecarlo/run"
@@ -80,16 +106,23 @@ def run(base_url: str, token: str, max_latency_ms: float) -> int:
 
     status, body, elapsed = _request_json("GET", health_url, headers=_headers())
     _print_result("health", status, elapsed)
-    checks.append(("health", status, elapsed, None if status == 200 and body == {"status": "ok"} else "Expected {'status': 'ok'}"))
+    checks.append(
+        (
+            "health",
+            status,
+            elapsed,
+            None if status == 200 and body == {"status": "ok"} else f"Expected {{'status': 'ok'}}, got {_summarize_body(body)}",
+        )
+    )
 
     det_payload = {"input_parameters": _base_input()}
     status, body, elapsed = _request_json("POST", det_url, headers=_headers(token), payload=det_payload)
     _print_result("deterministic", status, elapsed)
     det_error = None
     if status != 200:
-        det_error = f"Unexpected status/body: status={status}, body={body}"
+        det_error = f"Unexpected status/body: status={status}, body={_summarize_body(body)}"
     elif not isinstance(body, dict) or "runway_months" not in body or "min_savings_pence" not in body:
-        det_error = "Missing deterministic response keys"
+        det_error = f"Missing deterministic response keys, body={_summarize_body(body)}"
     checks.append(("deterministic", status, elapsed, det_error))
 
     mc_payload = {
@@ -102,9 +135,9 @@ def run(base_url: str, token: str, max_latency_ms: float) -> int:
     _print_result("montecarlo", status, elapsed)
     mc_error = None
     if status != 200:
-        mc_error = f"Unexpected status/body: status={status}, body={body}"
+        mc_error = f"Unexpected status/body: status={status}, body={_summarize_body(body)}"
     elif not isinstance(body, dict) or "metrics" not in body:
-        mc_error = "Missing Monte Carlo metrics"
+        mc_error = f"Missing Monte Carlo metrics, body={_summarize_body(body)}"
     checks.append(("montecarlo", status, elapsed, mc_error))
 
     failures: list[str] = []
@@ -120,6 +153,11 @@ def run(base_url: str, token: str, max_latency_ms: float) -> int:
         print("Smoke checks failed:")
         for item in failures:
             print(f" - {item}")
+
+        print("Common fixes:")
+        print(" - Confirm STRESS_API_BASE_URL points to the live Render API host")
+        print(" - Rotate SMOKE_TEST_BEARER_TOKEN and update repository secret")
+        print(" - Confirm Clerk issuer/JWKS and Render auth env vars are aligned")
         return 1
 
     print("Smoke checks passed.")
