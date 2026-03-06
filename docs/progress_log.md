@@ -685,6 +685,108 @@
 ### Risks / Blockers
 - In-memory cache is process-local and non-persistent; multi-instance deployments or restarts will require a shared backend cache in later phases.
 
+## 2026-03-06 — WS6-A01-03 Fetcher: BoE Bank Rate
+
+### Completed
+- WS6-A01-03: Added `services/api/app/fetchers/boe_bank_rate.py` to fetch and parse latest Bank Rate value and date.
+- WS6-A01-03: Added `services/api/app/data_fetcher.py` orchestrator with `refresh_all(...)` that writes BoE Bank Rate data to cache key `boe_bank_rate`.
+- WS6-A01-03: Integrated cache metadata creation (`fetched_at_utc`, `source_url`, `sha256`) in refresh flow.
+- WS6-A01-03: Added mocked unit tests in `services/api/tests/test_fetch_boe_bank_rate.py` (no live network calls) for parsing, cache write behavior, and parse-failure handling.
+
+### In progress
+- WS6-A01-04: Fetcher for BoE FX spot rates (GBP base).
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`65 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`46 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Kept fetcher parser lightweight and deterministic (regex-based) so tests can mock static payloads without network dependencies.
+- Centralized cache write in `refresh_all(...)` to keep metadata and hashing behavior consistent across future fetchers.
+
+### Risks / Blockers
+- Upstream BoE page structure changes may break regex parsing; robust parser hardening may be needed when additional fetchers are introduced.
+
+## 2026-03-06 — WS6-A01-04 Fetcher: BoE FX Spot Rates (GBP Base)
+
+### Completed
+- WS6-A01-04: Added `services/api/app/fetchers/boe_fx.py` to fetch and parse BoE EUR/USD spot rates against GBP base.
+- WS6-A01-04: Integrated BoE FX fetcher into `services/api/app/data_fetcher.py` `refresh_all(...)` flow.
+- WS6-A01-04: Added cache write under key `boe_fx_spot` including `base_currency`, `eur`, `usd`, `as_of_date`, and `indicative_only`.
+- WS6-A01-04: Added metadata hashing/provenance for FX payload (`fetched_at_utc`, `source_url`, `sha256`).
+- WS6-A01-04: Updated data registry FX license note to explicitly state indicative/not-official status.
+- WS6-A01-04: Added mocked unit tests in `services/api/tests/test_fetch_boe_fx.py` and updated bank-rate refresh test to reflect combined refresh outputs.
+
+### In progress
+- WS6-A01-05: Fetcher for ONS CPI/CPIH latest 12m rate.
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`68 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`46 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Stored FX values as GBP-base snapshot fields (`eur`, `usd`) to keep downstream consumption simple for baseline benchmarks.
+- Added explicit `indicative_only: true` in cached payload to reinforce non-official/non-transactional semantics.
+
+### Risks / Blockers
+- Regex extraction assumes the source content includes plain currency labels (`EUR`, `USD`); HTML structure shifts may require parser refinement.
+
+## 2026-03-06 — WS6-A01-05 Fetcher: ONS CPI/CPIH (Latest 12m Rate)
+
+### Completed
+- WS6-A01-05: Added `services/api/app/fetchers/ons_cpi.py` to fetch and parse latest CPIH/CPI annual rate and reference month.
+- WS6-A01-05: Integrated ONS fetcher into `services/api/app/data_fetcher.py` `refresh_all(...)` flow.
+- WS6-A01-05: Added cache write under key `ons_cpih_12m` with fields `measure`, `annual_rate_percent`, and `month`.
+- WS6-A01-05: Added cache metadata/provenance for ONS payload (`fetched_at_utc`, `source_url`, `sha256`).
+- WS6-A01-05: Updated existing BoE refresh tests to inject ONS fetcher in deterministic refresh-all test paths.
+- WS6-A01-05: Added mocked unit tests in `services/api/tests/test_fetch_ons_cpi.py` for parser success/failure and refresh-all cache integration.
+
+### In progress
+- WS6-A01-06: Fetcher for Ofgem price cap snapshot.
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`71 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`46 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Parser supports CPIH first with CPI fallback via shared pattern to keep fetch behavior resilient when one measure is unavailable.
+- Stored ONS snapshot as a compact key/value contract (`measure`, `annual_rate_percent`, `month`) for straightforward downstream default wiring.
+
+### Risks / Blockers
+- ONS page-content wording/layout changes could reduce regex reliability; parser hardening may be needed as data-source integrations expand.
+
+## 2026-03-06 — WS6-A01-06 Fetcher: Ofgem Price Cap Snapshot
+
+### Completed
+- WS6-A01-06: Added `services/api/app/fetchers/ofgem_cap.py` to fetch and parse a minimal Ofgem headline snapshot (region, annual bill cap, period start date).
+- WS6-A01-06: Integrated Ofgem fetcher into `services/api/app/data_fetcher.py` `refresh_all(...)` flow.
+- WS6-A01-06: Added cache write under key `ofgem_price_cap` with `region`, `annual_bill_gbp`, and `period_start`.
+- WS6-A01-06: Added metadata/provenance hashing for Ofgem payload (`fetched_at_utc`, `source_url`, `sha256`).
+- WS6-A01-06: Updated existing fetcher integration tests to inject Ofgem fetcher for deterministic refresh-all behavior.
+- WS6-A01-06: Added mocked unit tests in `services/api/tests/test_fetch_ofgem_cap.py` for parse success/failure and cache integration.
+
+### In progress
+- WS6-A01-07: Fetcher for DWP HBAI ZIP (store raw).
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`74 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`46 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Chose a minimal headline snapshot contract for initial Ofgem integration to keep parser complexity low while preserving source traceability.
+- Normalized comma-separated currency values (e.g., `£1,834`) to numeric `annual_bill_gbp` for downstream consistency.
+
+### Risks / Blockers
+- Ofgem page wording and layout changes can impact regex extraction reliability; a structured parser may be required in later hardening passes.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
