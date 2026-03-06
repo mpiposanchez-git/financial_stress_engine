@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import asyncio
 import secrets
+import time
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 
 from shared.engine.deterministic import run_deterministic
 from shared.engine.money import format_currency_from_pence
 from shared.engine.montecarlo import run_montecarlo
 
 from .auth import AuthContext, require_auth
+from .entitlements import is_premium, require_premium
 from .models import (
     DeterministicRunRequest,
     DeterministicRunResponse,
@@ -21,6 +23,7 @@ from .models import (
 )
 from .rate_limit import rate_limiter
 from .settings import Settings, get_settings
+from .telemetry import get_telemetry_snapshot, record_deterministic_run, record_montecarlo_run
 
 router = APIRouter()
 
@@ -28,6 +31,21 @@ router = APIRouter()
 @router.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@router.get("/api/v1/me")
+def me(auth: AuthContext = Depends(require_auth)) -> dict[str, str | bool]:
+    return {"subject": auth.subject, "is_premium": is_premium(auth)}
+
+
+@router.get("/api/v1/admin/telemetry")
+def admin_telemetry(
+    x_admin_metrics_token: str | None = Header(default=None, alias="X-Admin-Metrics-Token"),
+    settings: Settings = Depends(get_settings),
+) -> dict[str, dict[str, int] | int]:
+    if not settings.admin_metrics_token or x_admin_metrics_token != settings.admin_metrics_token:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    return get_telemetry_snapshot()
 
 
 def _assert_limits(payload: MonteCarloRunRequest, settings: Settings) -> None:
@@ -59,6 +77,7 @@ async def run_deterministic_route(
     auth: AuthContext = Depends(require_auth),
     settings: Settings = Depends(get_settings),
 ) -> DeterministicRunResponse:
+    started = time.perf_counter()
     _apply_rate_limit(auth, settings)
     engine_input = payload.input_parameters.to_engine_input(payload.horizon_months)
 
@@ -74,7 +93,7 @@ async def run_deterministic_route(
         ) from exc
 
     warnings = ["Educational simulation only. Not financial advice."]
-    return DeterministicRunResponse(
+    response = DeterministicRunResponse(
         reporting_currency=result.reporting_currency,
         fx_spot_rates_used=result.fx_spot_rates_used,
         fx_stressed_rates_used=result.fx_stressed_rates_used,
@@ -96,12 +115,14 @@ async def run_deterministic_route(
         month_by_month=result.savings_path_pence,
         warnings=warnings,
     )
+    record_deterministic_run((time.perf_counter() - started) * 1000.0)
+    return response
 
 
 @router.post("/api/v1/montecarlo/run", response_model=MonteCarloRunResponse)
 async def run_montecarlo_route(
     payload: MonteCarloRunRequest,
-    auth: AuthContext = Depends(require_auth),
+    auth: AuthContext = Depends(require_premium),
     settings: Settings = Depends(get_settings),
 ) -> MonteCarloRunResponse:
     _apply_rate_limit(auth, settings)
@@ -139,13 +160,15 @@ async def run_montecarlo_route(
             ),
         )
 
-        return MonteCarloRunResponse(
+        response = MonteCarloRunResponse(
             n_sims=result.n_sims,
             horizon_months=result.horizon_months,
             seed=result.seed,
             runtime_ms=result.runtime_ms,
             metrics=metrics,
         )
+        record_montecarlo_run(result.runtime_ms)
+        return response
 
     try:
         return await asyncio.wait_for(_run(), timeout=settings.request_timeout_seconds)

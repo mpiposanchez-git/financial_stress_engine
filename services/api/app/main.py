@@ -10,6 +10,7 @@ from starlette.responses import Response
 
 from .routes import router
 from .settings import get_settings
+from .telemetry import record_error
 
 settings = get_settings()
 
@@ -24,7 +25,7 @@ app.add_middleware(
     allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_headers=["Authorization", "Content-Type", "X-Admin-Metrics-Token"],
 )
 
 app.include_router(router)
@@ -37,6 +38,9 @@ async def access_log_middleware(request: Request, call_next) -> Response:
     start = time.perf_counter()
     response = await call_next(request)
     duration_ms = round((time.perf_counter() - start) * 1000.0, 2)
+
+    if response.status_code >= 400:
+        record_error()
 
     logger.info(
         "request completed",

@@ -105,3 +105,12 @@
 ### Risks / Blockers
 - Any external consumer still expecting pre-POC-002 float money fields may break without coordinated contract update.
 - Golden tests require strict maintenance discipline when deterministic logic intentionally changes.
+
+<!-- crossref:start -->
+## Related Documents
+
+- [Repository README](../README.md)
+- [Methodology Golden Source](methodology/methodology_textbook.md)
+- [BRD Implementation Plan](implementation/brd_implementation_plan.md)
+<!-- crossref:end -->
+

@@ -24,3 +24,12 @@
 
 ## Notes / risks
 - ...
+
+<!-- crossref:start -->
+## Related Documents
+
+- [Repository README](../README.md)
+- [Methodology Golden Source](../docs/methodology/methodology_textbook.md)
+- [BRD Implementation Plan](../docs/implementation/brd_implementation_plan.md)
+<!-- crossref:end -->
+

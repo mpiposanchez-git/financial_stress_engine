@@ -51,10 +51,25 @@ cd apps/web && npm run test
 
 ## References
 
-- Architecture and implementation spec: [docs/system_architecture_instructions.md](docs/system_architecture_instructions.md)
-- Model Development Document (BRD + MDR + RTM): [docs/model_development_document.md](docs/model_development_document.md)
-- POC flyer: [docs/poc_flyer.md](docs/poc_flyer.md)
-- Methodology textbook: [docs/methodology_textbook.md](docs/methodology_textbook.md)
-- BRD implementation plan: [docs/brd_implementation_plan.md](docs/brd_implementation_plan.md)
+- Architecture and implementation spec: [docs/implementation/system_architecture_instructions.md](docs/implementation/system_architecture_instructions.md)
+- Model Development Document (golden source): [docs/methodology/methodology_textbook.md](docs/methodology/methodology_textbook.md)
+- POC flyer: [docs/commercial/poc_flyer.md](docs/commercial/poc_flyer.md)
+- BRD implementation plan: [docs/implementation/brd_implementation_plan.md](docs/implementation/brd_implementation_plan.md)
+- Detailed implementation backlog (WS0-WS9): [docs/implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md](docs/implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md)
+- MOD specifications (one per functionality):
+- F-01 guided onboarding wizard: [docs/MOD/MOD-001_F-01_GUIDED_ONBOARDING_WIZARD.md](docs/MOD/MOD-001_F-01_GUIDED_ONBOARDING_WIZARD.md)
+- F-05 Monte Carlo fan chart: [docs/MOD/MOD-005_F-05_MONTE_CARLO_FAN_CHART.md](docs/MOD/MOD-005_F-05_MONTE_CARLO_FAN_CHART.md)
+- F-06 PDF export: [docs/MOD/MOD-006_F-06_PDF_EXPORT.md](docs/MOD/MOD-006_F-06_PDF_EXPORT.md)
+- A-01 data module and provenance: [docs/MOD/MOD-021_A-01_DATA_MODULE_AND_PROVENANCE.md](docs/MOD/MOD-021_A-01_DATA_MODULE_AND_PROVENANCE.md)
+- A-02 UK benchmarks: [docs/MOD/MOD-022_A-02_UK_BENCHMARKS_REFERENCE_AND_PERCENTILE.md](docs/MOD/MOD-022_A-02_UK_BENCHMARKS_REFERENCE_AND_PERCENTILE.md)
+- A-07 privacy-safe measurement: [docs/MOD/MOD-027_A-07_PRIVACY_SAFE_MEASUREMENT.md](docs/MOD/MOD-027_A-07_PRIVACY_SAFE_MEASUREMENT.md)
 - Privacy: [docs/disclaimers/privacy.md](docs/disclaimers/privacy.md)
 - Regulatory disclaimer: [docs/disclaimers/regulatory_disclaimer.md](docs/disclaimers/regulatory_disclaimer.md)
+
+<!-- crossref:start -->
+## Related Documents
+
+- [Methodology Golden Source](docs/methodology/methodology_textbook.md)
+- [BRD Implementation Plan](docs/implementation/brd_implementation_plan.md)
+<!-- crossref:end -->
+

@@ -317,3 +317,12 @@ Option 3.
 
 **Review date**  
 2026-04-08
+
+<!-- crossref:start -->
+## Related Documents
+
+- [Repository README](../README.md)
+- [Methodology Golden Source](methodology/methodology_textbook.md)
+- [BRD Implementation Plan](implementation/brd_implementation_plan.md)
+<!-- crossref:end -->
+

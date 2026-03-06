@@ -14,6 +14,7 @@ class Settings:
     max_horizon_months: int
     rate_limit_rpm: int
     request_timeout_seconds: int
+    admin_metrics_token: str
 
 
 def _parse_cors_origins(raw: str) -> list[str]:
@@ -30,4 +31,5 @@ def get_settings() -> Settings:
         max_horizon_months=int(os.getenv("MAX_HORIZON_MONTHS", "120")),
         rate_limit_rpm=int(os.getenv("RATE_LIMIT_RPM", "60")),
         request_timeout_seconds=int(os.getenv("REQUEST_TIMEOUT_SECONDS", "30")),
+        admin_metrics_token=os.getenv("ADMIN_METRICS_TOKEN", ""),
     )

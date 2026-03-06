@@ -81,3 +81,12 @@ These terms shall be governed by the laws of England and Wales.
 ------------------------------------------------------------------------
 
 This document should be reviewed periodically as the platform evolves.
+
+<!-- crossref:start -->
+## Related Documents
+
+- [Repository README](../../README.md)
+- [Methodology Golden Source](../methodology/methodology_textbook.md)
+- [BRD Implementation Plan](../implementation/brd_implementation_plan.md)
+<!-- crossref:end -->
+

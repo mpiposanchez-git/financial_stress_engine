@@ -88,6 +88,23 @@ vi.mock("../api/client", () => ({
 }));
 
 describe("StressTestPage", () => {
+  it("provides explicit labels and error descriptors for form controls", () => {
+    render(
+      <MemoryRouter>
+        <StressTestPage />
+      </MemoryRouter>
+    );
+
+    const reportingCurrency = screen.getByLabelText("Reporting currency");
+    const incomeCurrency = screen.getByLabelText("Income currency");
+    const fxSpotEur = screen.getByLabelText("FX spot EUR to reporting");
+
+    expect(reportingCurrency).toHaveAttribute("aria-describedby", "stress-form-error");
+    expect(incomeCurrency).toHaveAttribute("aria-describedby", "stress-form-error");
+    expect(fxSpotEur).toHaveAttribute("aria-describedby", "stress-form-error");
+    expect(screen.getByRole("alert")).toHaveAttribute("id", "stress-form-error");
+  });
+
   it("navigates to results with deterministic and montecarlo state", async () => {
     render(
       <MemoryRouter>
@@ -95,7 +112,7 @@ describe("StressTestPage", () => {
       </MemoryRouter>
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Run simulation" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "Run simulation" })[0]);
 
     await waitFor(() => {
       expect(mockRunDeterministic).toHaveBeenCalledTimes(1);

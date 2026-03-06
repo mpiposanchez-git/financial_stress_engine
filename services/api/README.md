@@ -1,6 +1,6 @@
 # API Service (`services/api`)
 
-FastAPI service for cloud deployment requirements in `docs/system_architecture_instructions.md` (PART VII).
+FastAPI service for cloud deployment requirements in `docs/implementation/system_architecture_instructions.md` (PART VII).
 
 ## Run locally
 
@@ -29,3 +29,12 @@ Use this start command in Render:
 ```bash
 uv run uvicorn services.api.app.main:app --host 0.0.0.0 --port $PORT
 ```
+
+<!-- crossref:start -->
+## Related Documents
+
+- [Repository README](../../README.md)
+- [Methodology Golden Source](../../docs/methodology/methodology_textbook.md)
+- [BRD Implementation Plan](../../docs/implementation/brd_implementation_plan.md)
+<!-- crossref:end -->
+

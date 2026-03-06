@@ -64,6 +64,17 @@ describe("ResultsPage", () => {
     expect(screen.getByText(/Month of depletion p50: 13/)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Runway distribution (months)" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Deterministic savings path" })).toBeInTheDocument();
+    expect(screen.getByText(/P10: 6.5m \| P50: 9.5m \| P90: 14.2m/)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Summary: central estimate at P50 is 9.5m, with an approximate spread of 6.5m to 14.2m\./)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Summary: starts at 123456 pence, ends at 120000 pence, and ranges between 120000 and 123456 pence\./)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/Approximate benchmark only\. Percentile ranking uses the UK HBAI BHC definition and depends on year and definitions\./)
+    ).toBeInTheDocument();
+    expect(screen.getByText(/It is not advice and not a measure of worth\./)).toBeInTheDocument();
   });
 
   it("shows fallback message when no route state is present", () => {

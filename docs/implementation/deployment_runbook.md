@@ -182,3 +182,12 @@ Current baseline checks:
 	3. Update GitHub Actions secret `SMOKE_TEST_BEARER_TOKEN`.
 	4. Invalidate old sessions for that user.
 	5. Trigger `.github/workflows/post-deploy-smoke.yml` manually once to confirm token validity.
+
+<!-- crossref:start -->
+## Related Documents
+
+- [Repository README](../../README.md)
+- [Methodology Golden Source](../methodology/methodology_textbook.md)
+- [BRD Implementation Plan](brd_implementation_plan.md)
+<!-- crossref:end -->
+

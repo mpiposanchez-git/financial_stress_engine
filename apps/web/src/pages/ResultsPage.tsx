@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 
+import { PercentileDisclosure } from "../components/benchmarks/PercentileDisclosure";
 import { ResultsRouteState } from "../types";
 
 type PercentileChartProps = {
@@ -16,10 +17,11 @@ function PercentileChart({ title, p10, p50, p90, formatter }: PercentileChartPro
   const span = Math.max(max - min, 1);
   const toPercent = (value: number): number => ((value - min) / span) * 100;
   const format = formatter ?? ((value: number) => `${value}`);
+  const headingId = `chart-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`;
 
   return (
-    <section className="result-card" aria-label={title}>
-      <h3>{title}</h3>
+    <figure className="result-card" aria-labelledby={headingId}>
+      <h3 id={headingId}>{title}</h3>
       <div className="percentile-track" aria-hidden="true">
         <div
           className="percentile-band"
@@ -35,10 +37,13 @@ function PercentileChart({ title, p10, p50, p90, formatter }: PercentileChartPro
           <span>P90</span>
         </div>
       </div>
-      <p className="percentile-values">
+      <figcaption className="percentile-values">
         P10: {format(p10)} | P50: {format(p50)} | P90: {format(p90)}
+      </figcaption>
+      <p className="chart-summary">
+        Summary: central estimate at P50 is {format(p50)}, with an approximate spread of {format(p10)} to {format(p90)}.
       </p>
-    </section>
+    </figure>
   );
 }
 
@@ -63,7 +68,7 @@ function SavingsPathChart({ values }: { values: number[] }) {
     .join(" ");
 
   return (
-    <section className="result-card">
+    <figure className="result-card">
       <h3>Deterministic savings path</h3>
       <svg
         className="savings-chart"
@@ -81,10 +86,13 @@ function SavingsPathChart({ values }: { values: number[] }) {
         />
         <polyline points={points} className="chart-line" />
       </svg>
-      <p className="chart-caption">
+      <figcaption className="chart-caption">
         Low point: {min} pence | High point: {max} pence
+      </figcaption>
+      <p className="chart-summary">
+        Summary: starts at {values[0]} pence, ends at {values[values.length - 1]} pence, and ranges between {min} and {max} pence.
       </p>
-    </section>
+    </figure>
   );
 }
 
@@ -126,6 +134,7 @@ export function ResultsPage() {
       </section>
 
       <section className="summary-grid">
+        <PercentileDisclosure />
         <PercentileChart
           title="Runway distribution (months)"
           p10={state.montecarlo.metrics.runway_months.p10}

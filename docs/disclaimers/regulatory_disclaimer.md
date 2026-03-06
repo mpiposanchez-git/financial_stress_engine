@@ -74,3 +74,12 @@ If you are experiencing financial difficulty, please contact:
 ---
 
 *Last reviewed: 2026-03-06. This disclaimer should be reviewed periodically to ensure it remains accurate and compliant with applicable UK law and regulatory guidance.*
+
+<!-- crossref:start -->
+## Related Documents
+
+- [Repository README](../../README.md)
+- [Methodology Golden Source](../methodology/methodology_textbook.md)
+- [BRD Implementation Plan](../implementation/brd_implementation_plan.md)
+<!-- crossref:end -->
+

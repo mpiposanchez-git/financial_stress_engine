@@ -51,6 +51,7 @@ export function StressTestPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { getToken } = useAuthState();
+  const formErrorId = "stress-form-error";
 
   const api = useMemo(() => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
@@ -85,10 +86,12 @@ export function StressTestPage() {
     <main>
       <h1>Stress Test</h1>
       <p>Run an illustrative simulation. This is not financial advice.</p>
-      <form onSubmit={onSubmit}>
-        <label>
+      <form onSubmit={onSubmit} aria-describedby={formErrorId}>
+        <label htmlFor="reporting-currency">
           Reporting currency
           <select
+            id="reporting-currency"
+            aria-describedby={formErrorId}
             value={form.reporting_currency}
             onChange={(event) =>
               setForm((prev) => {
@@ -111,9 +114,11 @@ export function StressTestPage() {
             ))}
           </select>
         </label>
-        <label>
+        <label htmlFor="income-currency">
           Income currency
           <select
+            id="income-currency"
+            aria-describedby={formErrorId}
             value={form.household_monthly_net_income_currency}
             onChange={(event) =>
               setForm((prev) => ({
@@ -129,9 +134,11 @@ export function StressTestPage() {
             ))}
           </select>
         </label>
-        <label>
+        <label htmlFor="essentials-currency">
           Essentials currency
           <select
+            id="essentials-currency"
+            aria-describedby={formErrorId}
             value={form.household_monthly_essential_spend_currency}
             onChange={(event) =>
               setForm((prev) => ({
@@ -147,9 +154,11 @@ export function StressTestPage() {
             ))}
           </select>
         </label>
-        <label>
+        <label htmlFor="debt-currency">
           Debt currency
           <select
+            id="debt-currency"
+            aria-describedby={formErrorId}
             value={form.household_monthly_debt_payments_currency}
             onChange={(event) =>
               setForm((prev) => ({
@@ -165,9 +174,11 @@ export function StressTestPage() {
             ))}
           </select>
         </label>
-        <label>
+        <label htmlFor="savings-currency">
           Savings currency
           <select
+            id="savings-currency"
+            aria-describedby={formErrorId}
             value={form.cash_savings_currency}
             onChange={(event) =>
               setForm((prev) => ({
@@ -183,9 +194,11 @@ export function StressTestPage() {
             ))}
           </select>
         </label>
-        <label>
+        <label htmlFor="mortgage-currency">
           Mortgage currency
           <select
+            id="mortgage-currency"
+            aria-describedby={formErrorId}
             value={form.mortgage_balance_currency}
             onChange={(event) =>
               setForm((prev) => ({
@@ -201,9 +214,11 @@ export function StressTestPage() {
             ))}
           </select>
         </label>
-        <label>
-          FX spot EUR→reporting
+        <label htmlFor="fx-spot-eur">
+          FX spot EUR to reporting
           <input
+            id="fx-spot-eur"
+            aria-describedby={formErrorId}
             type="number"
             step="0.0001"
             value={form.fx_spot_rates.EUR}
@@ -225,9 +240,11 @@ export function StressTestPage() {
             }
           />
         </label>
-        <label>
-          FX spot USD→reporting
+        <label htmlFor="fx-spot-usd">
+          FX spot USD to reporting
           <input
+            id="fx-spot-usd"
+            aria-describedby={formErrorId}
             type="number"
             step="0.0001"
             value={form.fx_spot_rates.USD}
@@ -249,9 +266,11 @@ export function StressTestPage() {
             }
           />
         </label>
-        <label>
+        <label htmlFor="fx-stress-eur">
           FX stress EUR (bps)
           <input
+            id="fx-stress-eur"
+            aria-describedby={formErrorId}
             type="number"
             value={form.fx_stress_bps.EUR ?? 0}
             onChange={(event) =>
@@ -272,9 +291,11 @@ export function StressTestPage() {
             }
           />
         </label>
-        <label>
+        <label htmlFor="fx-stress-usd">
           FX stress USD (bps)
           <input
+            id="fx-stress-usd"
+            aria-describedby={formErrorId}
             type="number"
             value={form.fx_stress_bps.USD ?? 0}
             onChange={(event) =>
@@ -299,7 +320,9 @@ export function StressTestPage() {
           {loading ? "Running…" : "Run simulation"}
         </button>
       </form>
-      {error ? <p role="alert">{error}</p> : null}
+      <p id={formErrorId} role="alert" aria-live="assertive" className={error ? "form-error" : "sr-only"}>
+        {error ?? "No validation errors."}
+      </p>
     </main>
   );
 }

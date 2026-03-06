@@ -1,17 +1,60 @@
-# UK Household Financial Stress Engine — Model Development Methodology (Textbook) 📘
+# UK Household Financial Stress Engine — Golden Source Methodology 📘
 
 **Version:** v0.2.0  
-**Status:** Draft / living document  
+**Status:** Golden source / living document  
 **Date:** 2026-03-06  
 **Repo:** https://github.com/mpiposanchez-git/financial_stress_engine  
 **Evidence snapshot:** _Insert commit SHA for the release (`git rev-parse HEAD`)_  
 **Audience order:** (1) auditor/reviewer, (2) end user learner
 
-> This document is intentionally comprehensive. It explains the concepts, assumptions, mathematics, data sources, and controls behind the tool.
+> This document is the single source of truth for model and methodology content in this repository.
+> If any discrepancy is found with historical methodology documents, this file takes absolute precedence.
+
+---
+
+## Abstract
+
+This document specifies and explains the UK Household Financial Stress Engine as an educational simulation tool for household financial stress testing.
+It covers deterministic modelling, stochastic/Monte Carlo modelling, assumptions, controls, data provenance, privacy posture, and validation.
+
+## Executive summary
+
+The system simulates how household finances can change under stress scenarios such as income shocks, inflation, mortgage-rate changes, and FX movements.
+It is designed for learning and decision support context only.
+
+Key outputs include:
+- month-by-month savings path
+- runway and depletion timing
+- percentile outcomes (P10/P50/P90) for uncertainty analysis
+
+This tool is not financial advice.
+
+## Document governance and control framework
+
+### Versioning
+
+This document uses semantic versioning (`vMAJOR.MINOR.PATCH`):
+- MAJOR: major scope change
+- MINOR: new model capability or substantive methodology change
+- PATCH: editorial clarification
+
+### Change control
+
+Material methodology changes should be accompanied by:
+- decision log update
+- corresponding tests and evidence updates
+- documentation update in this file
+
+### Evidence snapshot rule
+
+Published versions should include the exact commit SHA they describe.
 
 ---
 
 ## Table of Contents
+Abstract
+Executive summary
+Document governance and control framework
 0. Reader guide  
 1. Purpose, scope, and guardrails  
 2. System architecture overview  
@@ -28,8 +71,28 @@
 13. Accessibility & interpretability controls  
 14. Privacy-safe measurement (aggregate only)  
 15. Validation & testing framework  
+15A. Requirements traceability matrix
 16. Governance, modularity, and change management  
 Appendix: Glossary  
+
+---
+
+## Methodology to Implementation Crosswalk
+
+This index provides direct traceability from methodology chapters to implementation specs (MOD) and execution tasks.
+
+| Methodology chapter | Primary MOD specifications | Primary backlog tasks |
+|---|---|---|
+| Ch. 5 Deterministic model methodology | [MOD-002](../MOD/MOD-002_F-02_MONTH_BY_MONTH_RUNWAY_CHART.md), [MOD-003](../MOD/MOD-003_F-03_MORTGAGE_RATE_STRESS_MODULE.md), [MOD-010](../MOD/MOD-010_F-10_EMERGENCY_FUND_ADEQUACY_INDICATOR.md) | [WS1-F02](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws1-f02), [WS1-F15](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws1-f15), [WS3-F10](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws3-f10) |
+| Ch. 6 Monte Carlo methodology | [MOD-005](../MOD/MOD-005_F-05_MONTE_CARLO_FAN_CHART.md), [MOD-012](../MOD/MOD-012_F-12_SENSITIVITY_TORNADO_CHART.md), [MOD-013](../MOD/MOD-013_F-13_SHOCK_SCHEDULES.md) | [WS5-F05](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws5-f05), [WS5-F12](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws5-f12), [WS5-F13](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws5-f13) |
+| Ch. 7 FX and multi-currency | [MOD-007](../MOD/MOD-007_F-07_FX_AND_MULTI_CURRENCY.md) | [F-07](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-f-07) |
+| Ch. 8 Additional modelling features | [MOD-008](../MOD/MOD-008_F-08_CATEGORY_INFLATION_TOGGLES.md), [MOD-013](../MOD/MOD-013_F-13_SHOCK_SCHEDULES.md), [MOD-014](../MOD/MOD-014_F-14_NON_MORTGAGE_DEBT_SCHEDULE.md), [MOD-015](../MOD/MOD-015_F-15_MORTGAGE_TYPE_SANDBOX.md) | [WS5-F08](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws5-f08), [WS5-F13](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws5-f13), [WS5-F14](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws5-f14), [WS3-F15](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws3-f15) |
+| Ch. 9 UK benchmarking | [MOD-022](../MOD/MOD-022_A-02_UK_BENCHMARKS_REFERENCE_AND_PERCENTILE.md), [MOD-026](../MOD/MOD-026_A-06_ETHICS_AND_FAIRNESS_DISCLOSURE.md) | [WS7-A02A](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws7-a02a), [WS7-A02B](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws7-a02b), [WS0-A06](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws0-a06) |
+| Ch. 10 Data module | [MOD-021](../MOD/MOD-021_A-01_DATA_MODULE_AND_PROVENANCE.md) | [WS6-A01](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws6-a01), [WS6-A01B](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws6-a01b) |
+| Ch. 11 Exports | [MOD-006](../MOD/MOD-006_F-06_PDF_EXPORT.md) | [WS8-F06](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws8-f06) |
+| Ch. 12 Premium entitlements | [MOD-024](../MOD/MOD-024_A-04_PREMIUM_ENTITLEMENTS.md) | [WS0-A04](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws0-a04) |
+| Ch. 13 Accessibility and interpretability | [MOD-025](../MOD/MOD-025_A-05_ACCESSIBILITY_REQUIREMENTS.md), [MOD-011](../MOD/MOD-011_F-11_EXPLAIN_THE_RESULT_NARRATIVES_AND_TOOLTIPS.md) | [WS0-A05](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws0-a05), [WS3-F11](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws3-f11) |
+| Ch. 14 Privacy-safe measurement | [MOD-027](../MOD/MOD-027_A-07_PRIVACY_SAFE_MEASUREMENT.md) | [WS0-A07](../implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md#task-ws0-a07) |
 
 ---
 
@@ -258,6 +321,13 @@ DWP HBAI data tables (BHC). (https://www.gov.uk/government/statistics/households
 - Not a measure of personal worth.
 - Presented as context, not advice.
 
+### 9.5 Ethics & limitations disclosure text (UI reference)
+Use this plain-language disclosure wherever percentile ranking is displayed:
+- Approximate benchmark only.
+- Uses the UK HBAI BHC definition and depends on year and definitions.
+- Not advice.
+- Not a measure of worth.
+
 ---
 
 ## 10. Data module (sources, auto-fetch, verification, overrides) 🔍
@@ -352,6 +422,19 @@ Privacy policy states that aggregate operational metrics may be collected.
 - Contract tests: API schema stability
 - Security tests: prevent logging request bodies and auth headers
 
+### 15A. Requirements traceability matrix (RTM)
+
+| ID | Requirement | Code (primary) | Evidence/tests | Status |
+|---|---|---|---|---|
+| FR-001 | Clerk auth required | `services/api/app/auth.py` | protected route coverage | Implemented |
+| FR-002 | JWT signature and issuer validation | `services/api/app/auth.py` | auth validation tests/manual verification | Implemented |
+| FR-003 | Deterministic stress run | `shared/engine/deterministic.py` | `services/api/tests/test_deterministic_golden.py` | Implemented |
+| FR-004 | Month-by-month savings path | `shared/engine/deterministic.py` | deterministic golden tests | Implemented |
+| FR-005 | Monte Carlo simulation | `shared/engine/montecarlo.py` | `services/api/tests/test_montecarlo_reproducibility.py` | Implemented |
+| FR-006 | Multi-currency and FX support | `shared/engine/fx.py`, `shared/engine/inputs.py` | `services/api/tests/test_fx.py` | Implemented |
+| FR-007 | Premium server-side gating | `services/api/app/entitlements.py` | `services/api/tests/test_entitlements.py` | Implemented |
+| FR-008 | Privacy-safe aggregate telemetry | `services/api/app/telemetry.py` | `services/api/tests/test_telemetry.py` | Implemented |
+
 ---
 
 ## 16. Governance, modularity, and change management 🧾
@@ -376,3 +459,11 @@ Any modelling change requires:
 ---
 
 **End of methodology textbook.**
+
+<!-- crossref:start -->
+## Related Documents
+
+- [Repository README](../../README.md)
+- [BRD Implementation Plan](../implementation/brd_implementation_plan.md)
+<!-- crossref:end -->
+

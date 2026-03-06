@@ -531,3 +531,12 @@ Note: if these are missing at build time, production app may fail to initialize 
 ---
 
 END OF DOCUMENT
+
+<!-- crossref:start -->
+## Related Documents
+
+- [Repository README](../../README.md)
+- [Methodology Golden Source](../methodology/methodology_textbook.md)
+- [BRD Implementation Plan](brd_implementation_plan.md)
+<!-- crossref:end -->
+
