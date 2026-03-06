@@ -6,6 +6,7 @@ import { createApiClient } from "../api/client";
 import { CurrencySelect } from "../components/inputs/CurrencySelect";
 import { MortgageInputs } from "../components/inputs/MortgageInputs";
 import { MoneyInput } from "../components/inputs/MoneyInput";
+import { PercentSlider } from "../components/inputs/PercentSlider";
 import { Wizard } from "../components/wizard/Wizard";
 import { WizardNav } from "../components/wizard/WizardNav";
 import { WizardStep } from "../components/wizard/WizardStep";
@@ -308,58 +309,89 @@ export function StressTestPage() {
             </WizardStep>
           ) : (
             <WizardStep id="wizard-step-3" title="FX stress and review">
-              <label htmlFor="fx-stress-eur">
-                FX stress EUR (bps)
-                <input
-                  id="fx-stress-eur"
-                  aria-label="FX stress EUR (bps)"
-                  aria-describedby={formErrorId}
-                  type="number"
-                  value={form.fx_stress_bps.EUR ?? 0}
-                  onChange={(event) =>
-                    setForm((prev) => {
-                      const next = parseFiniteNumber(event.target.value);
-                      if (next === null) {
-                        return prev;
-                      }
-
-                      return {
-                        ...prev,
-                        fx_stress_bps: {
-                          ...prev.fx_stress_bps,
-                          EUR: next
-                        }
-                      };
-                    })
-                  }
-                />
-              </label>
-              <label htmlFor="fx-stress-usd">
-                FX stress USD (bps)
-                <input
-                  id="fx-stress-usd"
-                  aria-label="FX stress USD (bps)"
-                  aria-describedby={formErrorId}
-                  type="number"
-                  value={form.fx_stress_bps.USD ?? 0}
-                  onChange={(event) =>
-                    setForm((prev) => {
-                      const next = parseFiniteNumber(event.target.value);
-                      if (next === null) {
-                        return prev;
-                      }
-
-                      return {
-                        ...prev,
-                        fx_stress_bps: {
-                          ...prev.fx_stress_bps,
-                          USD: next
-                        }
-                      };
-                    })
-                  }
-                />
-              </label>
+              <PercentSlider
+                id="income-shock-slider"
+                label="Income shock (%)"
+                ariaDescribedBy={formErrorId}
+                value={form.shock_monthly_income_drop_percent}
+                min={0}
+                max={100}
+                step={0.5}
+                onChange={(value) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    shock_monthly_income_drop_percent: value
+                  }))
+                }
+              />
+              <PercentSlider
+                id="inflation-shock-slider"
+                label="Inflation essentials increase (%)"
+                ariaDescribedBy={formErrorId}
+                value={form.inflation_monthly_essentials_increase_percent}
+                min={0}
+                max={100}
+                step={0.5}
+                onChange={(value) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    inflation_monthly_essentials_increase_percent: value
+                  }))
+                }
+              />
+              <PercentSlider
+                id="mortgage-rate-stress-slider"
+                label="Stressed mortgage rate (%)"
+                ariaDescribedBy={formErrorId}
+                value={form.mortgage_rate_percent_stress}
+                min={0}
+                max={25}
+                step={0.1}
+                onChange={(value) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    mortgage_rate_percent_stress: value
+                  }))
+                }
+              />
+              <PercentSlider
+                id="fx-stress-eur-slider"
+                label="FX stress EUR (bps)"
+                ariaDescribedBy={formErrorId}
+                value={form.fx_stress_bps.EUR ?? 0}
+                valueKind="bps"
+                min={-3000}
+                max={3000}
+                step={25}
+                onChange={(value) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    fx_stress_bps: {
+                      ...prev.fx_stress_bps,
+                      EUR: value
+                    }
+                  }))
+                }
+              />
+              <PercentSlider
+                id="fx-stress-usd-slider"
+                label="FX stress USD (bps)"
+                ariaDescribedBy={formErrorId}
+                value={form.fx_stress_bps.USD ?? 0}
+                valueKind="bps"
+                min={-3000}
+                max={3000}
+                step={25}
+                onChange={(value) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    fx_stress_bps: {
+                      ...prev.fx_stress_bps,
+                      USD: value
+                    }
+                  }))
+                }
+              />
             </WizardStep>
           )}
         </Wizard>

@@ -94,6 +94,28 @@
 ### Risks / Blockers
 - If future API changes require term in months, a conversion or additional UI control will be needed.
 
+## 2026-03-06 — WS2-04 Stress Sliders
+
+### Completed
+- WS2-04: Added reusable `PercentSlider` input component with dual display (`%` and `bps`) and range-slider interaction.
+- WS2-04: Integrated sliders into `StressTestPage` step 3 for income shock, inflation increase, stressed mortgage rate, and FX stress (EUR/USD).
+- WS2-04: Added unit tests for slider rendering, percent/bps formatting behavior, and value-change callbacks.
+
+### In progress
+- WS2-05: Review + Run payload shaping and endpoint flow hardening.
+
+### Test evidence
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`16 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`42 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+
+### Decisions made
+- Keep FX stress values represented as bps in state while showing user-friendly `%` equivalents in slider readouts.
+
+### Risks / Blockers
+- Range bounds for stress sliders are currently static defaults and may need product tuning against methodology guidance.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

@@ -118,6 +118,21 @@ form {
   font-size: 0.92rem;
 }
 
+.percent-slider {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #e4edf4;
+  border-radius: 0.75rem;
+  background: #f9fcfd;
+}
+
+.percent-slider-value {
+  margin: 0;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  color: var(--muted);
+}
+
 .wizard-nav {
   display: flex;
   gap: 0.65rem;
