@@ -87,5 +87,5 @@ export type MonteCarloResponse = {
 
 export type ResultsRouteState = {
   deterministic: DeterministicResponse;
-  montecarlo: MonteCarloResponse;
+  montecarlo?: MonteCarloResponse;
 };

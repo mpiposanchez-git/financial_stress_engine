@@ -1,6 +1,7 @@
 import type {
   DeterministicRequest,
   DeterministicResponse,
+  InputParameters,
   MonteCarloRequest,
   MonteCarloResponse
 } from "../types";
@@ -46,12 +47,12 @@ async function extractErrorDetail(response: Response): Promise<string | null> {
 }
 
 function buildErrorMessage(statusCode: number, detail: string | null): string {
-    if (statusCode === 422) {
-      if (detail) {
-        return `Invalid simulation input: ${detail}`;
-      }
-      return "Invalid simulation input. Please check numeric fields and retry.";
+  if (statusCode === 422) {
+    if (detail) {
+      return `Invalid simulation input: ${detail}`;
     }
+    return "Invalid simulation input. Please check numeric fields and retry.";
+  }
 
   if (statusCode === 401) {
     return "Authentication failed. Please sign in again and retry from the official app URL.";
@@ -100,6 +101,8 @@ export function createApiClient(baseUrl: string, getToken: TokenProvider) {
   return {
     runDeterministic: (payload: DeterministicRequest) =>
       postJson<DeterministicResponse>("/api/v1/deterministic/run", payload),
+    runDeterministicFromInput: (inputParameters: InputParameters) =>
+      postJson<DeterministicResponse>("/api/v1/deterministic/run", { input_parameters: inputParameters }),
     runMonteCarlo: (payload: MonteCarloRequest) =>
       postJson<MonteCarloResponse>("/api/v1/montecarlo/run", payload)
   };

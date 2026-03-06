@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 
@@ -86,5 +86,44 @@ describe("ResultsPage", () => {
     );
 
     expect(screen.getByText("No results yet.")).toBeInTheDocument();
+  });
+
+  it("renders deterministic-only results when montecarlo state is absent", () => {
+    const state = {
+      deterministic: {
+        reporting_currency: "GBP",
+        fx_spot_rates_used: { GBP: 1, EUR: 0.86, USD: 0.78 },
+        fx_stressed_rates_used: { GBP: 1, EUR: 0.86, USD: 0.78 },
+        fx_stress_bps: { GBP: 0, EUR: 0, USD: 0 },
+        monthly_cashflow_base_pence: 90000,
+        monthly_cashflow_base_formatted: "£900.00",
+        monthly_cashflow_stress_pence: 40000,
+        monthly_cashflow_stress_formatted: "£400.00",
+        mortgage_payment_current_pence: 120000,
+        mortgage_payment_current_formatted: "£1,200.00",
+        mortgage_payment_stress_pence: 150000,
+        mortgage_payment_stress_formatted: "£1,500.00",
+        runway_months: 9.2,
+        savings_path_pence: [90000, 87000],
+        savings_path_formatted: ["£900.00", "£870.00"],
+        min_savings_pence: 87000,
+        min_savings_formatted: "£870.00",
+        month_of_depletion: null,
+        warnings: []
+      }
+    };
+
+    const { container } = render(
+      <MemoryRouter initialEntries={[{ pathname: "/results", state }]}> 
+        <Routes>
+          <Route path="/results" element={<ResultsPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+    const ui = within(container);
+
+    expect(ui.getByText(/Minimum savings: £870.00 \(87000 pence\)/)).toBeInTheDocument();
+    expect(ui.getByText("Monte Carlo results unavailable for this run.")).toBeInTheDocument();
+    expect(ui.queryByRole("heading", { name: "Runway distribution (months)" })).not.toBeInTheDocument();
   });
 });

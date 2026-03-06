@@ -99,6 +99,7 @@ function SavingsPathChart({ values }: { values: number[] }) {
 export function ResultsPage() {
   const location = useLocation();
   const state = location.state as ResultsRouteState | null;
+  const hasMonteCarlo = Boolean(state?.montecarlo);
 
   if (!state) {
     return (
@@ -122,41 +123,50 @@ export function ResultsPage() {
             Minimum savings: {state.deterministic.min_savings_formatted} ({state.deterministic.min_savings_pence} pence)
           </p>
         </article>
-        <article className="result-card">
-          <h2>Monte Carlo</h2>
-          <p>Simulations: {state.montecarlo.n_sims}</p>
-          <p>Runtime: {state.montecarlo.runtime_ms.toFixed(2)} ms</p>
-          <p>
-            Min savings p50: {state.montecarlo.metrics.min_savings.p50_formatted} ({state.montecarlo.metrics.min_savings.p50_pence} pence)
-          </p>
-          <p>Month of depletion p50: {state.montecarlo.metrics.month_of_depletion.p50}</p>
-        </article>
+        {hasMonteCarlo ? (
+          <article className="result-card">
+            <h2>Monte Carlo</h2>
+            <p>Simulations: {state.montecarlo?.n_sims}</p>
+            <p>Runtime: {state.montecarlo?.runtime_ms.toFixed(2)} ms</p>
+            <p>
+              Min savings p50: {state.montecarlo?.metrics.min_savings.p50_formatted} ({state.montecarlo?.metrics.min_savings.p50_pence} pence)
+            </p>
+            <p>Month of depletion p50: {state.montecarlo?.metrics.month_of_depletion.p50}</p>
+          </article>
+        ) : (
+          <article className="result-card">
+            <h2>Monte Carlo</h2>
+            <p>Monte Carlo results unavailable for this run.</p>
+          </article>
+        )}
       </section>
 
-      <section className="summary-grid">
-        <PercentileDisclosure />
-        <PercentileChart
-          title="Runway distribution (months)"
-          p10={state.montecarlo.metrics.runway_months.p10}
-          p50={state.montecarlo.metrics.runway_months.p50}
-          p90={state.montecarlo.metrics.runway_months.p90}
-          formatter={(value) => `${value.toFixed(1)}m`}
-        />
-        <PercentileChart
-          title="Minimum savings distribution (pence)"
-          p10={state.montecarlo.metrics.min_savings.p10_pence}
-          p50={state.montecarlo.metrics.min_savings.p50_pence}
-          p90={state.montecarlo.metrics.min_savings.p90_pence}
-          formatter={(value) => `${Math.round(value)}p`}
-        />
-        <PercentileChart
-          title="Depletion month distribution"
-          p10={state.montecarlo.metrics.month_of_depletion.p10}
-          p50={state.montecarlo.metrics.month_of_depletion.p50}
-          p90={state.montecarlo.metrics.month_of_depletion.p90}
-          formatter={(value) => `${value.toFixed(1)}m`}
-        />
-      </section>
+      {hasMonteCarlo ? (
+        <section className="summary-grid">
+          <PercentileDisclosure />
+          <PercentileChart
+            title="Runway distribution (months)"
+            p10={state.montecarlo!.metrics.runway_months.p10}
+            p50={state.montecarlo!.metrics.runway_months.p50}
+            p90={state.montecarlo!.metrics.runway_months.p90}
+            formatter={(value) => `${value.toFixed(1)}m`}
+          />
+          <PercentileChart
+            title="Minimum savings distribution (pence)"
+            p10={state.montecarlo!.metrics.min_savings.p10_pence}
+            p50={state.montecarlo!.metrics.min_savings.p50_pence}
+            p90={state.montecarlo!.metrics.min_savings.p90_pence}
+            formatter={(value) => `${Math.round(value)}p`}
+          />
+          <PercentileChart
+            title="Depletion month distribution"
+            p10={state.montecarlo!.metrics.month_of_depletion.p10}
+            p50={state.montecarlo!.metrics.month_of_depletion.p50}
+            p90={state.montecarlo!.metrics.month_of_depletion.p90}
+            formatter={(value) => `${value.toFixed(1)}m`}
+          />
+        </section>
+      ) : null}
 
       <SavingsPathChart values={state.deterministic.savings_path_pence} />
 

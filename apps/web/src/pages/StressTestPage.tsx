@@ -10,6 +10,7 @@ import { PercentSlider } from "../components/inputs/PercentSlider";
 import { Wizard } from "../components/wizard/Wizard";
 import { WizardNav } from "../components/wizard/WizardNav";
 import { WizardStep } from "../components/wizard/WizardStep";
+import { buildDeterministicPayload } from "../lib/buildPayload";
 import { InputParameters, ResultsRouteState } from "../types";
 
 const currencies = ["GBP", "EUR", "USD"] as const;
@@ -74,16 +75,9 @@ export function StressTestPage() {
     setError(null);
 
     try {
-      const deterministic = await api.runDeterministic({
-        input_parameters: form
-      });
-      const montecarlo = await api.runMonteCarlo({
-        input_parameters: form,
-        n_sims: 1000,
-        horizon_months: 24
-      });
-
-      const resultState: ResultsRouteState = { deterministic, montecarlo };
+      const deterministicPayload = buildDeterministicPayload(form);
+      const deterministic = await api.runDeterministic(deterministicPayload);
+      const resultState: ResultsRouteState = { deterministic };
       navigate("/results", { state: resultState });
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Request failed");

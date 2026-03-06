@@ -7,10 +7,8 @@ import { StressTestPage } from "./StressTestPage";
 const {
   mockNavigate,
   mockRunDeterministic,
-  mockRunMonteCarlo,
   mockGetToken,
-  deterministicResponse,
-  monteCarloResponse
+  deterministicResponse
 } = vi.hoisted(() => {
   const deterministic = {
     reporting_currency: "GBP",
@@ -34,32 +32,11 @@ const {
     warnings: ["Educational simulation only. Not financial advice."]
   };
 
-  const montecarlo = {
-    n_sims: 1000,
-    horizon_months: 24,
-    seed: 123,
-    runtime_ms: 12.5,
-    metrics: {
-      runway_months: { p10: 3.1, p50: 6.9, p90: 12.4 },
-      min_savings: {
-        p10_pence: 1000,
-        p10_formatted: "£10.00",
-        p50_pence: 2000,
-        p50_formatted: "£20.00",
-        p90_pence: 3000,
-        p90_formatted: "£30.00"
-      },
-      month_of_depletion: { p10: 8.0, p50: 11.0, p90: 25.0 }
-    }
-  };
-
   return {
     mockNavigate: vi.fn(),
     mockRunDeterministic: vi.fn().mockResolvedValue(deterministic),
-    mockRunMonteCarlo: vi.fn().mockResolvedValue(montecarlo),
     mockGetToken: vi.fn(),
-    deterministicResponse: deterministic,
-    monteCarloResponse: montecarlo
+    deterministicResponse: deterministic
   };
 });
 
@@ -82,7 +59,7 @@ vi.mock("../auth/useAuthState", () => ({
 vi.mock("../api/client", () => ({
   createApiClient: () => ({
     runDeterministic: mockRunDeterministic,
-    runMonteCarlo: mockRunMonteCarlo
+    runMonteCarlo: vi.fn()
   })
 }));
 
@@ -128,7 +105,7 @@ describe("StressTestPage", () => {
     expect(ui.getByRole("alert")).toHaveAttribute("id", "stress-form-error");
   });
 
-  it("navigates to results with deterministic and montecarlo state", async () => {
+  it("navigates to results with deterministic state", async () => {
     const { container } = render(
       <MemoryRouter>
         <StressTestPage />
@@ -142,11 +119,9 @@ describe("StressTestPage", () => {
 
     await waitFor(() => {
       expect(mockRunDeterministic).toHaveBeenCalledTimes(1);
-      expect(mockRunMonteCarlo).toHaveBeenCalledTimes(1);
       expect(mockNavigate).toHaveBeenCalledWith("/results", {
         state: {
-          deterministic: deterministicResponse,
-          montecarlo: monteCarloResponse
+          deterministic: deterministicResponse
         }
       });
     });

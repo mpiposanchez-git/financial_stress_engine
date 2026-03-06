@@ -116,6 +116,29 @@
 ### Risks / Blockers
 - Range bounds for stress sliders are currently static defaults and may need product tuning against methodology guidance.
 
+## 2026-03-06 — WS2-05 Review + Run Deterministic Flow
+
+### Completed
+- WS2-05: Added `buildDeterministicPayload` helper to normalize wizard-state payloads into deterministic API request DTO shape.
+- WS2-05: Updated stress-run submission flow to call deterministic endpoint with built payload and route to results using deterministic response state.
+- WS2-05: Updated `ResultsPage` to support deterministic-only route state while still rendering Monte Carlo analytics when present.
+- WS2-05: Added payload-builder unit test and adjusted page tests for deterministic-only result navigation and rendering.
+
+### In progress
+- WS2-06: Input diagnostics panel with warning/error checks.
+
+### Test evidence
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`18 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`42 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+
+### Decisions made
+- Preserve optional Monte Carlo rendering path in `ResultsPage` to avoid breaking existing views while WS2-05 enforces deterministic-first run flow.
+
+### Risks / Blockers
+- Deterministic-only submit path currently omits immediate Monte Carlo fetch; this is intentional for WS2-05 scope and may be expanded in later tasks.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
