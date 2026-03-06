@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuthState } from "../auth/useAuthState";
 import { createApiClient } from "../api/client";
+import { DiagnosticsPanel } from "../components/DiagnosticsPanel";
 import { CurrencySelect } from "../components/inputs/CurrencySelect";
 import { MortgageInputs } from "../components/inputs/MortgageInputs";
 import { MoneyInput } from "../components/inputs/MoneyInput";
@@ -396,6 +397,7 @@ export function StressTestPage() {
           onNext={() => setCurrentStep((prev) => Math.min(totalSteps - 1, prev + 1))}
           isSubmitting={loading}
         />
+        <DiagnosticsPanel input={form} />
       </form>
       <p id={formErrorId} role="alert" aria-live="assertive" className={error ? "form-error" : "sr-only"}>
         {error ?? "No validation errors."}

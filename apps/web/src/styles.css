@@ -265,6 +265,43 @@ a:focus-visible {
   color: #9f1239;
 }
 
+.diagnostics-panel {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.85rem;
+  padding: 0.85rem;
+}
+
+.diagnostics-panel h2 {
+  margin-bottom: 0.55rem;
+  font-size: 1rem;
+}
+
+.diagnostics-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.diagnostic-item {
+  line-height: 1.35;
+}
+
+.diagnostic-warning {
+  color: #92400e;
+}
+
+.diagnostic-error {
+  color: #9f1239;
+}
+
+.diagnostic-help {
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  text-underline-offset: 2px;
+  cursor: help;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;

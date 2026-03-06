@@ -139,6 +139,29 @@
 ### Risks / Blockers
 - Deterministic-only submit path currently omits immediate Monte Carlo fetch; this is intentional for WS2-05 scope and may be expanded in later tasks.
 
+## 2026-03-06 — WS2-06 Input Diagnostics Panel
+
+### Completed
+- WS2-06: Added `DiagnosticsPanel` component with rule checks for essentials-over-income (warning), zero-savings with negative monthly balance (warning), and reporting-currency FX spot not equal to 1.0 (error).
+- WS2-06: Added plain-language "Why this matters" tooltip text for each diagnostic entry.
+- WS2-06: Integrated diagnostics panel into `StressTestPage` so checks update as wizard inputs change.
+- WS2-06: Added diagnostics component unit tests covering all required conditions.
+
+### In progress
+- WS3-01: Deterministic savings path chart/table extraction and accessibility enhancements.
+
+### Test evidence
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`21 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`42 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+
+### Decisions made
+- Diagnostics are presented as quality checks only (warnings/errors with rationale), without recommendation language.
+
+### Risks / Blockers
+- Diagnostics currently evaluate the GBP-denominated input fields directly and do not apply cross-currency normalization.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
