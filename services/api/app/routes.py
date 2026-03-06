@@ -12,6 +12,7 @@ from shared.engine.montecarlo import run_montecarlo
 from shared.engine.sensitivity import compute_sensitivity
 
 from .auth import AuthContext, require_auth
+from .benchmarks.percentile import compute_uk_income_percentile
 from .benchmarks.reference_values import get_uk_reference_values
 from .data_cache import DATA_CACHE
 from .data_registry import DATA_REGISTRY
@@ -31,6 +32,8 @@ from .models import (
     SensitivityDriverImpact,
     SensitivityRunRequest,
     SensitivityRunResponse,
+    UkPercentileRequest,
+    UkPercentileResponse,
     UkReferenceValuesResponse,
 )
 from .rate_limit import rate_limiter
@@ -102,6 +105,19 @@ def data_defaults() -> DataDefaultsResponse:
 @router.get("/api/v1/benchmarks/uk/reference", response_model=UkReferenceValuesResponse)
 def uk_reference_values() -> UkReferenceValuesResponse:
     return UkReferenceValuesResponse.model_validate(get_uk_reference_values())
+
+
+@router.post("/api/v1/benchmarks/uk/percentile", response_model=UkPercentileResponse)
+def uk_income_percentile(
+    payload: UkPercentileRequest,
+    auth: AuthContext = Depends(require_premium),
+) -> UkPercentileResponse:
+    _ = auth
+    result = compute_uk_income_percentile(
+        annual_net_income_reporting_currency=payload.annual_net_income_reporting_currency,
+        reporting_currency=payload.reporting_currency,
+    )
+    return UkPercentileResponse.model_validate(result)
 
 
 @router.get("/api/v1/me")

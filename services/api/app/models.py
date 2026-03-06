@@ -137,6 +137,19 @@ class UkReferenceValuesResponse(BaseModel):
     provenance: ReferenceProvenance
 
 
+class UkPercentileRequest(BaseModel):
+    annual_net_income_reporting_currency: float = Field(..., ge=0)
+    reporting_currency: str = Field(default="GBP", min_length=3, max_length=3)
+
+
+class UkPercentileResponse(BaseModel):
+    percentile_bucket: int
+    year_label: str
+    reporting_currency: str
+    thresholds_gbp: list[float]
+    caveats: list[str]
+
+
 class DeterministicRunResponse(BaseModel):
     reporting_currency: str
     fx_spot_rates_used: dict[str, float]

@@ -905,6 +905,29 @@
 ### Risks / Blockers
 - Real HBAI ODS table structures may require stronger table-label matching than the current numeric-window heuristic.
 
+## 2026-03-06 — WS7-A02-03 Premium Percentile Endpoint (BHC)
+
+### Completed
+- WS7-A02-03: Added `shared/engine/benchmarks/income_percentile.py` with decile-threshold bucket computation (`10..90`).
+- WS7-A02-03: Added `services/api/app/benchmarks/percentile.py` service layer for UK income percentile responses and caveats.
+- WS7-A02-03: Added premium-gated endpoint `POST /api/v1/benchmarks/uk/percentile` in `services/api/app/routes.py`.
+- WS7-A02-03: Added request/response contracts in `services/api/app/models.py`.
+- WS7-A02-03: Added endpoint tests in `services/api/tests/test_percentile_endpoint.py` covering non-premium `403` and premium success.
+
+### In progress
+- WS7-A02-04: UI integration for UK context + premium ranking.
+
+### Test evidence
+- Backend tests: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests/test_percentile_endpoint.py -q` ✅ (`2 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check shared/engine/benchmarks/income_percentile.py services/api/app/benchmarks/percentile.py services/api/app/models.py services/api/app/routes.py services/api/tests/test_percentile_endpoint.py` ✅
+
+### Decisions made
+- Kept percentile output bounded to buckets `10..90` per backlog requirement and included caveats/disclosure text in endpoint output for UI consumption.
+- Used placeholder decile thresholds until parsed HBAI thresholds are wired, preserving endpoint contract stability.
+
+### Risks / Blockers
+- Percentile interpretation quality depends on replacing placeholder thresholds with parser-derived values and year-tag alignment in subsequent slices.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
