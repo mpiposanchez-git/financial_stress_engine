@@ -162,6 +162,30 @@
 ### Risks / Blockers
 - Diagnostics currently evaluate the GBP-denominated input fields directly and do not apply cross-currency normalization.
 
+## 2026-03-06 — WS3-01 Deterministic Savings Path Chart + Table
+
+### Completed
+- WS3-01: Extracted deterministic savings path visualization into `components/charts/SavingsPathChart.tsx`.
+- WS3-01: Added accessible chart output with `<figure>`, `<figcaption>`, and plain-language summary text.
+- WS3-01: Added month-by-month savings data table (pence + formatted values) for accessible tabular review.
+- WS3-01: Updated `ResultsPage` to render the extracted chart component with deterministic path inputs.
+- WS3-01: Added dedicated component tests for figcaption/summary and table accessibility.
+
+### In progress
+- WS3-02: Mortgage stress panel and plain-English delta explanation.
+
+### Test evidence
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`23 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`42 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+
+### Decisions made
+- Keep both visual and tabular deterministic path views to improve accessibility without changing deterministic output contracts.
+
+### Risks / Blockers
+- Large horizon values may produce long tables; pagination/virtualization may be needed in future UX passes.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

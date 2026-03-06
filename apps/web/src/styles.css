@@ -260,6 +260,24 @@ a:focus-visible {
   color: var(--muted);
 }
 
+.savings-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.65rem;
+  font-size: 0.9rem;
+}
+
+.savings-table th,
+.savings-table td {
+  border: 1px solid #d8e1eb;
+  padding: 0.35rem 0.45rem;
+  text-align: left;
+}
+
+.savings-table thead {
+  background: #eff6ff;
+}
+
 .form-error {
   margin-top: 0.75rem;
   color: #9f1239;

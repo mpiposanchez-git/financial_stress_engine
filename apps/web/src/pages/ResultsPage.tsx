@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 
 import { PercentileDisclosure } from "../components/benchmarks/PercentileDisclosure";
+import { SavingsPathChart } from "../components/charts/SavingsPathChart";
 import { ResultsRouteState } from "../types";
 
 type PercentileChartProps = {
@@ -42,55 +43,6 @@ function PercentileChart({ title, p10, p50, p90, formatter }: PercentileChartPro
       </figcaption>
       <p className="chart-summary">
         Summary: central estimate at P50 is {format(p50)}, with an approximate spread of {format(p10)} to {format(p90)}.
-      </p>
-    </figure>
-  );
-}
-
-function SavingsPathChart({ values }: { values: number[] }) {
-  if (values.length < 2) {
-    return <p>Savings path chart unavailable.</p>;
-  }
-
-  const width = 440;
-  const height = 180;
-  const padding = 16;
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const span = Math.max(max - min, 1);
-
-  const points = values
-    .map((value, index) => {
-      const x = padding + (index / (values.length - 1)) * (width - padding * 2);
-      const y = height - padding - ((value - min) / span) * (height - padding * 2);
-      return `${x.toFixed(2)},${y.toFixed(2)}`;
-    })
-    .join(" ");
-
-  return (
-    <figure className="result-card">
-      <h3>Deterministic savings path</h3>
-      <svg
-        className="savings-chart"
-        viewBox={`0 0 ${width} ${height}`}
-        role="img"
-        aria-label="Deterministic month-by-month savings path"
-      >
-        <line x1={padding} y1={padding} x2={padding} y2={height - padding} className="chart-axis" />
-        <line
-          x1={padding}
-          y1={height - padding}
-          x2={width - padding}
-          y2={height - padding}
-          className="chart-axis"
-        />
-        <polyline points={points} className="chart-line" />
-      </svg>
-      <figcaption className="chart-caption">
-        Low point: {min} pence | High point: {max} pence
-      </figcaption>
-      <p className="chart-summary">
-        Summary: starts at {values[0]} pence, ends at {values[values.length - 1]} pence, and ranges between {min} and {max} pence.
       </p>
     </figure>
   );
@@ -168,7 +120,10 @@ export function ResultsPage() {
         </section>
       ) : null}
 
-      <SavingsPathChart values={state.deterministic.savings_path_pence} />
+      <SavingsPathChart
+        values={state.deterministic.savings_path_pence}
+        formattedValues={state.deterministic.savings_path_formatted}
+      />
 
       {state.deterministic.warnings.length > 0 ? (
         <section className="result-card">
