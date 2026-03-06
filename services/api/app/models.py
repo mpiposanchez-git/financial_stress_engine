@@ -142,3 +142,31 @@ class MonteCarloRunResponse(BaseModel):
     seed: int
     runtime_ms: float
     metrics: MonteCarloMetrics
+
+
+class CompareScenarioRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=64)
+    input_parameters: DeterministicInputParameters
+    horizon_months: int = Field(default=24, ge=1)
+
+
+class CompareRunRequest(BaseModel):
+    scenarios: list[CompareScenarioRequest] = Field(..., min_length=1, max_length=4)
+
+
+class CompareScenarioResult(BaseModel):
+    name: str
+    reporting_currency: str
+    runway_months: float | None
+    month_of_depletion: int | None
+    min_savings_pence: int
+    min_savings_formatted: str
+    monthly_cashflow_stress_pence: int
+    monthly_cashflow_stress_formatted: str
+    mortgage_payment_stress_pence: int
+    mortgage_payment_stress_formatted: str
+    warnings: list[str]
+
+
+class CompareRunResponse(BaseModel):
+    scenarios: list[CompareScenarioResult]

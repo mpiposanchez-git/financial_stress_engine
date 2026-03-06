@@ -323,6 +323,29 @@
 ### Risks / Blockers
 - Premium unlock is currently static (`false`) in UI wiring and should later bind to real entitlement signals.
 
+## 2026-03-06 — WS4-02 Scenario Compare Endpoint (Premium)
+
+### Completed
+- WS4-02: Added premium-gated endpoint `POST /api/v1/compare/run` to execute deterministic runs across multiple named scenarios.
+- WS4-02: Added compare DTOs in API models for scenario-list request and comparison-ready response payload.
+- WS4-02: Endpoint now returns scenario rows including runway, depletion month, stressed cashflow/payment, min savings, reporting currency, and warnings.
+- WS4-02: Added endpoint tests for both `403` non-premium access and `200` premium access paths.
+
+### In progress
+- WS4-03: Scenario compare UI integration and premium-gated UX.
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`44 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`30 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Reused existing deterministic engine invocation per scenario to keep compare behavior aligned with single-scenario deterministic semantics.
+
+### Risks / Blockers
+- Compare endpoint currently runs scenarios sequentially; future scaling may require batched/parallel execution controls.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

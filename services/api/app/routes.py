@@ -13,6 +13,9 @@ from shared.engine.montecarlo import run_montecarlo
 from .auth import AuthContext, require_auth
 from .entitlements import is_premium, require_premium
 from .models import (
+    CompareRunRequest,
+    CompareRunResponse,
+    CompareScenarioResult,
     DeterministicRunRequest,
     DeterministicRunResponse,
     MoneyPercentileTriplet,
@@ -117,6 +120,45 @@ async def run_deterministic_route(
     record_deterministic_run((time.perf_counter() - started) * 1000.0)
     return response
 
+
+@router.post("/api/v1/compare/run", response_model=CompareRunResponse)
+async def run_compare_route(
+    payload: CompareRunRequest,
+    auth: AuthContext = Depends(require_premium),
+    settings: Settings = Depends(get_settings),
+) -> CompareRunResponse:
+    _apply_rate_limit(auth, settings)
+
+    async def _run() -> CompareRunResponse:
+        results: list[CompareScenarioResult] = []
+        for scenario in payload.scenarios:
+            engine_input = scenario.input_parameters.to_engine_input(scenario.horizon_months)
+            deterministic = await asyncio.to_thread(run_deterministic, engine_input)
+            results.append(
+                CompareScenarioResult(
+                    name=scenario.name,
+                    reporting_currency=deterministic.reporting_currency,
+                    runway_months=deterministic.runway_months,
+                    month_of_depletion=deterministic.month_of_depletion,
+                    min_savings_pence=deterministic.min_savings_pence,
+                    min_savings_formatted=deterministic.min_savings_formatted,
+                    monthly_cashflow_stress_pence=deterministic.monthly_cashflow_stress_pence,
+                    monthly_cashflow_stress_formatted=deterministic.monthly_cashflow_stress_formatted,
+                    mortgage_payment_stress_pence=deterministic.mortgage_payment_stress_pence,
+                    mortgage_payment_stress_formatted=deterministic.mortgage_payment_stress_formatted,
+                    warnings=["Educational simulation only. Not financial advice."],
+                )
+            )
+
+        return CompareRunResponse(scenarios=results)
+
+    try:
+        return await asyncio.wait_for(_run(), timeout=settings.request_timeout_seconds)
+    except TimeoutError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="Request timed out",
+        ) from exc
 
 @router.post("/api/v1/montecarlo/run", response_model=MonteCarloRunResponse)
 async def run_montecarlo_route(
