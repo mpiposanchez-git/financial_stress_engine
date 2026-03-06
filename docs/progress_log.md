@@ -209,6 +209,28 @@
 ### Risks / Blockers
 - Delta presentation is currently pence-centric and does not include localized currency-symbol delta formatting.
 
+## 2026-03-06 — WS3-03 Emergency Fund Adequacy Card
+
+### Completed
+- WS3-03: Added `EmergencyFundCard` component to compute and display months of coverage from modeled low-point savings and baseline monthly outgoings.
+- WS3-03: Integrated emergency-fund card into `ResultsPage` alongside deterministic and mortgage stress outputs.
+- WS3-03: Added a basic unit test covering months-of-coverage calculation and render output.
+
+### In progress
+- WS3-04: Explain-the-result narrative and glossary tooltips.
+
+### Test evidence
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`25 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`42 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+
+### Decisions made
+- Coverage is presented as an explanatory adequacy ratio (months), with neutral educational wording.
+
+### Risks / Blockers
+- Baseline monthly outgoings currently use available deterministic output fields and may need refinement once direct essentials outgoings are exposed in results contracts.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

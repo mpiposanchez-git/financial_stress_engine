@@ -1,6 +1,7 @@
 import { useLocation } from "react-router-dom";
 
 import { PercentileDisclosure } from "../components/benchmarks/PercentileDisclosure";
+import { EmergencyFundCard } from "../components/EmergencyFundCard";
 import { SavingsPathChart } from "../components/charts/SavingsPathChart";
 import { MortgageStressPanel } from "../components/MortgageStressPanel";
 import { ResultsRouteState } from "../types";
@@ -131,6 +132,11 @@ export function ResultsPage() {
         currentPaymentFormatted={state.deterministic.mortgage_payment_current_formatted}
         stressPaymentPence={state.deterministic.mortgage_payment_stress_pence}
         stressPaymentFormatted={state.deterministic.mortgage_payment_stress_formatted}
+      />
+
+      <EmergencyFundCard
+        minSavingsPence={state.deterministic.min_savings_pence}
+        monthlyEssentialsSpendPence={state.deterministic.monthly_cashflow_base_pence < 0 ? 0 : state.deterministic.monthly_cashflow_base_pence}
       />
 
       {state.deterministic.warnings.length > 0 ? (
