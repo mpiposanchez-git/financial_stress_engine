@@ -186,6 +186,29 @@
 ### Risks / Blockers
 - Large horizon values may produce long tables; pagination/virtualization may be needed in future UX passes.
 
+## 2026-03-06 — WS3-02 Mortgage Stress Panel
+
+### Completed
+- WS3-02: Added `MortgageStressPanel` component to display current vs stressed mortgage payment and absolute delta.
+- WS3-02: Included plain-English explanation of what the comparison represents, explicitly avoiding recommendation language.
+- WS3-02: Integrated panel into `ResultsPage` using deterministic mortgage payment outputs.
+- WS3-02: Added a basic unit test for panel rendering and delta text.
+
+### In progress
+- WS3-03: Emergency fund adequacy card.
+
+### Test evidence
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`24 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`42 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+
+### Decisions made
+- Delta is shown in pence with directional wording (`higher`, `lower`, `unchanged`) for clear interpretation.
+
+### Risks / Blockers
+- Delta presentation is currently pence-centric and does not include localized currency-symbol delta formatting.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

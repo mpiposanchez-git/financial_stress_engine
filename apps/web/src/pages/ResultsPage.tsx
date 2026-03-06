@@ -2,6 +2,7 @@ import { useLocation } from "react-router-dom";
 
 import { PercentileDisclosure } from "../components/benchmarks/PercentileDisclosure";
 import { SavingsPathChart } from "../components/charts/SavingsPathChart";
+import { MortgageStressPanel } from "../components/MortgageStressPanel";
 import { ResultsRouteState } from "../types";
 
 type PercentileChartProps = {
@@ -123,6 +124,13 @@ export function ResultsPage() {
       <SavingsPathChart
         values={state.deterministic.savings_path_pence}
         formattedValues={state.deterministic.savings_path_formatted}
+      />
+
+      <MortgageStressPanel
+        currentPaymentPence={state.deterministic.mortgage_payment_current_pence}
+        currentPaymentFormatted={state.deterministic.mortgage_payment_current_formatted}
+        stressPaymentPence={state.deterministic.mortgage_payment_stress_pence}
+        stressPaymentFormatted={state.deterministic.mortgage_payment_stress_formatted}
       />
 
       {state.deterministic.warnings.length > 0 ? (
