@@ -179,3 +179,24 @@ class CompareScenarioResult(BaseModel):
 
 class CompareRunResponse(BaseModel):
     scenarios: list[CompareScenarioResult]
+
+
+class SensitivityRunRequest(BaseModel):
+    input_parameters: DeterministicInputParameters
+    horizon_months: int = Field(default=24, ge=1)
+    delta_bps: int = Field(default=100, ge=0, le=10_000)
+
+
+class SensitivityDriverImpact(BaseModel):
+    driver: str
+    delta_bps: int
+    base_runway_months: float | None
+    perturbed_runway_months: float | None
+    runway_months_impact: float | None
+    base_min_savings_pence: int
+    perturbed_min_savings_pence: int
+    min_savings_impact_pence: int
+
+
+class SensitivityRunResponse(BaseModel):
+    impacts: list[SensitivityDriverImpact]

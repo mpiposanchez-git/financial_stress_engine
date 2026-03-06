@@ -466,6 +466,29 @@
 ### Risks / Blockers
 - Current ranking key emphasizes min-savings sensitivity; if product preference shifts to runway-first ranking, sorting policy should be updated consistently across API/UI consumers.
 
+## 2026-03-06 — WS5-F12-02 Sensitivity Endpoint (Premium gated)
+
+### Completed
+- WS5-F12-02: Added sensitivity endpoint DTOs in API models (`SensitivityRunRequest`, `SensitivityDriverImpact`, `SensitivityRunResponse`).
+- WS5-F12-02: Added `POST /api/v1/sensitivity/run` in main router, gated by `require_premium`.
+- WS5-F12-02: Endpoint applies existing rate limiting and request timeout guards, then executes deterministic sensitivity computation.
+- WS5-F12-02: Added endpoint tests for non-premium `403` behavior and premium `200` ranked-driver response contract.
+
+### In progress
+- WS5-F12-03: Tornado chart UI.
+
+### Test evidence
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`48 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`40 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Reused the existing single-router pattern (`routes.py`) for this endpoint to keep premium endpoint behavior consistent with compare and Monte Carlo flows.
+
+### Risks / Blockers
+- Endpoint currently returns deterministic ranking sorted by min-savings impact from engine output; if a different ranking policy is required by UI, both endpoint and tests should be aligned explicitly.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, status
 from shared.engine.deterministic import run_deterministic
 from shared.engine.money import format_currency_from_pence
 from shared.engine.montecarlo import run_montecarlo
+from shared.engine.sensitivity import compute_sensitivity
 
 from .auth import AuthContext, require_auth
 from .entitlements import is_premium, require_premium
@@ -23,6 +24,9 @@ from .models import (
     MonteCarloRunRequest,
     MonteCarloRunResponse,
     RunwayPercentileTriplet,
+    SensitivityDriverImpact,
+    SensitivityRunRequest,
+    SensitivityRunResponse,
 )
 from .rate_limit import rate_limiter
 from .settings import Settings, get_settings
@@ -151,6 +155,34 @@ async def run_compare_route(
             )
 
         return CompareRunResponse(scenarios=results)
+
+    try:
+        return await asyncio.wait_for(_run(), timeout=settings.request_timeout_seconds)
+    except TimeoutError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+            detail="Request timed out",
+        ) from exc
+
+
+@router.post("/api/v1/sensitivity/run", response_model=SensitivityRunResponse)
+async def run_sensitivity_route(
+    payload: SensitivityRunRequest,
+    auth: AuthContext = Depends(require_premium),
+    settings: Settings = Depends(get_settings),
+) -> SensitivityRunResponse:
+    _apply_rate_limit(auth, settings)
+
+    async def _run() -> SensitivityRunResponse:
+        engine_input = payload.input_parameters.to_engine_input(payload.horizon_months)
+        impacts = await asyncio.to_thread(
+            compute_sensitivity,
+            engine_input,
+            payload.delta_bps,
+        )
+        return SensitivityRunResponse(
+            impacts=[SensitivityDriverImpact(**item.model_dump()) for item in impacts]
+        )
 
     try:
         return await asyncio.wait_for(_run(), timeout=settings.request_timeout_seconds)
