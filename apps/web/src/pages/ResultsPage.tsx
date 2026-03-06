@@ -7,6 +7,7 @@ import { ExplainResult } from "../components/ExplainResult";
 import { SavingsPathChart } from "../components/charts/SavingsPathChart";
 import { MortgageStressPanel } from "../components/MortgageStressPanel";
 import { OfficialResources } from "../components/OfficialResources";
+import { ScenarioCompareTable } from "../components/scenarios/ScenarioCompareTable";
 import { ResultsRouteState } from "../types";
 
 type PercentileChartProps = {
@@ -57,6 +58,7 @@ export function ResultsPage() {
   const location = useLocation();
   const state = location.state as ResultsRouteState | null;
   const hasMonteCarlo = Boolean(state?.montecarlo);
+  const premiumUnlocked = Boolean(state?.premiumUnlocked);
 
   if (!state) {
     return (
@@ -97,6 +99,17 @@ export function ResultsPage() {
           </article>
         )}
       </section>
+
+      {state.compare ? (
+        premiumUnlocked ? (
+          <ScenarioCompareTable scenarios={state.compare.scenarios} />
+        ) : (
+          <section className="result-card" aria-label="Scenario comparison locked">
+            <h2>Scenario comparison</h2>
+            <p>Premium unlock required to view side-by-side scenario comparison.</p>
+          </section>
+        )
+      ) : null}
 
       {hasMonteCarlo ? (
         <section className="summary-grid">

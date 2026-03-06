@@ -346,6 +346,29 @@
 ### Risks / Blockers
 - Compare endpoint currently runs scenarios sequentially; future scaling may require batched/parallel execution controls.
 
+## 2026-03-06 — WS4-03 Scenario Compare UI (Premium)
+
+### Completed
+- WS4-03: Added `ScenarioCompareTable` component to render side-by-side scenario comparison output (runway, depletion month, min savings, stressed cashflow, stressed mortgage payment).
+- WS4-03: Integrated compare rendering into `ResultsPage` with premium gating: table is shown only when `premiumUnlocked` is true; otherwise a locked message is displayed.
+- WS4-03: Extended route-state typings to include compare response payload and premium flag for view gating.
+- WS4-03: Added tests covering scenario compare table headers/rows and Results page premium unlocked vs locked behaviors.
+
+### In progress
+- WS4-04: Local-only scenario storage with free/premium limits and device-only warning.
+
+### Test evidence
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`33 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`44 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+
+### Decisions made
+- Compare table consumes backend compare DTO fields directly to preserve contract clarity and avoid duplicate calculation logic in UI.
+
+### Risks / Blockers
+- `ResultsPage` rendering currently relies on compare data being present in route state; end-to-end compare fetch wiring is expected in subsequent workflow tasks.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

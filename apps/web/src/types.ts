@@ -85,7 +85,27 @@ export type MonteCarloResponse = {
   metrics: MonteCarloMetrics;
 };
 
+export type CompareScenarioResult = {
+  name: string;
+  reporting_currency: "GBP" | "EUR" | "USD";
+  runway_months: number | null;
+  month_of_depletion: number | null;
+  min_savings_pence: number;
+  min_savings_formatted: string;
+  monthly_cashflow_stress_pence: number;
+  monthly_cashflow_stress_formatted: string;
+  mortgage_payment_stress_pence: number;
+  mortgage_payment_stress_formatted: string;
+  warnings: string[];
+};
+
+export type CompareRunResponse = {
+  scenarios: CompareScenarioResult[];
+};
+
 export type ResultsRouteState = {
   deterministic: DeterministicResponse;
   montecarlo?: MonteCarloResponse;
+  compare?: CompareRunResponse;
+  premiumUnlocked?: boolean;
 };

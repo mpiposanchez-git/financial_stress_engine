@@ -136,4 +136,134 @@ describe("ResultsPage", () => {
     expect(ui.getByText("Monte Carlo results unavailable for this run.")).toBeInTheDocument();
     expect(ui.queryByRole("heading", { name: "Runway distribution (months)" })).not.toBeInTheDocument();
   });
+
+  it("renders scenario comparison table for premium users", () => {
+    const state = {
+      premiumUnlocked: true,
+      deterministic: {
+        reporting_currency: "GBP",
+        fx_spot_rates_used: { GBP: 1, EUR: 0.86, USD: 0.78 },
+        fx_stressed_rates_used: { GBP: 1, EUR: 0.86, USD: 0.78 },
+        fx_stress_bps: { GBP: 0, EUR: 0, USD: 0 },
+        monthly_cashflow_base_pence: 90000,
+        monthly_cashflow_base_formatted: "£900.00",
+        monthly_cashflow_stress_pence: 40000,
+        monthly_cashflow_stress_formatted: "£400.00",
+        mortgage_payment_current_pence: 120000,
+        mortgage_payment_current_formatted: "£1,200.00",
+        mortgage_payment_stress_pence: 150000,
+        mortgage_payment_stress_formatted: "£1,500.00",
+        runway_months: 9.2,
+        savings_path_pence: [90000, 87000],
+        savings_path_formatted: ["£900.00", "£870.00"],
+        min_savings_pence: 87000,
+        min_savings_formatted: "£870.00",
+        month_of_depletion: null,
+        warnings: []
+      },
+      compare: {
+        scenarios: [
+          {
+            name: "Base",
+            reporting_currency: "GBP",
+            runway_months: 11.2,
+            month_of_depletion: 17,
+            min_savings_pence: 110000,
+            min_savings_formatted: "GBP 1,100.00",
+            monthly_cashflow_stress_pence: -10000,
+            monthly_cashflow_stress_formatted: "GBP -100.00",
+            mortgage_payment_stress_pence: 145000,
+            mortgage_payment_stress_formatted: "GBP 1,450.00",
+            warnings: []
+          },
+          {
+            name: "A",
+            reporting_currency: "GBP",
+            runway_months: null,
+            month_of_depletion: null,
+            min_savings_pence: 250000,
+            min_savings_formatted: "GBP 2,500.00",
+            monthly_cashflow_stress_pence: 5000,
+            monthly_cashflow_stress_formatted: "GBP 50.00",
+            mortgage_payment_stress_pence: 135000,
+            mortgage_payment_stress_formatted: "GBP 1,350.00",
+            warnings: []
+          }
+        ]
+      }
+    };
+
+    render(
+      <MemoryRouter initialEntries={[{ pathname: "/results", state }]}> 
+        <Routes>
+          <Route path="/results" element={<ResultsPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("heading", { name: "Scenario comparison" })).toBeInTheDocument();
+    const table = screen.getByRole("table", { name: "Scenario comparison table" });
+    const ui = within(table);
+    expect(ui.getByRole("columnheader", { name: "Runway (months)" })).toBeInTheDocument();
+    expect(ui.getByRole("cell", { name: "Base" })).toBeInTheDocument();
+    expect(ui.getByRole("cell", { name: "11.2" })).toBeInTheDocument();
+    expect(ui.getByRole("cell", { name: "A" })).toBeInTheDocument();
+    expect(ui.getByRole("cell", { name: "Solvent" })).toBeInTheDocument();
+  });
+
+  it("shows premium lock message when compare data exists but premium is locked", () => {
+    const state = {
+      premiumUnlocked: false,
+      deterministic: {
+        reporting_currency: "GBP",
+        fx_spot_rates_used: { GBP: 1, EUR: 0.86, USD: 0.78 },
+        fx_stressed_rates_used: { GBP: 1, EUR: 0.86, USD: 0.78 },
+        fx_stress_bps: { GBP: 0, EUR: 0, USD: 0 },
+        monthly_cashflow_base_pence: 90000,
+        monthly_cashflow_base_formatted: "£900.00",
+        monthly_cashflow_stress_pence: 40000,
+        monthly_cashflow_stress_formatted: "£400.00",
+        mortgage_payment_current_pence: 120000,
+        mortgage_payment_current_formatted: "£1,200.00",
+        mortgage_payment_stress_pence: 150000,
+        mortgage_payment_stress_formatted: "£1,500.00",
+        runway_months: 9.2,
+        savings_path_pence: [90000, 87000],
+        savings_path_formatted: ["£900.00", "£870.00"],
+        min_savings_pence: 87000,
+        min_savings_formatted: "£870.00",
+        month_of_depletion: null,
+        warnings: []
+      },
+      compare: {
+        scenarios: [
+          {
+            name: "Base",
+            reporting_currency: "GBP",
+            runway_months: 11.2,
+            month_of_depletion: 17,
+            min_savings_pence: 110000,
+            min_savings_formatted: "GBP 1,100.00",
+            monthly_cashflow_stress_pence: -10000,
+            monthly_cashflow_stress_formatted: "GBP -100.00",
+            mortgage_payment_stress_pence: 145000,
+            mortgage_payment_stress_formatted: "GBP 1,450.00",
+            warnings: []
+          }
+        ]
+      }
+    };
+
+    const { container } = render(
+      <MemoryRouter initialEntries={[{ pathname: "/results", state }]}> 
+        <Routes>
+          <Route path="/results" element={<ResultsPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+    const ui = within(container);
+
+    expect(ui.getByText("Premium unlock required to view side-by-side scenario comparison.")).toBeInTheDocument();
+    expect(ui.queryByRole("table", { name: "Scenario comparison table" })).not.toBeInTheDocument();
+  });
 });
