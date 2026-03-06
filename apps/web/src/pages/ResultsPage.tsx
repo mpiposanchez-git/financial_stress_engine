@@ -1,58 +1,14 @@
 import { useLocation } from "react-router-dom";
 
-import { PercentileDisclosure } from "../components/benchmarks/PercentileDisclosure";
 import { AssumptionsPanel } from "../components/AssumptionsPanel";
 import { EmergencyFundCard } from "../components/EmergencyFundCard";
 import { ExplainResult } from "../components/ExplainResult";
+import { FanChart } from "../components/charts/FanChart";
 import { SavingsPathChart } from "../components/charts/SavingsPathChart";
 import { MortgageStressPanel } from "../components/MortgageStressPanel";
 import { OfficialResources } from "../components/OfficialResources";
 import { ScenarioCompareTable } from "../components/scenarios/ScenarioCompareTable";
 import { ResultsRouteState } from "../types";
-
-type PercentileChartProps = {
-  title: string;
-  p10: number;
-  p50: number;
-  p90: number;
-  formatter?: (value: number) => string;
-};
-
-function PercentileChart({ title, p10, p50, p90, formatter }: PercentileChartProps) {
-  const min = Math.min(p10, p50, p90);
-  const max = Math.max(p10, p50, p90);
-  const span = Math.max(max - min, 1);
-  const toPercent = (value: number): number => ((value - min) / span) * 100;
-  const format = formatter ?? ((value: number) => `${value}`);
-  const headingId = `chart-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")}`;
-
-  return (
-    <figure className="result-card" aria-labelledby={headingId}>
-      <h3 id={headingId}>{title}</h3>
-      <div className="percentile-track" aria-hidden="true">
-        <div
-          className="percentile-band"
-          style={{ left: `${toPercent(p10)}%`, width: `${Math.max(toPercent(p90) - toPercent(p10), 2)}%` }}
-        />
-        <div className="percentile-marker p10" style={{ left: `${toPercent(p10)}%` }}>
-          <span>P10</span>
-        </div>
-        <div className="percentile-marker p50" style={{ left: `${toPercent(p50)}%` }}>
-          <span>P50</span>
-        </div>
-        <div className="percentile-marker p90" style={{ left: `${toPercent(p90)}%` }}>
-          <span>P90</span>
-        </div>
-      </div>
-      <figcaption className="percentile-values">
-        P10: {format(p10)} | P50: {format(p50)} | P90: {format(p90)}
-      </figcaption>
-      <p className="chart-summary">
-        Summary: central estimate at P50 is {format(p50)}, with an approximate spread of {format(p10)} to {format(p90)}.
-      </p>
-    </figure>
-  );
-}
 
 export function ResultsPage() {
   const location = useLocation();
@@ -112,30 +68,14 @@ export function ResultsPage() {
       ) : null}
 
       {hasMonteCarlo ? (
-        <section className="summary-grid">
-          <PercentileDisclosure />
-          <PercentileChart
-            title="Runway distribution (months)"
-            p10={state.montecarlo!.metrics.runway_months.p10}
-            p50={state.montecarlo!.metrics.runway_months.p50}
-            p90={state.montecarlo!.metrics.runway_months.p90}
-            formatter={(value) => `${value.toFixed(1)}m`}
-          />
-          <PercentileChart
-            title="Minimum savings distribution (pence)"
-            p10={state.montecarlo!.metrics.min_savings.p10_pence}
-            p50={state.montecarlo!.metrics.min_savings.p50_pence}
-            p90={state.montecarlo!.metrics.min_savings.p90_pence}
-            formatter={(value) => `${Math.round(value)}p`}
-          />
-          <PercentileChart
-            title="Depletion month distribution"
-            p10={state.montecarlo!.metrics.month_of_depletion.p10}
-            p50={state.montecarlo!.metrics.month_of_depletion.p50}
-            p90={state.montecarlo!.metrics.month_of_depletion.p90}
-            formatter={(value) => `${value.toFixed(1)}m`}
-          />
-        </section>
+        premiumUnlocked ? (
+          <FanChart data={state.montecarlo!} />
+        ) : (
+          <section className="result-card" aria-label="Fan chart locked">
+            <h2>Fan chart</h2>
+            <p>Premium unlock required to view summary percentile fan chart.</p>
+          </section>
+        )
       ) : null}
 
       <SavingsPathChart

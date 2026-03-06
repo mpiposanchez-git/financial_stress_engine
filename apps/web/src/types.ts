@@ -82,6 +82,15 @@ export type MonteCarloResponse = {
   horizon_months: number;
   seed: number;
   runtime_ms: number;
+  runway_months_p10: number;
+  runway_months_p50: number;
+  runway_months_p90: number;
+  min_savings_p10_pence: number;
+  min_savings_p50_pence: number;
+  min_savings_p90_pence: number;
+  month_of_depletion_p10: number;
+  month_of_depletion_p50: number;
+  month_of_depletion_p90: number;
   metrics: MonteCarloMetrics;
 };
 

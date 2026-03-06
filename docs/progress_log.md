@@ -417,6 +417,31 @@
 ### Risks / Blockers
 - Response currently duplicates percentile values in two shapes (`metrics` and top-level), which should be rationalized in a later breaking-change window if contract simplification is desired.
 
+## 2026-03-06 — WS5-F05-02 Fan Chart UI (Table-first)
+
+### Completed
+- WS5-F05-02: Added `FanChart` component with a summary-percentile table for runway, min savings, and depletion month.
+- WS5-F05-02: Added lightweight placeholder percentile-band visualization with clear labeling for summary percentile interpretation.
+- WS5-F05-02: Integrated fan chart into `ResultsPage` and gated rendering by premium entitlement.
+- WS5-F05-02: Added locked-state card when Monte Carlo exists but premium is not unlocked.
+- WS5-F05-02: Updated frontend Monte Carlo response typing to include explicit top-level percentile fields from backend contract.
+- WS5-F05-02: Added dedicated fan chart tests and updated `ResultsPage` tests for unlocked/locked fan chart states.
+
+### In progress
+- WS5-F12-01: Sensitivity engine perturbation calculator.
+
+### Test evidence
+- Frontend: `npm --prefix apps/web test -- --run` ✅ (`40 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+- Backend: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests -q` ✅ (`44 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check .` ✅
+
+### Decisions made
+- Replaced previous percentile disclosure/card stack with a single fan-chart section to keep premium Monte Carlo interpretation focused and consistent with WS5-F05-02 scope.
+
+### Risks / Blockers
+- Fan chart currently uses percentile summary values (not full monthly percentile paths); richer fan-surface detail depends on future path-level percentile outputs.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
