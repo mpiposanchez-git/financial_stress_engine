@@ -1121,6 +1121,28 @@
 ### Risks / Blockers
 - Release evidence quality still depends on disciplined manual capture of CI links and provenance snapshots at release time.
 
+## 2026-03-06 — WS9-04 Single-Source-of-Truth Docs Wiring
+
+### Completed
+- WS9-04: Added stable-path docs artifacts:
+	- `docs/commercial/poc_flyer.md`
+	- `docs/implementation/brd_implementation_plan.md`
+	- `docs/implementation/POC_BACKLOG_MASTER_WS1_WS9_INLINE.md`
+- WS9-04: Updated `README.md` References to include the WS1-WS9 inline master backlog link.
+
+### In progress
+- WS9-05: Tagging discipline documentation alignment.
+
+### Test evidence
+- Path verification: confirmed required docs exist at expected repository paths ✅
+
+### Decisions made
+- Materialized stable path copies to keep README/governance links resilient and GitHub-browseable.
+- Kept methodology and implementation references aligned to canonical doc locations expected by backlog requirements.
+
+### Risks / Blockers
+- File duplication introduces drift risk unless future updates keep canonical and mirrored docs synchronized.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

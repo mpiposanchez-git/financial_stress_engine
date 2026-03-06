@@ -73,6 +73,7 @@ The hook set is intentionally lightweight to avoid blocking day-to-day developme
 - POC flyer: [docs/commercial/poc_flyer.md](docs/commercial/poc_flyer.md)
 - BRD implementation plan: [docs/implementation/brd_implementation_plan.md](docs/implementation/brd_implementation_plan.md)
 - Detailed implementation backlog (WS0-WS9): [docs/implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md](docs/implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md)
+- Master implementation backlog (WS1-WS9 inline): [docs/implementation/POC_BACKLOG_MASTER_WS1_WS9_INLINE.md](docs/implementation/POC_BACKLOG_MASTER_WS1_WS9_INLINE.md)
 - MOD specifications (one per functionality):
 - F-01 guided onboarding wizard: [docs/MOD/MOD-001_F-01_GUIDED_ONBOARDING_WIZARD.md](docs/MOD/MOD-001_F-01_GUIDED_ONBOARDING_WIZARD.md)
 - F-05 Monte Carlo fan chart: [docs/MOD/MOD-005_F-05_MONTE_CARLO_FAN_CHART.md](docs/MOD/MOD-005_F-05_MONTE_CARLO_FAN_CHART.md)
