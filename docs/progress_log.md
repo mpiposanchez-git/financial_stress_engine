@@ -1056,6 +1056,27 @@
 ### Risks / Blockers
 - JSON bundle size may increase as additional analytics blocks are added; optional compression/streaming can be evaluated later.
 
+## 2026-03-06 — WS9-01 Logging & Sensitive-Data Guards
+
+### Completed
+- WS9-01: Added `services/api/tests/test_no_payload_logging_config.py` to enforce CI guardrails against sensitive logging configuration patterns in API code.
+- WS9-01: Confirmed existing `services/api/tests/test_no_sensitive_logging.py` continues to scan for request-body and token logging patterns.
+- WS9-01: Updated `docs/disclaimers/privacy.md` to accurately state that automated CI tests enforce sensitive logging guardrails.
+
+### In progress
+- WS9-02: Lightweight pre-commit hooks.
+
+### Test evidence
+- Backend tests: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m pytest services/api/tests/test_no_sensitive_logging.py services/api/tests/test_no_payload_logging_config.py -q` ✅ (`2 passed`)
+- Backend lint: `c:/Users/mpipo/Codes/financial_stress_engine/.venv/Scripts/python.exe -m ruff check services/api/tests/test_no_sensitive_logging.py services/api/tests/test_no_payload_logging_config.py` ✅
+
+### Decisions made
+- Guard tests focus on explicit high-risk logging patterns and fail with clear file-level diagnostics to keep remediation straightforward.
+- Privacy docs now explicitly reference automated logging-safety test coverage for policy/code consistency.
+
+### Risks / Blockers
+- Pattern-based tests can produce occasional false positives/negatives if logging patterns evolve significantly; revisit regex coverage as logging architecture changes.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed
