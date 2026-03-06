@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ResultsPage } from "./ResultsPage";
 
-const { mockGetToken, mockRunSensitivity } = vi.hoisted(() => ({
+const { mockGetToken, mockRunSensitivity, mockGetUkReferenceValues, mockGetUkPercentile } = vi.hoisted(() => ({
   mockGetToken: vi.fn(),
   mockRunSensitivity: vi.fn().mockResolvedValue({
     impacts: [
@@ -19,7 +19,25 @@ const { mockGetToken, mockRunSensitivity } = vi.hoisted(() => ({
         min_savings_impact_pence: -60000
       }
     ]
-  })
+  }),
+  mockGetUkReferenceValues: vi.fn().mockResolvedValue({
+    income_median_bhc: { year_label: "FY2024", amount_gbp: 35000 },
+    income_deciles_bhc_gbp: null,
+    provenance: {
+      dataset_key: "dwp_hbai_zip_raw",
+      source_url: "https://example.test/hbai",
+      fetched_at_utc: "2026-03-06T00:00:00Z",
+      sha256: "abc",
+      status: "placeholder",
+    },
+  }),
+  mockGetUkPercentile: vi.fn().mockResolvedValue({
+    percentile_bucket: 70,
+    year_label: "FY2024",
+    reporting_currency: "GBP",
+    thresholds_gbp: [12000, 15500, 19000, 23000, 28000, 34000, 42000, 55000, 80000],
+    caveats: ["indicative"],
+  }),
 }));
 
 vi.mock("../auth/useAuthState", () => ({
@@ -34,7 +52,9 @@ vi.mock("../api/client", () => ({
   createApiClient: () => ({
     runDeterministic: vi.fn(),
     runMonteCarlo: vi.fn(),
-    runSensitivity: mockRunSensitivity
+    runSensitivity: mockRunSensitivity,
+    getUkReferenceValues: mockGetUkReferenceValues,
+    getUkPercentile: mockGetUkPercentile,
   })
 }));
 
@@ -66,6 +86,8 @@ const inputParameters = {
 describe("ResultsPage", () => {
   beforeEach(() => {
     mockRunSensitivity.mockClear();
+    mockGetUkReferenceValues.mockClear();
+    mockGetUkPercentile.mockClear();
   });
 
   it("renders formatted and pence money fields from route state", () => {

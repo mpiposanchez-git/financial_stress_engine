@@ -928,6 +928,33 @@
 ### Risks / Blockers
 - Percentile interpretation quality depends on replacing placeholder thresholds with parser-derived values and year-tag alignment in subsequent slices.
 
+## 2026-03-06 — WS7-A02-04 UI UK Benchmarks Integration
+
+### Completed
+- WS7-A02-04: Added `apps/web/src/components/benchmarks/UKContextBox.tsx` for always-visible UK context (median BHC value + year + source).
+- WS7-A02-04: Added `apps/web/src/components/benchmarks/UKRankingCard.tsx` for premium percentile ranking display and disclosure integration via `PercentileDisclosure`.
+- WS7-A02-04: Updated `apps/web/src/pages/ResultsPage.tsx` to fetch and render:
+	- UK reference context for all users (`GET /api/v1/benchmarks/uk/reference`)
+	- Premium percentile ranking for premium runs (`POST /api/v1/benchmarks/uk/percentile`)
+- WS7-A02-04: Extended API client/types for benchmark endpoints in `apps/web/src/api/client.ts` and `apps/web/src/types.ts`.
+- WS7-A02-04: Added basic UI tests in:
+	- `apps/web/src/components/benchmarks/UKContextBox.test.tsx`
+	- `apps/web/src/components/benchmarks/UKRankingCard.test.tsx`
+
+### In progress
+- WS8-F06-01: PDF generator core (ReportLab).
+
+### Test evidence
+- Frontend tests: `npm --prefix apps/web test -- --run src/pages/ResultsPage.test.tsx src/components/benchmarks/UKContextBox.test.tsx src/components/benchmarks/UKRankingCard.test.tsx` ✅ (`10 passed`)
+- Frontend typecheck: `npm --prefix apps/web run typecheck` ✅
+
+### Decisions made
+- Kept UK context visible to all users and separated premium ranking into a dedicated card to preserve clear entitlement boundaries.
+- Reused existing `PercentileDisclosure` to satisfy disclosure requirement without duplicating legal/explanatory copy.
+
+### Risks / Blockers
+- Ranking quality remains dependent on replacing placeholder deciles with parsed HBAI thresholds in subsequent integration slices.
+
 ## 2026-03-04 — Deployment, Auth Stabilization, and Security Cleanup
 
 ### Completed

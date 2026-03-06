@@ -44,6 +44,34 @@ export type DataDefaultsResponse = {
   fetched_at: Record<string, string | null>;
 };
 
+export type UkReferenceValuesResponse = {
+  income_median_bhc: {
+    year_label: string;
+    amount_gbp: number;
+  };
+  income_deciles_bhc_gbp: number[] | null;
+  provenance: {
+    dataset_key: string;
+    source_url: string;
+    fetched_at_utc: string | null;
+    sha256: string | null;
+    status: string;
+  };
+};
+
+export type UkPercentileRequest = {
+  annual_net_income_reporting_currency: number;
+  reporting_currency: "GBP" | "EUR" | "USD";
+};
+
+export type UkPercentileResponse = {
+  percentile_bucket: number;
+  year_label: string;
+  reporting_currency: string;
+  thresholds_gbp: number[];
+  caveats: string[];
+};
+
 export type MonteCarloRequest = {
   input_parameters: InputParameters;
   n_sims: number;

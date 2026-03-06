@@ -5,6 +5,9 @@ import type {
   InputParameters,
   MonteCarloRequest,
   MonteCarloResponse,
+  UkPercentileRequest,
+  UkPercentileResponse,
+  UkReferenceValuesResponse,
   SensitivityRequest,
   SensitivityResponse
 } from "../types";
@@ -124,6 +127,9 @@ export function createApiClient(baseUrl: string, getToken: TokenProvider) {
 
   return {
     getDefaults: () => getJson<DataDefaultsResponse>("/api/v1/data/defaults"),
+    getUkReferenceValues: () => getJson<UkReferenceValuesResponse>("/api/v1/benchmarks/uk/reference"),
+    getUkPercentile: (payload: UkPercentileRequest) =>
+      postJson<UkPercentileResponse>("/api/v1/benchmarks/uk/percentile", payload),
     runDeterministic: (payload: DeterministicRequest) =>
       postJson<DeterministicResponse>("/api/v1/deterministic/run", payload),
     runDeterministicFromInput: (inputParameters: InputParameters) =>

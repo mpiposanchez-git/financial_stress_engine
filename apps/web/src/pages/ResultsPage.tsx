@@ -4,6 +4,8 @@ import { useLocation } from "react-router-dom";
 import { createApiClient } from "../api/client";
 import { useAuthState } from "../auth/useAuthState";
 import { AssumptionsPanel } from "../components/AssumptionsPanel";
+import { UKContextBox } from "../components/benchmarks/UKContextBox";
+import { UKRankingCard } from "../components/benchmarks/UKRankingCard";
 import { EmergencyFundCard } from "../components/EmergencyFundCard";
 import { ExplainResult } from "../components/ExplainResult";
 import { FanChart } from "../components/charts/FanChart";
@@ -12,7 +14,7 @@ import { TornadoChart } from "../components/charts/TornadoChart";
 import { MortgageStressPanel } from "../components/MortgageStressPanel";
 import { OfficialResources } from "../components/OfficialResources";
 import { ScenarioCompareTable } from "../components/scenarios/ScenarioCompareTable";
-import { SensitivityDriverImpact, ResultsRouteState } from "../types";
+import { ResultsRouteState, SensitivityDriverImpact, UkPercentileResponse, UkReferenceValuesResponse } from "../types";
 
 export function ResultsPage() {
   const location = useLocation();
@@ -24,6 +26,12 @@ export function ResultsPage() {
   const [sensitivityImpacts, setSensitivityImpacts] = useState<SensitivityDriverImpact[] | null>(null);
   const [sensitivityLoading, setSensitivityLoading] = useState(false);
   const [sensitivityError, setSensitivityError] = useState<string | null>(null);
+  const [ukReference, setUkReference] = useState<UkReferenceValuesResponse | null>(null);
+  const [ukReferenceLoading, setUkReferenceLoading] = useState(false);
+  const [ukReferenceError, setUkReferenceError] = useState<string | null>(null);
+  const [ukRanking, setUkRanking] = useState<UkPercentileResponse | null>(null);
+  const [ukRankingLoading, setUkRankingLoading] = useState(false);
+  const [ukRankingError, setUkRankingError] = useState<string | null>(null);
 
   const api = useMemo(() => {
     const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
@@ -71,6 +79,74 @@ export function ResultsPage() {
     };
   }, [api, premiumUnlocked, inputParameters, state?.montecarlo?.horizon_months]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadReference = async () => {
+      setUkReferenceLoading(true);
+      setUkReferenceError(null);
+      try {
+        const response = await api.getUkReferenceValues();
+        if (!cancelled) {
+          setUkReference(response);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setUkReferenceError(error instanceof Error ? error.message : "UK reference request failed");
+        }
+      } finally {
+        if (!cancelled) {
+          setUkReferenceLoading(false);
+        }
+      }
+    };
+
+    void loadReference();
+    return () => {
+      cancelled = true;
+    };
+  }, [api]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!premiumUnlocked || !inputParameters) {
+      setUkRanking(null);
+      setUkRankingLoading(false);
+      setUkRankingError(null);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const loadRanking = async () => {
+      setUkRankingLoading(true);
+      setUkRankingError(null);
+      try {
+        const response = await api.getUkPercentile({
+          annual_net_income_reporting_currency: inputParameters.household_monthly_net_income_gbp * 12,
+          reporting_currency: inputParameters.reporting_currency,
+        });
+        if (!cancelled) {
+          setUkRanking(response);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setUkRankingError(error instanceof Error ? error.message : "UK percentile request failed");
+        }
+      } finally {
+        if (!cancelled) {
+          setUkRankingLoading(false);
+        }
+      }
+    };
+
+    void loadRanking();
+    return () => {
+      cancelled = true;
+    };
+  }, [api, premiumUnlocked, inputParameters]);
+
   if (!state) {
     return (
       <main>
@@ -110,6 +186,16 @@ export function ResultsPage() {
           </article>
         )}
       </section>
+
+      <UKContextBox reference={ukReference} loading={ukReferenceLoading} error={ukReferenceError} />
+      {premiumUnlocked ? (
+        <UKRankingCard ranking={ukRanking} loading={ukRankingLoading} error={ukRankingError} />
+      ) : (
+        <section className="result-card" aria-label="UK ranking locked">
+          <h2>UK income ranking</h2>
+          <p>Premium unlock required to view UK percentile ranking.</p>
+        </section>
+      )}
 
       {state.compare ? (
         premiumUnlocked ? (
