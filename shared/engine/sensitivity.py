@@ -52,8 +52,7 @@ def _run_impact(
         runway_months_impact=runway_impact,
         base_min_savings_pence=base_result.min_savings_pence,
         perturbed_min_savings_pence=perturbed_result.min_savings_pence,
-        min_savings_impact_pence=perturbed_result.min_savings_pence
-        - base_result.min_savings_pence,
+        min_savings_impact_pence=perturbed_result.min_savings_pence - base_result.min_savings_pence,
     )
 
 

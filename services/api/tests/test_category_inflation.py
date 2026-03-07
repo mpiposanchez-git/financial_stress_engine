@@ -38,13 +38,9 @@ def test_single_category_matches_single_bucket_when_equivalent() -> None:
     bucket_result = run_deterministic(bucket)
     category_result = run_deterministic(category)
 
+    assert category_result.monthly_cashflow_base_pence == bucket_result.monthly_cashflow_base_pence
     assert (
-        category_result.monthly_cashflow_base_pence
-        == bucket_result.monthly_cashflow_base_pence
-    )
-    assert (
-        category_result.monthly_cashflow_stress_pence
-        == bucket_result.monthly_cashflow_stress_pence
+        category_result.monthly_cashflow_stress_pence == bucket_result.monthly_cashflow_stress_pence
     )
     assert category_result.savings_path_pence == bucket_result.savings_path_pence
     assert category_result.min_savings_pence == bucket_result.min_savings_pence
