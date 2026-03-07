@@ -25,6 +25,28 @@
 
 ---
 
+## 2026-03-07 — WS9-05 Milestone Tag Execution
+
+### Completed
+- WS9-05: Created milestone tag `poc-milestone-1-2026-03-07` on commit `85c7b59`.
+- WS9-05: Pushed the milestone tag to `origin`.
+- WS9-05: Replaced the lightweight tag with an annotated tag of the same name after configuring Git identity, then force-updated the remote tag.
+
+### In progress
+- None.
+
+### Test evidence
+- Git verification: `git show --no-patch --oneline poc-milestone-1-2026-03-07` -> `85c7b59` ✅
+- Remote publish: `git push origin poc-milestone-1-2026-03-07` ✅
+
+### Decisions made
+- Initial creation used a lightweight Git tag due to missing identity; after identity setup, the same tag name was converted to an annotated tag for richer release metadata.
+
+### Risks / Blockers
+- None.
+
+---
+
 ## 2026-03-06 — Immediate Next Steps Execution (POC Follow-Through)
 
 ### Completed
