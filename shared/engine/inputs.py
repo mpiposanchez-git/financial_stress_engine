@@ -48,6 +48,12 @@ class EssentialsCategory(BaseModel):
     inflation_bps: int = Field(..., ge=0, le=10_000)
 
 
+class DebtItem(BaseModel):
+    balance_pence: int = Field(..., ge=0)
+    apr_bps: int = Field(..., ge=0, le=10_000)
+    min_payment_pence: int = Field(..., ge=0)
+
+
 class DeterministicInput(BaseModel):
     household_monthly_net_income_pence: int = Field(
         ..., ge=0, description="Monthly net household income in pence"
@@ -89,6 +95,7 @@ class DeterministicInput(BaseModel):
     )
     fx_stress_bps: dict[str, int] = Field(default_factory=dict)
     essentials_categories: dict[str, EssentialsCategory] | None = None
+    debts: list[DebtItem] | None = None
     income_shock_schedule: ShockSchedule | None = None
     inflation_shock_schedule: ShockSchedule | None = None
     mortgage_rate_stress_schedule: ShockSchedule | None = None
@@ -132,6 +139,9 @@ class DeterministicInput(BaseModel):
             for name in self.essentials_categories:
                 if not name.strip():
                     raise ValueError("essentials_categories keys must be non-empty")
+
+        if self.debts is not None and len(self.debts) == 0:
+            raise ValueError("debts must not be empty when provided")
 
         return self
 

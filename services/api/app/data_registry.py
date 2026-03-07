@@ -33,7 +33,9 @@ DATA_REGISTRY: list[DataRegistryEntry] = [
         provider="Bank of England",
         url="https://www.bankofengland.co.uk/boeapps/database/Rates.asp",
         refresh_cadence="Daily check on UK business days",
-        license_note="Indicative market rates; not transaction quotes.",
+        license_note=(
+            "Indicative market rates only; not official reference rates and not transaction quotes."
+        ),
         verification_steps=[
             "Confirm table date and currency pair labels on the source page.",
             "Verify GBP base alignment for EUR and USD extracts.",

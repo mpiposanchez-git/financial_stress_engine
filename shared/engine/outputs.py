@@ -30,6 +30,7 @@ class DeterministicOutput(BaseModel):
     savings_path_formatted: list[str] = Field(
         ..., description="Formatted savings path values aligned with savings_path_pence"
     )
+    debt_balance_path_pence: list[int] | None = None
     min_savings_pence: int
     min_savings_formatted: str
     month_of_depletion: int | None

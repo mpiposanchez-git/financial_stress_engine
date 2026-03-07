@@ -9,6 +9,7 @@ Runway logic:
 
 from decimal import Decimal
 
+from shared.engine.debt import amortize_debts
 from shared.engine.fx import (
     convert_minor_units,
     currency_symbol,
@@ -139,6 +140,15 @@ def run_deterministic(inputs: DeterministicInput) -> DeterministicOutput:
         inputs.household_monthly_debt_payments_currency,
         fx_spot_rates_used,
     )
+    debt_payment_series = [debt_base] * inputs.horizon_months
+    debt_balance_path_pence: list[int] | None = None
+    if inputs.debts:
+        debt_payment_series, debt_balance_path_pence = amortize_debts(
+            balances_pence=[debt.balance_pence for debt in inputs.debts],
+            apr_bps=[debt.apr_bps for debt in inputs.debts],
+            min_payments_pence=[debt.min_payment_pence for debt in inputs.debts],
+            horizon_months=inputs.horizon_months,
+        )
     cash_savings_base = _convert_to_reporting(
         inputs.cash_savings_pence,
         inputs.cash_savings_currency,
@@ -146,7 +156,7 @@ def run_deterministic(inputs: DeterministicInput) -> DeterministicOutput:
     )
 
     # Base cashflow
-    cashflow_base = income_base - essentials_base - debt_base - mortgage_current
+    cashflow_base = income_base - essentials_base - debt_payment_series[0] - mortgage_current
 
     stressed_debt = _convert_to_reporting(
         inputs.household_monthly_debt_payments_pence,
@@ -200,8 +210,9 @@ def run_deterministic(inputs: DeterministicInput) -> DeterministicOutput:
         )
         mortgage_stress_series.append(mortgage_stress)
 
+        month_debt = debt_payment_series[month_idx] if inputs.debts else stressed_debt
         cashflow_stress_series.append(
-            stressed_income - stressed_essentials - stressed_debt - mortgage_stress
+            stressed_income - stressed_essentials - month_debt - mortgage_stress
         )
 
     cashflow_stress = cashflow_stress_series[0]
@@ -266,6 +277,7 @@ def run_deterministic(inputs: DeterministicInput) -> DeterministicOutput:
         savings_path_formatted=[
             format_currency_from_pence(value, symbol=symbol) for value in savings_path_pence
         ],
+        debt_balance_path_pence=debt_balance_path_pence,
         min_savings_pence=min_savings_pence,
         min_savings_formatted=format_currency_from_pence(min_savings_pence, symbol=symbol),
         month_of_depletion=depletion_month,
