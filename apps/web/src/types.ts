@@ -21,10 +21,63 @@ export type InputParameters = {
   income_shock_std_percent: number;
   rate_shock_std_percent: number;
   inflation_shock_std_percent: number;
+  essentials_categories?: Record<
+    string,
+    {
+      monthly_spend_gbp: number;
+      inflation_bps: number;
+    }
+  >;
 };
 
 export type DeterministicRequest = {
   input_parameters: InputParameters;
+};
+
+export type DataDefaultsResponse = {
+  bank_rate_bps: number;
+  cpih_12m_bps: number;
+  fx_spot_rates: Record<"EUR" | "USD", number>;
+  energy_reference_values: {
+    annual_bill_gbp: number;
+  } | null;
+  fetched_at: Record<string, string | null>;
+};
+
+export type UkReferenceValuesResponse = {
+  income_median_bhc: {
+    year_label: string;
+    amount_gbp: number;
+  };
+  income_deciles_bhc_gbp: number[] | null;
+  provenance: {
+    dataset_key: string;
+    source_url: string;
+    fetched_at_utc: string | null;
+    sha256: string | null;
+    status: string;
+  };
+};
+
+export type UkPercentileRequest = {
+  annual_net_income_reporting_currency: number;
+  reporting_currency: "GBP" | "EUR" | "USD";
+};
+
+export type UkPercentileResponse = {
+  percentile_bucket: number;
+  year_label: string;
+  reporting_currency: string;
+  thresholds_gbp: number[];
+  caveats: string[];
+};
+
+export type PdfReportRequest = {
+  inputs: Record<string, unknown>;
+  outputs: Record<string, unknown>;
+  disclaimers: string[];
+  provenance: Record<string, unknown>;
+  app_version: string;
 };
 
 export type MonteCarloRequest = {
@@ -32,6 +85,12 @@ export type MonteCarloRequest = {
   n_sims: number;
   horizon_months: number;
   seed?: number;
+};
+
+export type SensitivityRequest = {
+  input_parameters: InputParameters;
+  horizon_months?: number;
+  delta_bps?: number;
 };
 
 export type DeterministicResponse = {
@@ -82,10 +141,55 @@ export type MonteCarloResponse = {
   horizon_months: number;
   seed: number;
   runtime_ms: number;
+  runway_months_p10: number;
+  runway_months_p50: number;
+  runway_months_p90: number;
+  min_savings_p10_pence: number;
+  min_savings_p50_pence: number;
+  min_savings_p90_pence: number;
+  month_of_depletion_p10: number;
+  month_of_depletion_p50: number;
+  month_of_depletion_p90: number;
   metrics: MonteCarloMetrics;
+};
+
+export type CompareScenarioResult = {
+  name: string;
+  reporting_currency: "GBP" | "EUR" | "USD";
+  runway_months: number | null;
+  month_of_depletion: number | null;
+  min_savings_pence: number;
+  min_savings_formatted: string;
+  monthly_cashflow_stress_pence: number;
+  monthly_cashflow_stress_formatted: string;
+  mortgage_payment_stress_pence: number;
+  mortgage_payment_stress_formatted: string;
+  warnings: string[];
+};
+
+export type CompareRunResponse = {
+  scenarios: CompareScenarioResult[];
+};
+
+export type SensitivityDriverImpact = {
+  driver: string;
+  delta_bps: number;
+  base_runway_months: number | null;
+  perturbed_runway_months: number | null;
+  runway_months_impact: number | null;
+  base_min_savings_pence: number;
+  perturbed_min_savings_pence: number;
+  min_savings_impact_pence: number;
+};
+
+export type SensitivityResponse = {
+  impacts: SensitivityDriverImpact[];
 };
 
 export type ResultsRouteState = {
   deterministic: DeterministicResponse;
-  montecarlo: MonteCarloResponse;
+  inputParameters?: InputParameters;
+  montecarlo?: MonteCarloResponse;
+  compare?: CompareRunResponse;
+  premiumUnlocked?: boolean;
 };

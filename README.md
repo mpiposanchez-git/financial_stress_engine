@@ -43,6 +43,23 @@ uv run pytest services/api/tests -v
 cd apps/web && npm run test
 ```
 
+## Lightweight Pre-Commit Hooks
+
+This repository includes lightweight pre-commit checks for:
+
+- `ruff` (with safe auto-fix)
+- basic secrets-pattern detection
+
+Install and enable:
+
+```bash
+uv run pip install pre-commit
+uv run pre-commit install
+uv run pre-commit run --all-files
+```
+
+The hook set is intentionally lightweight to avoid blocking day-to-day development.
+
 ## Key Endpoints
 
 - `GET /health`
@@ -56,6 +73,7 @@ cd apps/web && npm run test
 - POC flyer: [docs/commercial/poc_flyer.md](docs/commercial/poc_flyer.md)
 - BRD implementation plan: [docs/implementation/brd_implementation_plan.md](docs/implementation/brd_implementation_plan.md)
 - Detailed implementation backlog (WS0-WS9): [docs/implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md](docs/implementation/POC_BACKLOG_DETAILED_TASKS_WS0_WS9.md)
+- Master implementation backlog (WS1-WS9 inline): [docs/implementation/POC_BACKLOG_MASTER_WS1_WS9_INLINE.md](docs/implementation/POC_BACKLOG_MASTER_WS1_WS9_INLINE.md)
 - MOD specifications (one per functionality):
 - F-01 guided onboarding wizard: [docs/MOD/MOD-001_F-01_GUIDED_ONBOARDING_WIZARD.md](docs/MOD/MOD-001_F-01_GUIDED_ONBOARDING_WIZARD.md)
 - F-05 Monte Carlo fan chart: [docs/MOD/MOD-005_F-05_MONTE_CARLO_FAN_CHART.md](docs/MOD/MOD-005_F-05_MONTE_CARLO_FAN_CHART.md)

@@ -1,8 +1,16 @@
 import type {
+  DataDefaultsResponse,
   DeterministicRequest,
   DeterministicResponse,
+  InputParameters,
   MonteCarloRequest,
-  MonteCarloResponse
+  MonteCarloResponse,
+  PdfReportRequest,
+  UkPercentileRequest,
+  UkPercentileResponse,
+  UkReferenceValuesResponse,
+  SensitivityRequest,
+  SensitivityResponse
 } from "../types";
 
 type TokenProvider = () => Promise<string | null>;
@@ -46,12 +54,12 @@ async function extractErrorDetail(response: Response): Promise<string | null> {
 }
 
 function buildErrorMessage(statusCode: number, detail: string | null): string {
-    if (statusCode === 422) {
-      if (detail) {
-        return `Invalid simulation input: ${detail}`;
-      }
-      return "Invalid simulation input. Please check numeric fields and retry.";
+  if (statusCode === 422) {
+    if (detail) {
+      return `Invalid simulation input: ${detail}`;
     }
+    return "Invalid simulation input. Please check numeric fields and retry.";
+  }
 
   if (statusCode === 401) {
     return "Authentication failed. Please sign in again and retry from the official app URL.";
@@ -73,6 +81,27 @@ function buildErrorMessage(statusCode: number, detail: string | null): string {
 }
 
 export function createApiClient(baseUrl: string, getToken: TokenProvider) {
+  const getJson = async <T>(path: string): Promise<T> => {
+    const token = await getToken();
+    const headers: Record<string, string> = {};
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${baseUrl}${path}`, {
+      method: "GET",
+      headers
+    });
+
+    if (!response.ok) {
+      const detail = await extractErrorDetail(response);
+      throw new Error(buildErrorMessage(response.status, detail));
+    }
+
+    return (await response.json()) as T;
+  };
+
   const postJson = async <T>(path: string, payload: unknown): Promise<T> => {
     const token = await getToken();
     const headers: Record<string, string> = {
@@ -97,10 +126,43 @@ export function createApiClient(baseUrl: string, getToken: TokenProvider) {
     return (await response.json()) as T;
   };
 
+  const postBinary = async (path: string, payload: unknown): Promise<Blob> => {
+    const token = await getToken();
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json"
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${baseUrl}${path}`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const detail = await extractErrorDetail(response);
+      throw new Error(buildErrorMessage(response.status, detail));
+    }
+
+    return response.blob();
+  };
+
   return {
+    getDefaults: () => getJson<DataDefaultsResponse>("/api/v1/data/defaults"),
+    getUkReferenceValues: () => getJson<UkReferenceValuesResponse>("/api/v1/benchmarks/uk/reference"),
+    getUkPercentile: (payload: UkPercentileRequest) =>
+      postJson<UkPercentileResponse>("/api/v1/benchmarks/uk/percentile", payload),
+    downloadPdfReport: (payload: PdfReportRequest) => postBinary("/api/v1/reports/pdf", payload),
     runDeterministic: (payload: DeterministicRequest) =>
       postJson<DeterministicResponse>("/api/v1/deterministic/run", payload),
+    runDeterministicFromInput: (inputParameters: InputParameters) =>
+      postJson<DeterministicResponse>("/api/v1/deterministic/run", { input_parameters: inputParameters }),
     runMonteCarlo: (payload: MonteCarloRequest) =>
-      postJson<MonteCarloResponse>("/api/v1/montecarlo/run", payload)
+      postJson<MonteCarloResponse>("/api/v1/montecarlo/run", payload),
+    runSensitivity: (payload: SensitivityRequest) =>
+      postJson<SensitivityResponse>("/api/v1/sensitivity/run", payload)
   };
 }

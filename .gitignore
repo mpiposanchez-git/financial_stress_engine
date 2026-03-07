@@ -207,6 +207,8 @@ node_modules/
 .cursorindexingignore
 
 # Marimo
+!apps/web/src/lib/
+!apps/web/src/lib/*.ts
 marimo/_static/
 marimo/_lsp/
 __marimo__/

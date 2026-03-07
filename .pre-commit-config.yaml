@@ -1,0 +1,15 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.5
+    hooks:
+      - id: ruff
+        args: ["--fix"]
+
+  - repo: local
+    hooks:
+      - id: lightweight-secrets-check
+        name: lightweight-secrets-check
+        language: pygrep
+        entry: "(?i)(api[_-]?key\\s*[=:]|secret\\s*[=:]|token\\s*[=:]|-----BEGIN (RSA|EC|OPENSSH) PRIVATE KEY-----)"
+        files: "\\.(py|ts|tsx|js|jsx|json|ya?ml|env|txt|md)$"
+        exclude: "(^docs/progress_log\\.md$|^docs/CHANGELOG\\.md$)"

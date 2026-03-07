@@ -5,6 +5,55 @@ from pydantic import BaseModel, Field, model_validator
 from shared.engine.fx import validate_currency
 
 
+class ShockSchedule(BaseModel):
+    kind: Literal["step", "ramp", "stepped"]
+    level_bps: int | None = Field(default=None, ge=0, le=10_000)
+    end_month: int | None = Field(default=None, ge=1)
+    points: list[tuple[int, int]] | None = None
+
+    @model_validator(mode="after")
+    def validate_shape(self) -> "ShockSchedule":
+        if self.kind == "step":
+            if self.level_bps is None:
+                raise ValueError("step schedule requires level_bps")
+            return self
+
+        if self.kind == "ramp":
+            if self.level_bps is None:
+                raise ValueError("ramp schedule requires level_bps")
+            if self.end_month is None:
+                raise ValueError("ramp schedule requires end_month")
+            return self
+
+        if not self.points:
+            raise ValueError("stepped schedule requires points")
+
+        months = [month for month, _level in self.points]
+        if any(month < 1 for month in months):
+            raise ValueError("stepped schedule months must be >= 1")
+        if months != sorted(months):
+            raise ValueError("stepped schedule points must be sorted by month")
+        if len(set(months)) != len(months):
+            raise ValueError("stepped schedule months must be unique")
+
+        for _month, level in self.points:
+            if level < 0 or level > 10_000:
+                raise ValueError("stepped schedule level_bps must be between 0 and 10000")
+
+        return self
+
+
+class EssentialsCategory(BaseModel):
+    monthly_spend_pence: int = Field(..., ge=0)
+    inflation_bps: int = Field(..., ge=0, le=10_000)
+
+
+class DebtItem(BaseModel):
+    balance_pence: int = Field(..., ge=0)
+    apr_bps: int = Field(..., ge=0, le=10_000)
+    min_payment_pence: int = Field(..., ge=0)
+
+
 class DeterministicInput(BaseModel):
     household_monthly_net_income_pence: int = Field(
         ..., ge=0, description="Monthly net household income in pence"
@@ -45,6 +94,11 @@ class DeterministicInput(BaseModel):
         default_factory=lambda: {"GBP": 1.0, "EUR": 0.86, "USD": 0.78}
     )
     fx_stress_bps: dict[str, int] = Field(default_factory=dict)
+    essentials_categories: dict[str, EssentialsCategory] | None = None
+    debts: list[DebtItem] | None = None
+    income_shock_schedule: ShockSchedule | None = None
+    inflation_shock_schedule: ShockSchedule | None = None
+    mortgage_rate_stress_schedule: ShockSchedule | None = None
     horizon_months: int = Field(default=24, ge=1, description="Projection horizon in months")
 
     @model_validator(mode="after")
@@ -78,6 +132,16 @@ class DeterministicInput(BaseModel):
         for code, shock in self.fx_stress_bps.items():
             if shock < -9_999 or shock > 10_000:
                 raise ValueError(f"fx_stress_bps for {code} must be between -9999 and 10000")
+
+        if self.essentials_categories is not None:
+            if len(self.essentials_categories) == 0:
+                raise ValueError("essentials_categories must not be empty when provided")
+            for name in self.essentials_categories:
+                if not name.strip():
+                    raise ValueError("essentials_categories keys must be non-empty")
+
+        if self.debts is not None and len(self.debts) == 0:
+            raise ValueError("debts must not be empty when provided")
 
         return self
 

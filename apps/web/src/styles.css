@@ -75,6 +75,145 @@ form {
   gap: 0.75rem;
 }
 
+.scenario-tabs {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.scenario-tab-row {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.scenario-tab {
+  border-radius: 0.55rem;
+  padding: 0.4rem 0.75rem;
+}
+
+.scenario-tab-active {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.65);
+}
+
+.scenario-note {
+  margin: 0;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", Consolas, monospace;
+}
+
+.scenario-clone-card {
+  border: 1px dashed #c6d4e4;
+  border-radius: 0.7rem;
+  padding: 0.65rem;
+  background: #f8fbff;
+}
+
+.scenario-clone-card p {
+  margin-top: 0;
+}
+
+.saved-scenarios {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.saved-scenarios-form {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.saved-scenario-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.saved-scenario-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: center;
+  border: 1px solid #d8e1eb;
+  border-radius: 0.65rem;
+  padding: 0.55rem 0.65rem;
+  background: #f8fbff;
+}
+
+.saved-scenario-item p {
+  margin: 0.2rem 0 0;
+}
+
+.saved-scenario-actions {
+  display: flex;
+  gap: 0.45rem;
+}
+
+.wizard-shell {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.wizard-progress,
+.wizard-step-label {
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  color: var(--muted);
+  margin: 0;
+}
+
+.wizard-step {
+  display: grid;
+  gap: 0.75rem;
+  background: var(--card);
+  border: 1px solid #ebeff5;
+  border-radius: 0.9rem;
+  padding: 0.9rem;
+}
+
+.wizard-step-content {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.money-input {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 1fr;
+}
+
+.mortgage-inputs {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.field-error {
+  margin: -0.15rem 0 0;
+  color: #9f1239;
+  font-size: 0.92rem;
+}
+
+.percent-slider {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #e4edf4;
+  border-radius: 0.75rem;
+  background: #f9fcfd;
+}
+
+.percent-slider-value {
+  margin: 0;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  color: var(--muted);
+}
+
+.wizard-nav {
+  display: flex;
+  gap: 0.65rem;
+  justify-content: flex-end;
+}
+
 label {
   display: grid;
   gap: 0.25rem;
@@ -196,9 +335,173 @@ a:focus-visible {
   color: var(--muted);
 }
 
+.fan-band-grid {
+  margin: 0.85rem 0 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.fan-band-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.fan-band-row span {
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  color: var(--muted);
+}
+
+.fan-band-track {
+  position: relative;
+  height: 14px;
+  border-radius: 999px;
+  background: #ecf3f8;
+  border: 1px solid #d7e3ee;
+}
+
+.fan-band-range {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(13, 148, 136, 0.3), rgba(13, 148, 136, 0.65));
+}
+
+.fan-band-median {
+  position: absolute;
+  top: -2px;
+  width: 2px;
+  height: 16px;
+  background: #0f172a;
+}
+
+.tornado-list {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.65rem;
+}
+
+.tornado-item {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.tornado-label-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  color: var(--muted);
+}
+
+.tornado-track {
+  width: 100%;
+  height: 14px;
+  border-radius: 999px;
+  border: 1px solid #d7e3ee;
+  background: #ecf3f8;
+  overflow: hidden;
+}
+
+.tornado-bar {
+  height: 100%;
+  border-radius: 999px;
+}
+
+.tornado-bar-positive {
+  background: linear-gradient(90deg, #0d9488, #14b8a6);
+}
+
+.tornado-bar-negative {
+  background: linear-gradient(90deg, #ea580c, #f59e0b);
+}
+
+.savings-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 0.65rem;
+  font-size: 0.9rem;
+}
+
+.savings-table th,
+.savings-table td {
+  border: 1px solid #d8e1eb;
+  padding: 0.35rem 0.45rem;
+  text-align: left;
+}
+
+.savings-table thead {
+  background: #eff6ff;
+}
+
 .form-error {
   margin-top: 0.75rem;
   color: #9f1239;
+}
+
+.diagnostics-panel {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.85rem;
+  padding: 0.85rem;
+}
+
+.diagnostics-panel h2 {
+  margin-bottom: 0.55rem;
+  font-size: 1rem;
+}
+
+.diagnostics-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.diagnostic-item {
+  line-height: 1.35;
+}
+
+.diagnostic-warning {
+  color: #92400e;
+}
+
+.diagnostic-error {
+  color: #9f1239;
+}
+
+.diagnostic-help {
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  text-underline-offset: 2px;
+  cursor: help;
+}
+
+.glossary-term {
+  font-family: "IBM Plex Mono", Consolas, monospace;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  cursor: help;
+}
+
+.assumptions-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.resources-disclaimer {
+  margin-top: 0;
+  color: var(--muted);
+}
+
+.resources-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.35rem;
 }
 
 .sr-only {
@@ -220,5 +523,12 @@ a:focus-visible {
 
   .result-card {
     padding: 0.85rem;
+  }
+}
+
+@media (min-width: 641px) {
+  .money-input {
+    grid-template-columns: minmax(0, 1.6fr) minmax(120px, 0.7fr);
+    align-items: end;
   }
 }

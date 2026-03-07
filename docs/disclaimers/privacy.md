@@ -88,6 +88,8 @@ These logs are used for security and operational reliability (e.g., troubleshoot
 
 Application-level operational logging is limited to request metadata (e.g., method/path/status/timing). The application is designed not to log request bodies or authentication bearer tokens.
 
+The repository also includes automated backend tests that fail CI if sensitive logging patterns (for example request bodies or bearer token logging) are introduced.
+
 ---
 
 ## Aggregate Operational Telemetry
